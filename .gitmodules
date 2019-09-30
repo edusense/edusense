@@ -1,0 +1,15 @@
+[submodule "compute/openpose/third_party/openpose"]
+  path = compute/openpose/third_party/openpose
+  url = https://github.com/CMU-Perceptual-Computing-Lab/openpose.git
+  branch = v1.5.1
+[submodule "compute/openpose/third_party/rapidjson"]
+  path = compute/openpose/third_party/rapidjson
+  url = https://github.com/Tencent/rapidjson.git
+  branch = v1.1.0
+[submodule "compute/openpose/third_party/base64"]
+  path = compute/openpose/third_party/base64
+  url = https://github.com/ReneNyffenegger/cpp-base64.git
+  branch = master
+[submodule "compute/video/third_party/deepgaze"]
+  path = compute/video/third_party/deepgaze
+  url = https://github.com/mpatacchiola/deepgaze.git

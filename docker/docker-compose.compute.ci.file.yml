@@ -1,0 +1,68 @@
+version: '2.4'
+services:
+  video:
+    build: ../compute/video
+    command:
+      - "--video_sock"
+      - "/app/sock/unix.sock"
+      - "--tcp_host"
+      - "0.0.0.0"
+      - "--tcp_port"
+      - "5000"
+      - "--file_output_dir"
+      - "/output"
+      - "--schema"
+      - "edusense-video"
+      - "--time_duration"
+      - "100"
+      - "--process_real_time"
+      - "--process_gaze"
+      - "--keep_frame_number"
+      - "--profile"
+      - "--video_out"
+      - "video.avi"
+      - "--image_out"
+      - "--json_out"
+    ports:
+      - "5000:5000"
+    networks:
+      - edusense_backend
+    volumes:
+      - ./output:/output
+      - data-volume:/app/sock
+    environment:
+      - LOCAL_USER_ID
+      - APP_USERNAME
+      - APP_PASSWORD
+  openpose:
+    build: ../compute/openpose
+    runtime: nvidia
+    command:
+      - "--video"
+      - "/input/video.avi"
+      - "--raw_image"
+      - "--tcp_host"
+      - "video"
+      - "--tcp_port"
+      - "5000"
+      - "--display"
+      - "0"
+      - "--render_pose"
+      - "0"
+      - "--unix_socket"
+      - "/app/sock/unix.sock"
+    depends_on:
+      - video
+    networks:
+      - edusense_backend
+    volumes:
+      - ./input:/input
+      - data-volume:/app/sock
+    environment:
+      - LOCAL_USER_ID
+volumes:
+  data-volume:
+networks:
+  edusense_backend:
+    driver: bridge
+    internal: true

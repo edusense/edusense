@@ -1,0 +1,8 @@
+numpy
+resampy
+keras
+tensorflow
+pyaudio
+joblib
+requests
+sklearn

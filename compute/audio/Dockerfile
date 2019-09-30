@@ -1,0 +1,27 @@
+FROM python:3.7-stretch
+LABEL maintainer dohyunk@cs.cmu.edu
+
+RUN set -eux; \
+  apt-get update; \
+  apt-get install -y \
+    gosu \
+    libasound-dev \
+    portaudio19-dev \
+    libportaudio2 \
+    libportaudiocpp0 \
+    ffmpeg \
+    libav-tools ; \
+  rm -rf /var/lib/apt/lists/*; \
+# verify that the binary works
+  gosu nobody true
+
+WORKDIR /app
+COPY ./python /app
+COPY ./models /app/models
+COPY ./entrypoint.sh /app
+RUN pip install --no-cache-dir -r requirements.txt
+ADD https://www.dropbox.com/s/cq1d7uqg0l28211/example_model.hdf5?dl=1 /app/models/example_model.hdf5
+
+RUN chmod +x entrypoint.sh
+
+ENTRYPOINT ["./entrypoint.sh"]

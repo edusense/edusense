@@ -1,0 +1,39 @@
+version: '3.1'
+services:
+  storage:
+    build: ../storage
+    command: ["-db", "edusense", "-dbhost", "mongo", "-port", "5000"]
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongo
+    networks:
+      - edusense_frontend
+      - edusense_backend
+    secrets:
+      - ssl_cert
+      - ssl_cert_private_key
+      - app_username
+      - app_password
+  mongo:
+    image: mongo
+    ports:
+      - "27017:27017"
+    networks:
+      - edusense_backend
+networks:
+  edusense_frontend:
+    driver: bridge
+    internal: false
+  edusense_backend:
+    driver: bridge
+    internal: true
+secrets:
+  ssl_cert:
+    file: <path_to_fullchain.pem: e.g. /etc/letsencrypt/live/<hostname>/fullchain.pem>
+  ssl_cert_private_key:
+    file: <path_to_privkeypem: e.g. /etc/letsencrypt/live/<hostname>/privkey.pem>
+  app_username:
+    file: <path_to_app_username_file>
+  app_password:
+    file: <path_to_app_password_file>
