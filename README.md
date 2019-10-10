@@ -2,11 +2,13 @@
 
 ## News
 
-- *Sep 2019* We presented our paper titled "Edusense: Practical Classroom Sensing at Scale" at Ubicomp'19.
 - *Oct 2019* We open-source our EduSense code!
+- *Sep 2019* We presented our paper titled "Edusense: Practical Classroom Sensing at Scale" at Ubicomp'19.
 
 ## Related Links
 
+- [EduSense Website](https://www.edusense.io/)
+- [EduSense Paper](https://karan-ahuja.com/assets/docs/paper/edusense.pdf)
 - [EduSense Docker Hub](https://hub.docker.com/u/edusensecmu)
 
 ## Citation
