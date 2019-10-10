@@ -7,7 +7,7 @@
 
 ## Related Links
 
-- [EduSense Docker Hub](https://hub.docker.com/edusensecmu)
+- [EduSense Docker Hub](https://hub.docker.com/u/edusensecmu)
 
 ## Citation
 

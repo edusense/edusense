@@ -1,5 +1,5 @@
-Running Continuous Integration/Development build
-================================================
+Running EduSense on Docker
+==========================
 
 ## Storage (MongoDB + Storage Web Server)
 
@@ -10,7 +10,6 @@ If you want to use without SSL or use default credentials, put path to an empty
 file. For example, `touch username` and put the created file path(`username`).
 
 ### Use Docker-compose for single node setup
-
 ```
 docker-compose -f ./docker-compose-storage.yml up
 docker-compose -f ./docker-compose-storage.yml down
