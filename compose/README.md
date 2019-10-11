@@ -1,6 +1,8 @@
 Running EduSense on Docker
 ==========================
 
+# Continuous Integration
+
 ## Storage (MongoDB + Storage Web Server)
 
 ### YAML setup
@@ -14,8 +16,7 @@ file. For example, `touch username` and put the created file path(`username`).
 docker-compose -f ./docker-compose-storage.yml up
 docker-compose -f ./docker-compose-storage.yml down
 ```
-Deploying EduSense for Production
-=================================
+# Deploying EduSense without Compilation for Production
 
 Dockerfiles in this directory are mainly for automated builds in certain
 environments where we need to download the code from publicly available
