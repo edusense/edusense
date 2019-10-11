@@ -23,13 +23,13 @@ deployments.
 ## Installing Dependencies
 
 1. Install **nvidia-docker**: [nvidia-docker2 installation doc](https://github.com/NVIDIA/nvidia-docker/wiki/Installation-(version-2.0)).
-  * When you are done installing Docker, please make sure you also follow post-installation [steps](https://docs.docker.com/install/linux/linux-postinstall)
-  * Note: With Docker >= 19.03, GPUs are natively supported by Docker daemon,
-    but `docker-compose` does not support GPU allocation as of now. We stick to
-    soon-to-be-deprecated nvidia-docker for current deployment. Once the new
-    version of docker-compose gets released, we will explore ways to use the
-    new functionality.
-1. Install **docker-compose**: [docker-compose installation doc](https://docs.docker.com/compose/install/)
+    * When you are done installing Docker, please make sure you also follow post-installation [steps](https://docs.docker.com/install/linux/linux-postinstall)
+    * Note: With Docker >= 19.03, GPUs are natively supported by Docker daemon,
+      but `docker-compose` does not support GPU allocation as of now. We stick
+      to to-be-deprecated nvidia-docker for current deployment. Once the new
+      version of docker-compose gets released, we will explore ways to use the
+      new functionality.
+2. Install **docker-compose**: [docker-compose installation doc](https://docs.docker.com/compose/install/)
 
 ## Building/Deploying EduSense
 
@@ -57,11 +57,11 @@ components.
 We have two options for deployment: deploying EduSense for development and
 for production. **If you make any changes to the code base and want to test
 your component, please use the instructions for
-[deploying EduSense for development](#deploying-edusense-(development)). If you
+[deploying EduSense for development](#deploying-edusense-development). If you
 just want to deploy EduSense in production, please the instructions in
-[deploying EduSense for production](#deploying-edusense-(production))**
+[deploying EduSense for production](#deploying-edusense-production)**
 
-### Deploying EduSense (Production)
+### Deploying EduSense for Production
 
 We have all our container images available at [docker hub](https://hub.docker.com/u/edusensecmu).
 As our system has multiple components to be deployed, we provide at set of
@@ -69,7 +69,7 @@ docker compose files that automatically download the images from the hub and
 set up the connections among the containers. For more details, please refer to
 [EduSense production repository](https://www.github.com/edusense/production).
 
-### Deploying EduSense (Development)
+### Deploying EduSense for Development
 
 We are glad to see you interested in developing with us! We always welcome
 new contributors. Please feel free to discuss what you found or what you want
