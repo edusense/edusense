@@ -4,12 +4,12 @@ Getting Started with EduSense
 ## Contents
 
 1. [Requirements](#requirements)
-  1. [Operating Systems](#operating-systems)
-  1. [Installing Dependencies](#installing-dependencies)
-  1. [Buildling/Deploying EduSense](#building/deploying-edusense)
+    1. [Operating Systems](#operating-systems)
+2. [Installing Dependencies](#installing-dependencies)
+3. [Buildling/Deploying EduSense](#buildingdeploying-edusense)
     1. [EduSense Components](#edusense-components)
-    1. [Deploying EduSense (Production)](#deploying-edusense-(production))
-    1. [Deploying EduSense (Development)](#deploying-edusense-(development))
+    2. [Deploying EduSense (Production)](#deploying-edusense-production)
+    3. [Deploying EduSense (Development)](#deploying-edusense-development)
 
 ## Requirements
 
