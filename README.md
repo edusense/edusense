@@ -1,5 +1,7 @@
 # EduSense: Practical Classroom Sensing at Scale
 
+![hero image](media/hero.png)
+
 [EduSense](https://www.edusense.io/) represents the **first real-time, in-the-wild evaluated and practically-deployable  classroom sensing system at scale** that produces a plethora of theoretically-motivated visual and audio features correlated with effective instruction.
 
 Our [getting started](doc/getting_started.md) is a good starting point if you are interested in building/developing/deploying EduSense. More information about the team can be found on the [EduSense website](https://www.edusense.io/team).
@@ -10,6 +12,7 @@ Our [getting started](doc/getting_started.md) is a good starting point if you ar
 - *Sep 2019* We presented our paper titled "Edusense: Practical Classroom Sensing at Scale" at Ubicomp'19.
 
 ## Features for Students and Instructors
+![features](media/features.png)
 - **Visual Features**:
     - **Body Segmentation, Keypoints and Inter-frame tracking**:
         - Hand Raise Detection
@@ -25,8 +28,13 @@ Our [getting started](doc/getting_started.md) is a good starting point if you ar
     - **Speech Detection**:        
         - Student vs Instructor Speech
         - Speech Act Delimation   
-- **Visualization Dashboard**
 
+### Visualization Dashboard
+![viz dashboard](media/dashboard.jpg)
+
+
+### System Architecture
+![system architecture](media/architecture.png)
 
 ## Related Links
 - [EduSense Website](https://www.edusense.io/)
@@ -34,6 +42,8 @@ Our [getting started](doc/getting_started.md) is a good starting point if you ar
 - [EduSense Docker Hub](https://hub.docker.com/u/edusensecmu)
 
 ## Citation
+
+Karan Ahuja, Dohyun Kim, Franceska Xhakaj, Virag Varga, Anne Xie, Stanley Zhang, Jay Eric Townsend, Chris Harrison, Amy Ogan, and Yuvraj Agarwal. 2019. EduSense: Practical Classroom Sensing at Scale. Proc. ACM Interact. Mob. Wearable Ubiquitous Technol. 3, 3, Article 71 (September 2019), 26 pages. DOI: https://doi.org/10.1145/3351229
 
 ```
 @article{Ahuja:2019:EPC:3361560.3351229,
