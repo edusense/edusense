@@ -67,3 +67,10 @@ Karan Ahuja, Dohyun Kim, Franceska Xhakaj, Virag Varga, Anne Xie, Stanley Zhang,
  keywords = {Audio, Classroom, Computer Vision, Instructor, Machine Learning, Pedagogy, Sensing, Speech Detection, Teacher},
 }
 ```
+
+## License
+
+The source code in this directory and its subdirectories are all governed
+by [BSD 3-Clause License](/LICENSE). Once compiled or packaged, it is the
+user's reponsibility to ensure that any use of the result binary or image
+complies with any relevant licenses for all software packaged together.
