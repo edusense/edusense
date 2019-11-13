@@ -6,7 +6,7 @@
 # Either use the LOCAL_USER_ID if passed in at runtime or fallback.
 USER_ID=${LOCAL_USER_ID:-9001}
 
-adduser --shell /bin/sh -u $USER_ID -D -H edusense
+adduser --shell /bin/sh -u $USER_ID --gecos "" --quiet --disabled-login --no-create-home edusense
 chown -R edusense:edusense /app
 
 # Read secrets and then deescalate the previleges
@@ -19,4 +19,4 @@ exec env SSL_CERT="$SSL_CERT" \
   env SSL_CERT_PRIVATE_KEY="$SSL_CERT_PRIVATE_KEY" \
   env APP_USERNAME="$APP_USERNAME" \
   env APP_PASSWORD="$APP_PASSWORD" \
-  /usr/local/bin/gosu edusense ./storage "$@"
+  gosu edusense ./storage "$@"
