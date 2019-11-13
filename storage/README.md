@@ -50,7 +50,7 @@ docker run <image_name> <arguments>
 ## License
 
 The source code in this directory and its subdirectories are all governed
-by [BSD 3-Clause License](LICENSE). By compiling this source code, you should
+by [BSD 3-Clause License](/LICENSE). By compiling this source code, you should
 comply with the terms for "derivation" or "derived work" noted by each of the
 software libraries this code depends on. Those libraries are automatically
 identified and downloaded by go builder.
