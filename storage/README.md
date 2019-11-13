@@ -52,5 +52,9 @@ docker run <image_name> <arguments>
 The source code in this directory and its subdirectories are all governed
 by [BSD 3-Clause License](/LICENSE). By compiling this source code, you should
 comply with the terms for "derivation" or "derived work" noted by each of the
-software libraries this code depends on. Those libraries are automatically
-identified and downloaded by go builder.
+software libraries this code depends on. The following is the list of direct
+dependencies of storage server implementation:
+
+- [globalsign/mgo](github.com/globalsign/mgo): [license](github.com/globalsign/mgo/LICENSE)
+* [gorilla/mux](github.com/gorilla/mux): [license](github.com/gorilla/mux/LICENSE)
+- [graph-gophers/graphql-go](github.com/graph-gophers/graphql-go): [license](github.com/graph-gophers/graphql-go/LICENSE)
