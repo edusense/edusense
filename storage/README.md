@@ -50,11 +50,6 @@ docker run <image_name> <arguments>
 ## License
 
 The source code in this directory and its subdirectories are all governed
-by [BSD 3-Clause License](/LICENSE). By compiling this source code, you should
-comply with the terms for "derivation" or "derived work" noted by each of the
-software libraries this code depends on. The following is the list of direct
-dependencies of storage server implementation:
-
-- [globalsign/mgo](https://github.com/globalsign/mgo): [license](https://github.com/globalsign/mgo/tree/master/LICENSE)
-- [gorilla/mux](https://github.com/gorilla/mux): [license](https://github.com/gorilla/mux/tree/master/LICENSE)
-- [graph-gophers/graphql-go](https://github.com/graph-gophers/graphql-go): [license](https://github.com/graph-gophers/graphql-go/tree/master/LICENSE)
+by [BSD 3-Clause License](/LICENSE). Once compiled or packaged, it is the
+user's reponsibility to ensure that any use of the result binary or image
+complies with any relevant licenses for all software packaged together.
