@@ -2,16 +2,19 @@ EduSense Storage
 ================
 
 This is a repository for storage backend component of EduSense.
-Core functionalities are implemented with Go language (golang.org).
+Storage server can be compiled manually natively using Go compiler or
+automatically using Dockerfile.
 
-## Get Started
+## Getting Started
 
-### Build storage
+### Custom build
+
+#### Build storage
 ```
 go build go.edusense.io/storage/apiserver
 ```
 
-### Run storage
+#### Run storage
 ```
 export SSL_CERT=<contents of SSL cert>
 export SSL_CERT_PRIVATE_KEY=<contents of SSL private key>
@@ -22,3 +25,28 @@ export APP_PASSWORD=<password_for_authentication>
   --dbhost <db_host: host for MongoDB (default localhost)>:<db_port: port for MongoDB (default 27017)> \
   --db <db_name: db name (default edusense)>
 ```
+
+### Docker build
+```
+docker build .
+```
+
+You may also want to name the image like below:
+```
+docker build . -t <tag_name>
+```
+
+To run, you can give the same parameters with LOCAL_USER_ID environment
+variable.
+```
+export LOCAL_USER_ID=$(id -u)
+docker run <image_name> <arguments>
+```
+
+## License
+
+The source code in this directory and its subdirectories are all governed
+by [BSD 3-Clause License](LICENSE). By compiling this source code, you should
+comply with the terms for "derivation" or "derived work" noted by each of the
+software libraries this code depends on. Those libraries are automatically
+identified and downloaded by go builder.
