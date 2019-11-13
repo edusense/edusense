@@ -27,6 +27,8 @@ export APP_PASSWORD=<password_for_authentication>
 ```
 
 ### Docker build
+
+#### Bulid image
 ```
 docker build .
 ```
@@ -36,6 +38,8 @@ You may also want to name the image like below:
 docker build . -t <tag_name>
 ```
 
+
+### Run image
 To run, you can give the same parameters with LOCAL_USER_ID environment
 variable.
 ```
