@@ -39,7 +39,7 @@ docker build . -t <tag_name>
 ```
 
 
-### Run image
+#### Run image
 To run, you can give the same parameters with LOCAL_USER_ID environment
 variable.
 ```
