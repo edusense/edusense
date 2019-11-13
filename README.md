@@ -1,28 +1,49 @@
 # EduSense: Practical Classroom Sensing at Scale
 
-EduSense is a comprehensive sensing system that produces a plethora of
-theoretically-motivated visual and audio features correlated with effective
-instruction, which could feed professional development tools in much the same
-way as a Fitbit sensor reports step count to an end user app.
-Although previous systems have demonstrated some of our features in isolation,
-EduSense is the first to unify them into a cohesive, real-time, in-the-wild
-evaluated, and practically-deployable system.
+![hero image](media/hero.png)
 
-Our [getting started](doc/getting_started.md) is a good starting point if you
-are interested in building/developing/deploying EduSense.
+[EduSense](https://www.edusense.io/) represents the **first real-time, in-the-wild evaluated and practically-deployable  classroom sensing system at scale** that produces a plethora of theoretically-motivated visual and audio features correlated with effective instruction.
+
+Our [getting started](doc/getting_started.md) is a good starting point if you are interested in building/developing/deploying EduSense. More information about the team can be found on the [EduSense website](https://www.edusense.io/team).
 
 ## News
 
 - *Oct 2019* We open-source our EduSense code!
 - *Sep 2019* We presented our paper titled "Edusense: Practical Classroom Sensing at Scale" at Ubicomp'19.
 
-## Related Links
+## Features for Students and Instructors
+![features](media/features.png)
+- **Visual Features**:
+    - **Body Segmentation, Keypoints and Inter-frame tracking**:
+        - Hand Raise Detection
+        - Upper Body Pose Estimation
+        - Sit vs Stand Detection
+        - Synthetic Accelerometer
+        - Classroom Topology
+    - **Facial Lanndmarks and Attributes**:
+        - Smile Detection
+        - Mouth State Detection
+        - Gaze Estimation
+- **Audio Features**:
+    - **Speech Detection**:        
+        - Student vs Instructor Speech
+        - Speech Act Delimation   
 
+### Visualization Dashboard
+![viz dashboard](media/dashboard.jpg)
+
+
+### System Architecture
+![system architecture](media/architecture.png)
+
+## Related Links
 - [EduSense Website](https://www.edusense.io/)
 - [EduSense Paper](https://karan-ahuja.com/assets/docs/paper/edusense.pdf)
 - [EduSense Docker Hub](https://hub.docker.com/u/edusensecmu)
 
 ## Citation
+
+Karan Ahuja, Dohyun Kim, Franceska Xhakaj, Virag Varga, Anne Xie, Stanley Zhang, Jay Eric Townsend, Chris Harrison, Amy Ogan, and Yuvraj Agarwal. 2019. EduSense: Practical Classroom Sensing at Scale. Proc. ACM Interact. Mob. Wearable Ubiquitous Technol. 3, 3, Article 71 (September 2019), 26 pages. DOI: https://doi.org/10.1145/3351229
 
 ```
 @article{Ahuja:2019:EPC:3361560.3351229,
