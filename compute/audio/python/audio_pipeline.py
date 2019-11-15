@@ -1,3 +1,6 @@
+# Copyright (c) 2017-2019 Carnegie Mellon University. All rights reserved.
+# Use of this source code is governed by BSD 3-clause license.
+
 from vggish_input import waveform_to_examples
 from keras.models import load_model
 import vggish_params

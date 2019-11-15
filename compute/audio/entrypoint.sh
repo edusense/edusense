@@ -1,4 +1,8 @@
 #!/bin/sh
+
+# Copyright (c) 2017-2019 Carnegie Mellon University. All rights reserved.
+# Use of this source code is governed by BSD 3-clause license.
+
 # The following code is derived from one of the code snippets in
 # https://denibertovic.com/posts/handling-permissions-with-docker-volumes/ .
 

@@ -1,6 +1,11 @@
+# Copyright (c) 2017-2019 Carnegie Mellon University. All rights reserved.
+# Use of this source code is governed by BSD 3-clause license.
+
 FROM python:3.7-stretch
 LABEL maintainer dohyunk@cs.cmu.edu
 
+# Some part of the following setup procedure is derived from
+# https://github.com/tianon/gosu/INSTALL.md.
 RUN set -eux; \
   apt-get update; \
   apt-get install -y \

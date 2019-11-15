@@ -1,4 +1,7 @@
-# Define Labels
+# Copyright (c) 2017-2019 Carnegie Mellon University. All rights reserved.
+# Use of this source code is governed by BSD 3-clause license.
+
+# Define labels
 labels = {
     'dog-bark': 0,
     'drill': 1,
