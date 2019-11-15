@@ -1,18 +1,21 @@
 #!/usr/bin/env python
 
+# Copyright (c) 2017-2019 Carnegie Mellon University. All rights reserved.
+# Use of this source code is governed by BSD 3-clause license.
 # EduSense Note: Code modified from deepgaze/examples/ex_cnn_head_pose_axes/ex_cnn_head_pose_estimation_axes.py (oct 2019).
+# Original license is also included below:
 
-#The MIT License (MIT)
-#Copyright (c) 2016 Massimiliano Patacchiola
+# The MIT License (MIT)
+# Copyright (c) 2016 Massimiliano Patacchiola
 #
-#THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-#MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-#CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-#SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+# CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#In this example the Deepgaze CNN head pose estimator is used to get the YAW angle.
-#The angle is projected on the input images and showed on-screen as a red line.
-#The images are then saved in the same folder of the script.
+# In this example the Deepgaze CNN head pose estimator is used to get the YAW angle.
+# The angle is projected on the input images and showed on-screen as a red line.
+# The images are then saved in the same folder of the script.
 
 import numpy as np
 import os

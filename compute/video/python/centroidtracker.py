@@ -1,3 +1,10 @@
+# Copyright (c) 2017-2019 Carnegie Mellon University. All rights reserved.
+# Use of this source code is governed by BSD 3-clause license.
+
+# This code has been modified from the original code written by
+# Adrian Rosebrock. The original code is from
+# https://www.pyimagesearch.com/2018/07/23/simple-object-tracking-with-opencv/
+
 # import the necessary packages
 from scipy.spatial import distance as dist
 from collections import OrderedDict

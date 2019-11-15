@@ -1,3 +1,6 @@
+# Copyright (c) 2017-2019 Carnegie Mellon University. All rights reserved.
+# Use of this source code is governed by BSD 3-clause license.
+
 FROM python:2.7-buster AS builder
 LABEL maintainer dohyunk@cs.cmu.edu
 
@@ -14,7 +17,7 @@ RUN cd deepgaze && python setup.py install
 
 FROM python:2.7-buster
 # The following gosu setup procedure is derived from
-# https://github.com/tianon/gosu. LICENSE: GPL-3.0.
+# https://github.com/tianon/gosu/INSTALL.md.
 RUN set -eux; \
   apt-get update; \
   apt-get install -y gosu; \
