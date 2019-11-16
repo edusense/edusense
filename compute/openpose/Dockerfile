@@ -1,3 +1,6 @@
+# Copyright (c) 2017-2019 Carnegie Mellon University. All rights reserved.
+# Use of this source code is governed by BSD 3-clause license.
+
 ARG CUDA_VERSION=10.0
 ARG CUDNN_VERSION=7
 ARG UBUNTU_VERSION=18.04
@@ -35,6 +38,9 @@ RUN curl -o install_cmake.sh -SL "https://github.com/Kitware/CMake/releases/down
   rm install_cmake.sh
 
 COPY edusense examples/edusense
+RUN patch examples/tutorial_api_cpp/16_synchronous_custom_output.cpp -i examples/edusense/edusense.cpp.patch -o examples/edusense/edusense.cpp && \
+    patch examples/user_code/CMakeLists.txt -i examples/edusense/CMakeLists.txt.patch -o examples/edusense/CMakeLists.txt
+
 COPY third_party/base64 examples/edusense/base64
 COPY third_party/rapidjson/include/rapidjson examples/edusense/rapidjson
 RUN echo "add_subdirectory(edusense)" >> examples/CMakeLists.txt
@@ -46,7 +52,7 @@ FROM nvidia/cuda:${CUDA_VERSION}-cudnn${CUDNN_VERSION}-runtime-ubuntu${UBUNTU_VE
 
 ENV DEBIAN_FRONTEND=noninteractive
 # The following gosu setup procedure is derived from
-# https://github.com/tianon/gosu. LICENSE: GPL-3.0.
+# https://github.com/tianon/gosu.
 RUN set -eux; \
   apt-get update; \
   apt-get install -y gosu; \

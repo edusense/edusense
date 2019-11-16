@@ -1,0 +1,27 @@
+Copyright (c) 2017-2019 Carnegie Mellon University. All rights reserved.
+Use of this source code is governed by BSD 3-clause license.
+
+2,7c2,3
+< # set(USER_CODE_FILES 
+< #     ADD_HERE_YOUR_FILE1.cpp
+< #     ADD_HERE_YOUR_FILE1.hpp
+< #     ADD_HERE_YOUR_FILE2.cpp
+< #     # ...
+< #     ADD_HERE_YOUR_FILEn.cpp)
+---
+> set(USER_CODE_FILES
+>     edusense.cpp)
+9c5,6
+< foreach(USER_CODE_FILE ${USER_CODE_FILES})
+---
+> find_package(Boost COMPONENTS system)
+> find_package(OpenSSL REQUIRED)
+10a8
+> foreach(USER_CODE_FILE ${USER_CODE_FILES})
+20,21c18,20
+<   add_executable(${EXE_NAME} ${USER_CODE_FILE})
+<   target_link_libraries(${EXE_NAME} openpose ${examples_3rdparty_libraries})
+---
+>   add_executable(${EXE_NAME} ${USER_CODE_FILE} base64/base64.cpp)
+>   include_directories(${Boost_INCLUDE_DIRS})
+>   target_link_libraries(${EXE_NAME} openpose ${examples_3rdparty_libraries} ${Boost_LIBRARIES} ${OPENSSL_LIBRARIES})
