@@ -63,9 +63,10 @@ To faciliate deployment, we packaged each component of EduSense into Docker
 containers. We provide Dockerfiles for each components and docker-compose files
 that automates multi-container deployment. 
 
-We provide a set of [docker compose files](compose/) that automates compilation
-and deploys EduSense. For more details on each of the docker-compose files,
-please refer to [readme file](compose/README.md).
+We provide a set of [docker compose files](/compose/) that automates compilation
+and deploys EduSense. Feel free to take a look at the directory for more information.
+
+## Contributing to EduSense
 
 We are glad to see you interested in developing with us! We always welcome
 new contributors. Please feel free to discuss what you found or what you want
