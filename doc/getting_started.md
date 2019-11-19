@@ -53,29 +53,20 @@ components.
   * **storage** supports REST API end points for the compute pipelines
     mentioned above and EduSense client applications. Our storage backend
     depends on MongoDB as database backend.
+* Frontend (not included in this repository)
+  * **frontend** visualizes processed data, providing useful debug interface.
+    Currently, our edusense repository does not contain this component.
+    
+## Deploying EduSense
 
-We have two options for deployment: deploying EduSense for development and
-for production. **If you make any changes to the code base and want to test
-your component, please use the instructions for
-[deploying EduSense for development](#deploying-edusense-development). If you
-just want to deploy EduSense in production, please the instructions in
-[deploying EduSense for production](#deploying-edusense-production)**
-
-### Deploying EduSense for Production
-
-We have all our container images available at [docker hub](https://hub.docker.com/u/edusensecmu).
-As our system has multiple components to be deployed, we provide at set of
-docker compose files that automatically download the images from the hub and
-set up the connections among the containers. For more details, please refer to
-[EduSense production repository](https://www.github.com/edusense/production).
-
-### Deploying EduSense for Development
-
-We are glad to see you interested in developing with us! We always welcome
-new contributors. Please feel free to discuss what you found or what you want
-to do in our issue page.
+To faciliate deployment, we packaged each component of EduSense into Docker
+containers. We provide Dockerfiles for each components and docker-compose files
+that automates multi-container deployment. 
 
 We provide a set of [docker compose files](compose/) that automates compilation
 and deploys EduSense. For more details on each of the docker-compose files,
 please refer to [readme file](compose/README.md).
 
+We are glad to see you interested in developing with us! We always welcome
+new contributors. Please feel free to discuss what you found or what you want
+to do in our issue page.
