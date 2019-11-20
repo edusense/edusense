@@ -240,6 +240,27 @@ def get_pose_pts(body_keypoints):
         pose.append((int(body_keypoints[3*i]), int(body_keypoints[3*i+1]), int(body_keypoints[3*i+2])))
     return pose
 
+def get_pts_of_interest(keypoints, area_of_interest):
+    low_x = area_of_interest[0] if area_of_interest[0] < area_of_interest[2] else area_of_interest[2]
+    high_x = area_of_interest[2] if area_of_interest[0] < area_of_interest[2] else area_of_interest[0]
+    low_y = area_of_interest[1] if area_of_interest[1] < area_of_interest[3] else area_of_interest[3]
+    high_y = area_of_interest[3] if area_of_interest[1] < area_of_interest[3] else area_of_interest[1]
+
+    for i in range(int(len(keypoints)/3)):
+        is_of_interest = (keypoints[3*i] >= low_x and keypoints[3*i] <= high_x and
+                          keypoints[3*i+1] >= low_y and keypoints[3*i+1] <= high_y)
+        keypoints[3*i] = keypoints[3*i] if is_of_interest else 0
+        keypoints[3*i+1] = keypoints[3*i+1] if is_of_interest else 0
+        keypoints[3*i+2] = keypoints[3*i+2] if is_of_interest else 0
+
+    return keypoints
+
+def get_pts_of_interest_from_person(p, area_of_interest):
+    for t in ['body', 'face', 'hand']:
+        if t in p.keys():
+            p[t] = get_pts_of_interest(p[t], area_of_interest)
+    return p
+
 def check_body_pts(body_keypoints):
     valid_pts = 0
     for i in range(int(len(body_keypoints)/3)):

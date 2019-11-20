@@ -26,6 +26,11 @@ services:
       - "video.avi"
       - "--image_out"
       - "--json_out"
+      - "--area_of_interest"
+      - "3940"
+      - "2160"
+      - "1920"
+      - "1080"
     ports:
       - "5000:5000"
     networks:

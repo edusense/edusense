@@ -119,11 +119,13 @@ class SocketReaderThread(threading.Thread):
 
 class ConsumerThread(threading.Thread):
     def __init__(self, input_queue, process_real_time, process_gaze, channel,
-                 backend_params=None, file_params=None, profile=False):
+                 area_of_interest, backend_params=None, file_params=None,
+                 profile=False):
         threading.Thread.__init__(self)
         self.input_queue = input_queue
         self.process_real_time = process_real_time
         self.channel = channel
+        self.area_of_interest = area_of_interest
 
         # Initialize file posting
         self.file_params = file_params
@@ -254,12 +256,13 @@ class ConsumerThread(threading.Thread):
 
             person_poses = []
 
+            if self.area_of_interest is not None:
+                bodies = list(map(lambda b: get_pts_of_interest_from_person(b, self.area_of_interest), bodies))
             bodies = list(filter(lambda b: check_body_pts(b['body']), bodies))
 
             for body in bodies:
                 body_keypoints = body["body"]
-                face_keypoints = body["face"] if "face" in body.keys(
-                ) else None
+                face_keypoints = body["face"] if "face" in body.keys() else None
 
                 # prune body keypoints
                 body_keypoints = prune_body_pts(body_keypoints)
@@ -514,8 +517,8 @@ class ConsumerThread(threading.Thread):
 
 
 def run_pipeline(server_address, time_duration, process_real_time,
-                 process_gaze, keep_frame_number, channel, backend_params=None,
-                 file_params=None, profile=False):
+                 process_gaze, keep_frame_number, channel, area_of_interest,
+                 backend_params=None, file_params=None, profile=False):
 
     # initialize queues
     q = None
@@ -532,8 +535,8 @@ def run_pipeline(server_address, time_duration, process_real_time,
 
     # initialize video consumers
     consumer_thread = ConsumerThread(q, process_real_time, process_gaze,
-                                     channel, backend_params, file_params,
-                                     profile)
+                                     channel, area_of_interest, backend_params,
+                                     file_params, profile)
 
     # start downstream (consumers)
     consumer_thread.start()
@@ -596,6 +599,9 @@ if __name__ == '__main__':
     parser.add_argument('--keep_frame_number', dest='keep_frame_number',
                         action='store_true', help='if set, keep frame number '
                         'given by openpose, otherwise issue new frame number')
+    parser.add_argument('--area_of_interest', dest='area_of_interest',
+                        type=int, nargs=4, help='process bodies in certain '
+                        'area. --area_of_interest <x1> <y1> <x2> <y2>')
     parser.add_argument('--profile', dest='profile', action='store_true',
                         help='if set, profile performance')
     parser.add_argument('--instructor', dest='instructor', action='store_true',
@@ -643,4 +649,4 @@ if __name__ == '__main__':
                       else (args.tcp_host, args.tcp_port))
     run_pipeline(server_address, args.time_duration, args.process_real_time,
                  args.process_gaze, args.keep_frame_number, channel,
-                 backend_params, file_params, profile)
+                 args.area_of_interest, backend_params, file_params, profile)
