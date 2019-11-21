@@ -470,6 +470,10 @@ class ConsumerThread(threading.Thread):
         if frame_data is not None:
             try:
                 file_post_start_time = time.time()
+                if self.area_of_interest is not None:
+                    start_pt = tuple(self.area_of_interest[:2])
+                    end_pt = tuple(self.area_of_interest[2:])
+                    cv2.rectangle(raw_image, start_pt, end_pt, (0, 0, 255), 5)
 
                 if self.file_params['image'] and raw_image is not None:
                     path = os.path.join(self.file_params['base_dir'], '%d.%s.jpg' % (
