@@ -101,3 +101,10 @@ docker-compose -f docker-compose.storage.yml down
 2. *Changing DB name*: By default, all the data is stored in `edusense`
    database in mongo DB. To change the DB name, change the value for
    `-db` at `services.storage.command`.
+   
+## Notes on larger scale deployment
+
+For large scale deployment of EduSense, we deploy each container manually
+using docker run for better, fine-grained control of deployments. For more
+information about each of the components, please refer to readme.md for
+each docker containers.
