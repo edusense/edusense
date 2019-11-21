@@ -7,7 +7,16 @@ automatically using Dockerfile.
 
 ## Getting Started
 
-### Custom build
+This instruction is for manually setting up storage servers. For those
+who are new to EduSense, we recommend to take a look at automated
+multi-container setup provided [here](/compose/README.md). The setup code
+will provide a good reference to figure out how each EduSense component
+should be connected to each other.
+
+In the following sectinos, we provide two different instructions: deploying without
+Docker and with Docker.
+
+### Building/Deploying without Docker
 
 #### Build storage
 ```
@@ -26,7 +35,7 @@ export APP_PASSWORD=<password_for_authentication>
   --db <db_name: db name (default edusense)>
 ```
 
-### Docker build
+### Building/Deploying with Docker
 
 #### Bulid image
 ```
@@ -46,3 +55,18 @@ variable.
 export LOCAL_USER_ID=$(id -u)
 docker run <image_name> <arguments>
 ```
+
+### Command Line Arguments & Environment Variables
+
+Storage server takes the following command line arguements:
+
+* **-port**: port number (integer) users wants to put the API end point
+* **-dbhost**: hostport for mongodb backend.
+* **-db**: database name inside mongoDB.
+
+Also, the storage server takes the following environment variables:
+
+* **SSL_CERT**: SSL certificate for HTTPS connection
+* **SSL_CERT_PRIVATE_KEY**: private key used to create the SSL certificate above
+* **APP_USERNAME**: root user name to authorize API access
+* **APP_PASSWORD**: root user password to authorize API access
