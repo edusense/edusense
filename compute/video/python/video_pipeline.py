@@ -125,7 +125,7 @@ class ConsumerThread(threading.Thread):
         self.input_queue = input_queue
         self.process_real_time = process_real_time
         self.channel = channel
-        self.area_of_interest = area_of_interest
+        self.area_of_interest = np.array(area_of_interest).reshape((-1, 1, 2))
 
         # Initialize file posting
         self.file_params = file_params
@@ -471,9 +471,7 @@ class ConsumerThread(threading.Thread):
             try:
                 file_post_start_time = time.time()
                 if self.area_of_interest is not None:
-                    start_pt = tuple(self.area_of_interest[:2])
-                    end_pt = tuple(self.area_of_interest[2:])
-                    cv2.rectangle(raw_image, start_pt, end_pt, (0, 0, 255), 5)
+                    cv2.drawContours(raw_image, [self.area_of_interest], -1, (0, 0, 255), 5)
 
                 if self.file_params['image'] and raw_image is not None:
                     path = os.path.join(self.file_params['base_dir'], '%d.%s.jpg' % (
@@ -604,7 +602,7 @@ if __name__ == '__main__':
                         action='store_true', help='if set, keep frame number '
                         'given by openpose, otherwise issue new frame number')
     parser.add_argument('--area_of_interest', dest='area_of_interest',
-                        type=int, nargs=4, help='process bodies in certain '
+                        type=int, nargs='+', help='process bodies in certain '
                         'area. --area_of_interest <x1> <y1> <x2> <y2>')
     parser.add_argument('--profile', dest='profile', action='store_true',
                         help='if set, profile performance')
@@ -620,6 +618,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     channel = 'instructor' if args.instructor else 'student'
+    if len(args.area_of_interest) % 2 == 1 or len(args.area_of_interest) < 6:
+        print('for area of interest, you should put x, y pairs: suppied {}'.format(len(args.area_of_interest)))
 
     # setup backend params
     backend_params = None
