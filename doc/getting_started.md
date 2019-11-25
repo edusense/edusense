@@ -5,11 +5,10 @@ Getting Started with EduSense
 
 1. [Requirements](#requirements)
     1. [Operating Systems](#operating-systems)
-2. [Installing Dependencies](#installing-dependencies)
-3. [Buildling/Deploying EduSense](#buildingdeploying-edusense)
-    1. [EduSense Components](#edusense-components)
-    2. [Deploying EduSense (Production)](#deploying-edusense-production)
-    3. [Deploying EduSense (Development)](#deploying-edusense-development)
+    2. [Dependencies](#dependencies)
+3. [EduSense Component Overview](#edusense-component-overview)
+4. [Deploying EduSense](#deploying-edusense)
+5. [Using EduSense APIs for Client Development](#using-edusense-apis-for-client-development)
 
 ## Requirements
 
@@ -20,7 +19,7 @@ containers. EduSense should be deployable on any Linux distributions with
 proper docker daemon installed. Currently, we do not support Windows/Mac
 deployments.
 
-## Installing Dependencies
+### Dependencies
 
 1. Install **nvidia-docker**: [nvidia-docker2 installation doc](https://github.com/NVIDIA/nvidia-docker/wiki/Installation-(version-2.0)).
     * When you are done installing Docker, please make sure you also follow post-installation [steps](https://docs.docker.com/install/linux/linux-postinstall)
@@ -31,9 +30,7 @@ deployments.
       new functionality.
 2. Install **docker-compose**: [docker-compose installation doc](https://docs.docker.com/compose/install/)
 
-## Building/Deploying EduSense
-
-### EduSense Components
+## EduSense Component Overview
 
 EduSense is composed of multiple components packaged as separate Docker
 components.
@@ -65,6 +62,12 @@ that automates multi-container deployment.
 
 We provide a set of [docker compose files](/compose/) that automates compilation
 and deploys EduSense. Feel free to take a look at the directory for more information.
+
+## Using EduSense APIs for Client Development
+
+Storage server supports a set of HTTP RESTful APIs for custom EduSense applications
+(App Layer in the paper). Please refer to this [documentation](/doc/developer_guide.md)
+for more details about the client API.
 
 ## Contributing to EduSense
 
