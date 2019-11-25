@@ -7,6 +7,51 @@ of these APIs.
 
 ## Core Concepts
 
+Taking into account that there will be a huge diversity in how users organize
+classroom data, EduSense storage backend is designed to provide high flexibility
+by holding a minimal set of contextual data inside storage backend. EduSense
+encourages users to build a separate application with deployment-specific contextual
+information. To support these use cases, we provide the following minimal HTTP RESTful
+APIs. EduSense developers should be conservative about adding new APIs as it may tamper
+usability.
+
+For simplicity, session and frame management in EduSense storage follows the following
+few rules.
+
+### Session Management
+
+1. Class session means the single, continuous time period when a class takes place. In
+   general university settings, these class sessions repeat on a weekly basis. For example,
+   a semester-long course is composed of multiple class sessions repeated over the
+   semester.
+1. Each class session has a custom `keyword` and a unique machine-generated session identifier (`session_id`).
+1. A custom `keyword` is a way for users to search for specific class sessions they want. For example,
+   in CMU, we use some keyword structure like:
+   `cmu_0000A_weh_7111_201911251753` noting that the corresponding session has `0000A` as
+   class code and took place in `weh_7111` at `201911251753`. Our default search algorithm
+   for session keywords is *prefix-match*; we encourage developers to implement prefix-coded
+   hierarchy for keyword schema.
+1. A machine-generated(readable) `session_id` serves as a unique identifier for each session.
+   After looking up session identifiers by a keyword, you can post/get frames and session metadata
+   using this session id.
+
+### Frame Management
+
+1. Each session can have multiple ways to represent data (e.g., different data format). Different
+   data representation formats can be distinguished from each other by string `schema` field. Users can
+   effectively *version* their data schema using this field for compatibility.
+1. Processed frames for each class session are indexed by `timestamp` and `frame_number`. All frames
+   should have these fields.
+1. To distinguish instructor frames (back camera) from student frames (front camera), we use a separate
+   field `channel` which can be either `instructor` or `student`.
+1. Since GraphQL requires frames to be formatted in a unified schema, we have a separate field
+   `type`. If a user posts a frame with `type` being `video`, users can query the frame by GraphQL's video
+   frame schema. If a user posts a frame with `type` being `audio`, users can query the frame by GraphQL's
+   audio frame schema. If `type` is either `video` or `audio`, if the posted frame does not follow the
+   certain schema, it will return error in response. Otherwise--if `type` is neither `video` nor `audio`--
+   the frame will be regarded as free-form, returning errors when user tries to query the frame using
+   GraphQL.
+
 ## Storage API
 
 External APIs for storage servers are based on RESTful HTTP APIs. Currently, storage server
