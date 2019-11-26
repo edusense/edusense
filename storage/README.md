@@ -70,3 +70,27 @@ Also, the storage server takes the following environment variables:
 * **SSL_CERT_PRIVATE_KEY**: private key used to create the SSL certificate above
 * **APP_USERNAME**: root user name to authorize API access
 * **APP_PASSWORD**: root user password to authorize API access
+
+## Developer Guide
+
+Welcome to storage server code base! For developers who are new to storage server,
+they can start looking at [apiserver/app.go](apiserver/app.go).
+
+### Directory Structure
+
+* **[apiserver/](apiserver)**: Frontend API server. Implements endpoints, authentication and other utilities.
+  * **[app.go](apiserver/app.go)**: Implements RESTful endpoints.
+  * **[auth.go](apiserver/auth.go)**: Implements authentication.
+  * **[manage.go](apiserver/manage.go)**: Implements camera connectivity monitoring utilities.
+  * **[proto.go](apiserver/proto.go)**: Defines request/response protocol for the endpoints.
+* **[dbhandler/](dbhandler)**: DB connectors. Transforms data operations into DB commands.
+  * **[interface.go](dbhandler/interface.go)**: Defines abstractions for DB operations.
+  * **[mongo/](dbhandler/mongo)**: Implements DB operations for MongoDB binding.
+* **[models/](models)**: DB-independent data model definitions.
+  * **[audioframe.go](models/audioframe.go)**: Defines processed audio frame structs.
+  * **[frame.go](models/frame.go)**: Defines frame filter structs.
+  * **[session.go](models/session.go)**: Defines class session structs.
+  * **[videoframe.go](models/videoframe.go)**: Defines processed video frame structs.
+* **[query/](query)**: Query logic. Implement GraphQL functionalities.
+  * **[schema.go](query/schema.go)**: Defines GraphQL schema.
+  * **[resolver/](query/resolver)**: Implements GraphQL query resolving.
