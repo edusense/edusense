@@ -125,7 +125,11 @@ class ConsumerThread(threading.Thread):
         self.input_queue = input_queue
         self.process_real_time = process_real_time
         self.channel = channel
-        self.area_of_interest = np.array(area_of_interest).reshape((-1, 1, 2))
+
+        if area_of_interest is not None:
+            self.area_of_interest = np.array(area_of_interest).reshape((-1, 1, 2))
+        else:
+            self.area_of_interest = None
 
         # Initialize file posting
         self.file_params = file_params
@@ -584,7 +588,8 @@ if __name__ == '__main__':
     parser.add_argument('--tcp_port', dest='tcp_port', type=int, nargs='?',
                         help='EduSense video server TCP port')
     parser.add_argument('--backend_url', dest='backend_url', type=str,
-                        nargs='?', help='Edusense backend storage hostport')
+                        nargs='?', help='Edusense backend storage url '
+                        '(hostport)')
     parser.add_argument('--file_output_dir', dest='file_output_dir', type=str,
                         nargs='?')
     parser.add_argument('--session_id', dest='session_id', type=str, nargs='?',
@@ -618,8 +623,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     channel = 'instructor' if args.instructor else 'student'
-    if len(args.area_of_interest) % 2 == 1 or len(args.area_of_interest) < 6:
-        print('for area of interest, you should put x, y pairs: suppied {}'.format(len(args.area_of_interest)))
+    if args.area_of_interest is not None:
+        if len(args.area_of_interest) % 2 == 1 or len(args.area_of_interest) < 6:
+            print('for area of interest, you should put x, y pairs: suppied {}'.format(len(args.area_of_interest)))
 
     # setup backend params
     backend_params = None
@@ -631,7 +637,7 @@ if __name__ == '__main__':
 
         backend_params = {
             'url': ('https://%s/sessions/%s/video/frames/%s/%s/' %
-                    (hostport, args.session_id, args.schema, channel)),
+                    (args.backend_url, args.session_id, args.schema, channel)),
             'headers': {
                 'Authorization': 'Basic {}'.format(encoded_cred),
                 'Content-Type': 'application/json'}
