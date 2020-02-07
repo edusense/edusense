@@ -62,8 +62,8 @@ code base yet.*
 
 ### Authentication
 
-To access data in storage servers, users should provide correct credentials. We use
-basic HTTP authentication method. For details on HTTP Basic authentication: please refer to
+To access data in storage servers, users should provide correct credentials (APP_USERNAME, APP_PASSWORD).
+We use basic HTTP authentication method. For details on HTTP Basic authentication: please refer to
 [HTTP Basic Auth](https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#Basic_authentication_scheme).
 
 ### API Specifications
