@@ -24,7 +24,7 @@ docker run edusensecmu/storage --help
 
 ## Processing Video File
 
-[docker-compose.video.file.yml](compose/docker-compose.video.file.yml) starts
+[docker-compose.compute.file.yml](compose/docker-compose.compute.file.yml) starts
 the video processing pipeline. It reads video file at ./input/video.avi and
 outputs json (./output/video.(student|instructor).(frame\_number).json,
 image (./output/video.(student|instructor).(frame\_number).jpg and annotated
@@ -37,12 +37,12 @@ To run the pipeline off-the-shelf:
    video.avi. As a result, you will have the video file at ./input/video.avi.
 3. Run the following command:
 ```
-LOCAL_USER_ID=$(id -u) docker-compose -f docker-compose.video.file.yml up
+LOCAL_USER_ID=$(id -u) docker-compose -f docker-compose.compute.file.yml up
 ```
 4. Check ./output for results
 5. Shutdown the system by
 ```
-docker-compose -f docker-compose.video.file.yml down
+docker-compose -f docker-compose.compute.file.yml down
 ```
 
 ### Advanced Usage
