@@ -209,13 +209,13 @@ try:
             headers = {
                 'Authorization': ('Basic %s' % base64.standard_b64encode(credential.encode('ascii')).decode('ascii')),
                 'Content-Type': 'application/json'}
-            frame_url = args.backend_url + '/sessions/' + \
+            frame_url = 'https://' + args.backend_url + '/sessions/' + \
                 session_id + '/audio/frames/' + schema + '/instructor/'
             req = {'frames': [frames[0]]}
             resp = requests.post(frame_url, headers=headers, json=req)
             if (resp.status_code != 200 or 'success' not in resp.json().keys() or not resp.json()['success']):
                 raise RuntimeError(resp.text)
-            frame_url = args.backend_url + '/sessions/' + \
+            frame_url = 'https://' + args.backend_url + '/sessions/' + \
                 session_id + '/audio/frames/' + schema + '/student/'
             req = {'frames': [frames[1]]}
             resp = requests.post(frame_url, headers=headers, json=req)

@@ -13,10 +13,6 @@ USER_ID=${LOCAL_USER_ID:-9001}
 adduser --shell /bin/sh -u $USER_ID --gecos "" --quiet --disabled-login --no-create-home edusense
 chown -R edusense:edusense /app
 
-# Read secrets and then deescalate the previleges
-APP_USERNAME="$(cat /run/secrets/app_username)"
-APP_PASSWORD="$(cat /run/secrets/app_password)"
-
 exec env APP_USERNAME="$APP_USERNAME" \
   env APP_PASSWORD="$APP_PASSWORD" \
   gosu edusense python audio_pipeline.py "$@"
