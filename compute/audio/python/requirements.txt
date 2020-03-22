@@ -1,7 +1,7 @@
 numpy
 resampy
 keras
-tensorflow==1.15.0
+tensorflow==1.15.2
 pyaudio
 joblib
 requests
