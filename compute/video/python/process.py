@@ -306,13 +306,9 @@ def get_pose_box(pose):
     return np.array([int(pose[1][0])-1,int(pose[1][1])-1,int(pose[1][0])+1,int(pose[1][1])+1])
 
 def get_3d_head_position(pose,size):
-    image_points = np.array([
-                            (pose[0][0], pose[0][1]),     # Nose tip
-                            (pose[15][0], pose[15][1]),   # Right eye
-                            (pose[14][0], pose[14][1]),   # Left eye
-                            (pose[17][0], pose[17][1]),   # Right ear
-                            (pose[16][0], pose[16][1]),   # Left ear
-                        ], dtype="double")
+    pose_idx = [0, 15, 16, 17, 18] # Nose tip, REye, LEye, REar, LEar
+    image_points = []
+    model_points_filtered = []
     model_points = np.array([
                             (-48.0, 0.0, 21.0),       # Nose tip
                             (-5.0, -65.5, -20.0),     # Right eye 
@@ -320,6 +316,18 @@ def get_3d_head_position(pose,size):
                             (-6.0, -77.5, -100.0),    # Right ear
                             (-6.0, 77.5, -100.0)      # Left ear 
                          ])
+
+    for i, idx in enumerate(pose_idx):
+        if pose[idx][2] >= 0.1: # Confidance value >= 0.1
+            image_points.append([pose[idx][0], pose[idx][1]])
+            model_points_filtered.append(model_points[i])
+
+    image_points = np.array(image_points, dtype="double")
+    model_points_filtered = np.array(model_points_filtered, dtype="double")
+    model_points_filtered = model_points_filtered/1000.0 # mm to meters
+
+    if len(image_points) < 4:
+        raise Exception("Image points filtered are not enough for PnP algorithm.")
 
     c_x = size[1]/2
     c_y = size[0]/2
@@ -332,8 +340,9 @@ def get_3d_head_position(pose,size):
                          [0, 0, 1]], dtype = "double"
                          )
     dist_coeffs = np.zeros((4,1))
-    (success, rotation_vector, translation_vector) = cv2.solvePnP(model_points, image_points, camera_matrix, dist_coeffs, flags=cv2.SOLVEPNP_ITERATIVE)
-    tvec = (int(translation_vector[0]/100.0),int(translation_vector[1]/100.0),abs(int(translation_vector[2]/100.0))) 
+
+    (success, rvec, tvec) = cv2.solvePnP(model_points_filtered, image_points, camera_matrix, dist_coeffs, flags=cv2.SOLVEPNP_UPNP)
+    # Final tvec in meters
     return tvec
 
 def get_pose_pts(body_keypoints):
