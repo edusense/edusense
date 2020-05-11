@@ -22,6 +22,7 @@ import os
 import tensorflow as tf
 import cv2
 from deepgaze.head_pose_estimation import CnnHeadPoseEstimator
+from scipy.spatial.transform import Rotation as R
 
 is_cuda_set = os.getenv('CUDA_VISIBLE_DEVICES')
 if is_cuda_set is None:
@@ -33,29 +34,6 @@ if tf.test.gpu_device_name():
     has_gpu = True
 else:
     print("No GPU found")
-
-#Function used to get the rotation matrix
-def yaw2rotmat(yaw):
-    x = 0.0
-    y = 0.0
-    z = yaw
-    ch = np.cos(z)
-    sh = np.sin(z)
-    ca = np.cos(y)
-    sa = np.sin(y)
-    cb = np.cos(x)
-    sb = np.sin(x)
-    rot = np.zeros((3,3), 'float32')
-    rot[0][0] = ch * ca
-    rot[0][1] = sh*sb - ch*sa*cb
-    rot[0][2] = ch*sa*sb + sh*cb
-    rot[1][0] = sa
-    rot[1][1] = ca * cb
-    rot[1][2] = -ca * sb
-    rot[2][0] = -sh * ca
-    rot[2][1] = sh*sa*cb + ch*sb
-    rot[2][2] = -sh*sa*sb + ch*cb
-    return rot
 
 config = tf.ConfigProto(allow_soft_placement=True)
 if has_gpu:
@@ -91,11 +69,17 @@ def get_head_pose_vector(image, face):
     pitch_degree = my_head_pose_estimator.return_pitch(image, radians=False)  # Evaluate the pitch angle using a CNN
     yaw_degree = my_head_pose_estimator.return_yaw(image, radians=False)  # Evaluate the yaw angle using a CNN
     # print("Estimated [roll, pitch, yaw] (degrees) ..... [" + str(roll_degree[0,0,0]) + "," + str(pitch_degree[0,0,0]) + "," + str(yaw_degree[0,0,0])  + "]")
-    yaw = np.deg2rad(yaw_degree)
     #Getting rotation and translation vector
-    rot_matrix = yaw2rotmat(-yaw[0,0,0]) #Deepgaze use different convention for the Yaw, we have to use the minus sign
+    #Deepgaze use different convention for the Yaw, we have to use the minus sign
     #Attention: OpenCV uses a right-handed coordinates system:
     #Looking along optical axis of the camera, X goes right, Y goes downward and Z goes forward.
+    pitch_degree = pitch_degree.squeeze()
+    yaw_degree = yaw_degree.squeeze()
+    roll_degree = roll_degree.squeeze()
+
+    r = R.from_euler('xyz', [pitch_degree, -yaw_degree, roll_degree], degrees=True)
+    rot_matrix = r.as_dcm()
+
     rvec, jacobian = cv2.Rodrigues(rot_matrix)
     tvec = np.array([0.0, 0.0, 1.0], np.float) # translation vector
 
