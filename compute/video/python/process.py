@@ -237,7 +237,7 @@ def predict_sit_stand(body_points):
 def get_pose_pts(body_keypoints):
     pose = []
     for i in range(int(len(body_keypoints)/3)):
-        pose.append((int(body_keypoints[3*i]), int(body_keypoints[3*i+1]), int(body_keypoints[3*i+2])))
+        pose.append((int(body_keypoints[3*i]), int(body_keypoints[3*i+1]), body_keypoints[3*i+2]))
     return pose
 
 def get_pts_of_interest(keypoints, area_of_interest):

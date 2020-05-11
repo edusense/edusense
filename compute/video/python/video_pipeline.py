@@ -269,8 +269,8 @@ class ConsumerThread(threading.Thread):
                 face_keypoints = body["face"] if "face" in body.keys() else None
 
                 # prune body keypoints
-                body_keypoints = prune_body_pts(body_keypoints)
-                body["body"] = body_keypoints
+                # body_keypoints = prune_body_pts(body_keypoints)
+                # body["body"] = body_keypoints
                 pose = get_pose_pts(body_keypoints)
                 body['inference'] = {
                     'posture': {},
