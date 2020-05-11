@@ -306,6 +306,7 @@ def get_pose_box(pose):
     return np.array([int(pose[1][0])-1,int(pose[1][1])-1,int(pose[1][0])+1,int(pose[1][1])+1])
 
 def get_3d_head_position(pose,size):
+    tvec_conf = 0
     pose_idx = [0, 15, 16, 17, 18] # Nose tip, REye, LEye, REar, LEar
     image_points = []
     model_points_filtered = []
@@ -318,7 +319,7 @@ def get_3d_head_position(pose,size):
                          ])
 
     for i, idx in enumerate(pose_idx):
-        if pose[idx][2] >= 0.1: # Confidance value >= 0.1
+        if pose[idx][2] >= 0.1: # Confidence value >= 0.1
             image_points.append([pose[idx][0], pose[idx][1]])
             model_points_filtered.append(model_points[i])
 
@@ -326,8 +327,11 @@ def get_3d_head_position(pose,size):
     model_points_filtered = np.array(model_points_filtered, dtype="double")
     model_points_filtered = model_points_filtered/1000.0 # mm to meters
 
+    tvec_conf = np.sum(pose[pose_idx][2])/len(pose_idx)
+    
     if len(image_points) < 4:
-        raise Exception("Image points filtered are not enough for PnP algorithm.")
+        model_points_filtered = model_points
+        image_points = pose[pose_idx, :2]
 
     c_x = size[1]/2
     c_y = size[0]/2
@@ -343,14 +347,7 @@ def get_3d_head_position(pose,size):
 
     (success, rvec, tvec) = cv2.solvePnP(model_points_filtered, image_points, camera_matrix, dist_coeffs, flags=cv2.SOLVEPNP_UPNP)
     # Final tvec in meters
-    return tvec
-
-def get_pose_pts(body_keypoints):
-    pose = []
-    for i in range(int(len(body_keypoints)/3)):
-        pose.append((int(body_keypoints[3*i]), int(body_keypoints[3*i+1]), int(body_keypoints[3*i+2])))
-    return pose
-
+    return tvec, tvec_conf
 
 def get_facing_direction(pose):
     facing_direction = "error"

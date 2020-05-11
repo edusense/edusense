@@ -361,10 +361,11 @@ class ConsumerThread(threading.Thread):
                 pitch = None
                 roll = None
                 gaze_vector = None
+                tvec_confidence = None
                 face = get_face(pose)
 
                 if (self.process_gaze):
-                    tvec = get_3d_head_position(pose, raw_image.shape)
+                    tvec, tvec_confidence = get_3d_head_position(pose, raw_image.shape)
                     # face box
                     if face is not None:
                         face_crop = raw_image[face[0][1]:face[1][1], face[0][0]:face[1][0]]
@@ -400,6 +401,8 @@ class ConsumerThread(threading.Thread):
                     body['inference']['head']['gazeVector'] = gaze_vector
                 if tvec is not None:
                     body['inference']['head']['translationVector'] = tvec
+                if tvec_confidence is not None:
+                    body['inference']['head']['tvecConf'] = tvec_confidence
 
             featurization_time = time.time() - featurization_start_time
 
