@@ -269,8 +269,8 @@ class ConsumerThread(threading.Thread):
                 face_keypoints = body["face"] if "face" in body.keys() else None
 
                 # prune body keypoints
-                # body_keypoints = prune_body_pts(body_keypoints)
-                # body["body"] = body_keypoints
+                body_keypoints = prune_body_pts(body_keypoints)
+                body["body"] = body_keypoints
                 pose = get_pose_pts(body_keypoints)
                 body['inference'] = {
                     'posture': {},
@@ -365,20 +365,23 @@ class ConsumerThread(threading.Thread):
                 face = get_face(pose)
 
                 if (self.process_gaze):
-                    tvec, tvec_confidence = get_3d_head_position(pose, raw_image.shape)
-                    # face box
-                    if face is not None:
-                        face_crop = raw_image[face[0][1]:face[1][1], face[0][0]:face[1][0]]
-                        if face_crop.shape[0] >= 64 and face_crop.shape[1] >= 64:
-                            yaw, pitch, roll, gaze_start, gaze_stop = get_head_pose_vector(
-                                face_crop, face)
-                            yaw = yaw.flatten().tolist()[0]
-                            pitch = pitch.flatten().tolist()[0]
-                            roll = roll.flatten().tolist()[0]
-                            gaze_vector = [gaze_start, gaze_stop]
-                            cv2.line(raw_image, gaze_start,
-                                     gaze_stop, (255, 255, 255), 2)
-
+                    try:
+                        tvec, tvec_confidence = get_3d_head_position(pose, raw_image.shape)
+                        # face box
+                        if face is not None:
+                            face_crop = raw_image[face[0][1]:face[1][1], face[0][0]:face[1][0]]
+                            if face_crop.shape[0] >= 64 and face_crop.shape[1] >= 64:
+                                yaw, pitch, roll, gaze_start, gaze_stop = get_head_pose_vector(
+                                    face_crop, face)
+                                yaw = yaw.flatten().tolist()[0]
+                                pitch = pitch.flatten().tolist()[0]
+                                roll = roll.flatten().tolist()[0]
+                                gaze_vector = [gaze_start, gaze_stop]
+                                cv2.line(raw_image, gaze_start,
+                                        gaze_stop, (255, 255, 255), 2)
+                    except Exception as e:
+                        traceback.print_exc(file=sys.stdout)
+                        print("Continuing...")
                 if armpose is not None:
                     body['inference']['posture']['armPose'] = armpose
                 if sit_stand is not None:

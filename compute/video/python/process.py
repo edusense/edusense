@@ -10,6 +10,8 @@ from scipy.spatial import distance as dist
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.externals import joblib
 
+import copy
+
 model_dir = os.getenv('MODEL_DIR', './models')
 clf_sit_stand = joblib.load(os.path.join(model_dir, 'stand_svc.pkl'))
 clf_posture = joblib.load(os.path.join(model_dir, 'posture.pkl'))
@@ -320,18 +322,22 @@ def get_3d_head_position(pose,size):
 
     for i, idx in enumerate(pose_idx):
         if pose[idx][2] >= 0.1: # Confidence value >= 0.1
-            image_points.append([pose[idx][0], pose[idx][1]])
+            image_points.append((pose[idx][0], pose[idx][1]))
             model_points_filtered.append(model_points[i])
 
     image_points = np.array(image_points, dtype="double")
     model_points_filtered = np.array(model_points_filtered, dtype="double")
     model_points_filtered = model_points_filtered/1000.0 # mm to meters
-
-    tvec_conf = np.sum(pose[pose_idx][2])/len(pose_idx)
+    
+    pose_npa = copy.deepcopy(pose)
+    pose_npa = np.asarray(pose_npa,dtype=np.float32)
+    tvec_conf = np.sum(pose_npa[pose_idx][2])/len(pose_idx)
     
     if len(image_points) < 4:
+        raise Exception("Image points filtered are not enough for PnP algorithm.")
+    else:
         model_points_filtered = model_points
-        image_points = pose[pose_idx, :2]
+        image_points = pose_npa[pose_idx, :2]
 
     c_x = size[1]/2
     c_y = size[0]/2
@@ -345,8 +351,10 @@ def get_3d_head_position(pose,size):
                          )
     dist_coeffs = np.zeros((4,1))
 
-    (success, rvec, tvec) = cv2.solvePnP(model_points_filtered, image_points, camera_matrix, dist_coeffs, flags=cv2.SOLVEPNP_UPNP)
+    (success, rvec, tvec) = cv2.solvePnP(model_points_filtered, image_points, camera_matrix, dist_coeffs, flags=cv2.SOLVEPNP_ITERATIVE)
     # Final tvec in meters
+    tvec = tvec.reshape(-1)
+    tvec = (tvec[0], tvec[1], tvec[2])
     return tvec, tvec_conf
 
 def get_facing_direction(pose):
