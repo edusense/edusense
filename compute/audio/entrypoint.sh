@@ -15,4 +15,4 @@ chown -R edusense:edusense /app
 
 exec env APP_USERNAME="$APP_USERNAME" \
   env APP_PASSWORD="$APP_PASSWORD" \
-  gosu edusense python audio_pipeline.py "$@"
+  gosu edusense python3 audio_pipeline.py "$@"
