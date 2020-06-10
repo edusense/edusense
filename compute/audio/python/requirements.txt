@@ -3,6 +3,8 @@ resampy
 keras
 tensorflow==1.15.0
 pyaudio
+opencv-python
+pytesseract
 joblib
 requests
 sklearn
