@@ -17,11 +17,13 @@ import inspect
 import argparse
 from joblib import dump, load
 import time
-import datetime
+from datetime import datetime,timedelta
 import json
 import struct
 import requests
 import base64
+import get_time as gt
+import cv2
 
 frame_number = 0
 
@@ -68,19 +70,27 @@ parser.add_argument('--session_id', dest='session_id', type=str, nargs='?',
                     help='EduSense session ID')
 parser.add_argument('--schema', dest='schema', type=str, nargs='?',
                     help='EduSense schema')
+parser.add_argument('--ocr_time',dest='ocr_time',action='store_true',help="use OCR extracted timestamp")
+parser.add_argument('--file_time',dest='file_time',action='store_true',help="use file_name timestamp")
+
 args = parser.parse_args()
+
 
 ip1 = args.front_url
 ip2 = args.back_url
+#proc=subprocess.Popen(['ffmpeg','-i',ip1,'-debug_ts'],stdout= subprocess.PIPE,stderr= subprocess.PIPE)
+
+
 backend_url = args.backend_url
 session_id = args.session_id
 schema = 'edusense-audio' if args.schema is None else args.schema
+
 
 class FFMpegReader:
     def __init__(self, ip):
         self.proc = None
         self.ip = ip
-
+    
     def _procread(self, nbytes):
         if self.proc is None:
             if 'rtsp' in self.ip:
@@ -93,6 +103,7 @@ class FFMpegReader:
                                               '-i', str(self.ip), '-nostats', '-loglevel', '0',
                                               '-vn', '-f', 's16le', '-acodec', 'pcm_s16le',
                                               '-'], stdout=subprocess.PIPE)
+
         return self.proc.stdout.read(nbytes)
 
     def read(self, nframes):
@@ -118,16 +129,30 @@ class FFMpegReader:
 
 ffmpeg_proc1 = FFMpegReader(ip1)
 ffmpeg_proc2 = FFMpegReader(ip2)
+'''
+## if log volume is mounted
+try:
+  log=open('/log/log.txt','w')
+except:
+  log=open('/log.txt','w')
 
+log.write(f"{ip1} timestamp log\n")
+starting_time1=gt.extract_time(ip1,args.ocr_time,args.file_time,log)
+log.write(f"{ip2} timestamp log\n")
+starting_time2=gt.extract_time(ip2,args.ocr_time,args.file_time,log)
+log.close()
+print(starting_time1 , starting_time2)
+'''
 try:
     while(1):
-        timestamp = datetime.datetime.utcnow().isoformat() + "Z"
+        timestamp = datetime.utcnow().isoformat() + "Z" 
+        print('llllll')
         np_wav1 = ffmpeg_proc1.read(16000)
         np_wav2 = ffmpeg_proc2.read(16000)
-
+        print('ffff')
         if np_wav1 is None or np_wav2 is None:
-            break
-
+            break        
+       
         x1 = waveform_to_examples(np_wav1, RATE)
         x2 = waveform_to_examples(np_wav2, RATE)
         mel_feats1 = x1.astype(float_dtype)
@@ -223,3 +248,4 @@ try:
                 raise RuntimeError(resp.text)
 except:
     raise RuntimeError("error occurred")
+
