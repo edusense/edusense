@@ -86,7 +86,7 @@ def extract_date(video):
 
 def extract_time(video,ocr_bool,file_bool,log):
    
-
+   print(pytesseract.get_tesseract_version())
    threshold_error=timedelta(hours=1,minutes=0)
    ocr_time_failed=False;
    file_time_failed=False;
