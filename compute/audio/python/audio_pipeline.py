@@ -129,27 +129,24 @@ class FFMpegReader:
 
 ffmpeg_proc1 = FFMpegReader(ip1)
 ffmpeg_proc2 = FFMpegReader(ip2)
-'''
+
 ## if log volume is mounted
 try:
   log=open('/log/log.txt','w')
 except:
-  log=open('/log.txt','w')
-
+  log=open('log.txt','w')
+###extract starting time #####
 log.write(f"{ip1} timestamp log\n")
-starting_time1=gt.extract_time(ip1,args.ocr_time,args.file_time,log)
+date1,time1=gt.extract_time(ip1,args.ocr_time,args.file_time,log)
 log.write(f"{ip2} timestamp log\n")
-starting_time2=gt.extract_time(ip2,args.ocr_time,args.file_time,log)
+date2,time2=gt.extract_time(ip2,args.ocr_time,args.file_time,log)
 log.close()
-print(starting_time1 , starting_time2)
-'''
+
 try:
     while(1):
-        timestamp = datetime.utcnow().isoformat() + "Z" 
-        print('llllll')
-        np_wav1 = ffmpeg_proc1.read(16000)
-        np_wav2 = ffmpeg_proc2.read(16000)
-        print('ffff')
+        
+        np_wav1 = ffmpeg_proc1.read(32000)
+        np_wav2 = ffmpeg_proc2.read(32000)
         if np_wav1 is None or np_wav2 is None:
             break        
        
@@ -191,12 +188,17 @@ try:
             map(lambda x: list(map(lambda y: round(y, 2), x)), mel_feats1.tolist()[0]))
         mel_feats2 = list(
             map(lambda x: list(map(lambda y: round(y, 2), x)), mel_feats2.tolist()[0]))
-
+        ## set the time stamps
+        timestamp1=f"{date1}T{str(time1)}Z"
+        timestamp2=f"{date2}T{str(time2)}Z"
+        print(timestamp1)
+        print(timestamp2)
+        print('........................................................................')
         # set the float point
         frames = [
             {
                 'frameNumber': frame_number,
-                'timestamp': timestamp,
+                'timestamp': timestamp1,
                 'channel': 'instructor',
                 'audio': {
                     'amplitude': amp1.tolist(),
@@ -210,7 +212,7 @@ try:
                 }
             }, {
                 'frameNumber': frame_number,
-                'timestamp': timestamp,
+                'timestamp': timestamp2,
                 'channel': 'student',
                 'audio': {
                     'amplitude': amp2.tolist(),
@@ -224,8 +226,10 @@ try:
                 }
             }
         ]
-
+        ## assuming audio is 1 fps
         frame_number += 1
+        time1=time1+timedelta(seconds=1)
+        time2=time2+timedelta(seconds=1)
 
         if backend_url is not None:
             app_username = os.getenv("APP_USERNAME", "")
