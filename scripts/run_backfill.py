@@ -7,19 +7,53 @@ import sys
 import subprocess
 import tempfile
 import time
-from threading import Timer
+import threading
 
-def kill_all_containers(containers):
+def kill_all_containers():
     print('killing all containers')
 
     process = subprocess.Popen(['docker', 'container', 'kill'] + containers,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
+    lock.acquire()
     killed_container_ids = stdout.decode('utf-8').split()
     for c in killed_container_ids:
         print('killed container', c)
     print(stderr)
+    print("\n")
+    lock.release()
+
+def wait_container(container):
+        process = subprocess.Popen([
+        'docker', 'container', 'wait',
+         container],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE)
+        stdout, stderr = process.communicate()
+
+        process = subprocess.Popen([ 
+        'docker', 'inspect', container, "--format='{{.State.ExitCode}}'"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE)
+
+        status=stdout.decode('utf-8')
+
+        ## print is not thread-safe
+        ## acquire a lock
+        lock.acquire()
+        print(container_dict[container],"exited with status code",status)
+        ## remove the container from global list and dict 
+        ## in a thread-safe way
+        containers.remove(container)
+        del container_dict[container]
+        ## release lock
+        lock.release()
+
+lock=threading.Lock()
+## a global list of container id's
+containers=[]
+container_dict={}
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='EduSense deploy video')
@@ -47,6 +81,8 @@ if __name__ == '__main__':
         required=True, help='video schema for CI')
     parser.add_argument('--audio_schema', dest='audio_schema', type=str, nargs='?',
         required=True, help='audio schema for CI')
+    parser.add_argument('--timeout', dest='timeout', type=int, nargs='?',
+        required=True, help='timeout for the script',default=7200)
     parser.add_argument('--log_dir', dest='log_dir' ,type=str, nargs='?',
             help='get the logs in a directory')
     parser.add_argument('--video_dir', dest='video_dir', type=str, nargs='?',
@@ -60,6 +96,7 @@ if __name__ == '__main__':
 
     uid = os.getuid()
     gid = os.getgid()
+
     app_username = os.getenv("APP_USERNAME", "")
     app_password = os.getenv("APP_PASSWORD", "")
 
@@ -73,12 +110,12 @@ if __name__ == '__main__':
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
-
-    print(stderr)
+    print(stdout)
     try:
       output = json.loads(stdout.decode('utf-8'))
       success = output['success']
       session_id = output['session_id'].strip()
+
     except:
         print("Unable to create a session")
         print("check APP username and password")
@@ -88,12 +125,12 @@ if __name__ == '__main__':
 
     real_time_flag = ['--process_real_time'] if args.process_real_time \
                     else []
-    print(args.log_dir)
+
     # create temp directory
     with tempfile.TemporaryDirectory() as tmp_dir:
         if args.log_dir == None:
             args.log_dir=tmp_dir
-        print('create temporary directory', tmp_dir)
+            print('create temporary directory', tmp_dir)
         process = subprocess.Popen([
             'nvidia-docker', 'run', '-d',
             '-e', 'LOCAL_USER_ID=%s' % uid,
@@ -102,7 +139,6 @@ if __name__ == '__main__':
             '-e', 'APP_PASSWORD=%s' % app_password,
             '-v', '%s:/app/source' %args.video_dir,
             '-v', '%s:/tmp' % args.log_dir,
-            '--rm',
             'edusense/video:'+args.dev,
             '--video',os.path.join('/app', 'source', args.front_video),
             '--video_sock', '/tmp/unix.front.sock',
@@ -117,8 +153,10 @@ if __name__ == '__main__':
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
+        
         front_video_container_id = stdout.decode('utf-8').strip()
-
+        containers.append(front_video_container_id)
+        container_dict[front_video_container_id]='front video container'
         print('created front video container', front_video_container_id)
 
         process = subprocess.Popen([
@@ -128,7 +166,6 @@ if __name__ == '__main__':
             '-e', 'APP_PASSWORD=%s' % app_password,
             '-v', '%s:/tmp' % args.log_dir,
             '-v', '%s:/app/source' %args.video_dir,
-            '--rm',
             'edusense/video:'+args.dev,
             '--video',os.path.join('/app', 'source', args.back_video),
             '--video_sock', '/tmp/unix.back.sock',
@@ -144,8 +181,10 @@ if __name__ == '__main__':
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
-        back_video_container_id = stdout.decode('utf-8').strip()
 
+        back_video_container_id = stdout.decode('utf-8').strip()
+        containers.append(back_video_container_id)
+        container_dict[back_video_container_id]='back video container'
         print('created back video container', back_video_container_id)
 
         time.sleep(30)
@@ -155,7 +194,6 @@ if __name__ == '__main__':
             '-e', 'LOCAL_USER_ID=%s' % uid,
             '-v', '%s:/tmp' %args.log_dir,
             '-v', '%s:/app/video' % args.video_dir,
-            '--rm',
             'edusense/openpose:'+args.dev,
             '--video', os.path.join('/app', 'video', args.front_video),
             '--num_gpu_start', str(args.front_num_gpu_start),
@@ -169,7 +207,8 @@ if __name__ == '__main__':
             stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
         front_openpose_container_id = stdout.decode('utf-8').strip()
-
+        containers.append(front_openpose_container_id)
+        container_dict[front_openpose_container_id]='front openpose container'
         print('created front openpose container', front_openpose_container_id)
 
         process = subprocess.Popen([
@@ -177,7 +216,6 @@ if __name__ == '__main__':
             '-e', 'LOCAL_USER_ID=%s' % uid,
             '-v', '%s:/tmp' %args.log_dir,
             '-v', '%s:/app/video' % args.video_dir,
-            '--rm',
             'edusense/openpose:'+args.dev,
             '--video', os.path.join('/app', 'video', args.back_video),
             '--num_gpu_start', str(args.back_num_gpu_start),
@@ -191,7 +229,8 @@ if __name__ == '__main__':
             stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
         back_openpose_container_id = stdout.decode('utf-8').strip()
-
+        containers.append(back_openpose_container_id)
+        container_dict[back_openpose_container_id]='back openpose container'
         print('created back openpose container', back_openpose_container_id)
 
         process = subprocess.Popen([
@@ -201,7 +240,6 @@ if __name__ == '__main__':
             '-e', 'APP_PASSWORD=%s' % app_password,
             '-v', '%s:/app/video' % args.video_dir,
             '-v', '%s:/tmp' % args.log_dir,
-            '--rm',
             'edusense/audio:'+args.dev,
             '--front_url', os.path.join('/app', 'video', args.front_video),
             '--back_url', os.path.join('/app', 'video', args.back_video),
@@ -212,30 +250,26 @@ if __name__ == '__main__':
             stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
         audio_container_id = stdout.decode('utf-8').strip()
-
-        print('created audio container', audio_container_id)
-
-
-        timer = Timer(7200, kill_all_containers, ([
-            front_video_container_id,
-            front_openpose_container_id,
-            back_video_container_id,
-            back_openpose_container_id,
-            audio_container_id],))
+        containers.append(audio_container_id)
+        container_dict[audio_container_id]='audio container'
+        print('created audio container', audio_container_id,'\n\n')
+        
+        
+        ## the script can be kept running and dockers will be killed after timeout seconds
+        timer = threading.Timer(args.timeout, kill_all_containers)
         timer.start()
-
-        process = subprocess.Popen([
-            'docker', 'container', 'wait',
-            front_video_container_id,
-            front_openpose_container_id,
-            back_video_container_id,
-            back_openpose_container_id,
-            audio_container_id],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
-        stdout, stderr = process.communicate()
-        killed_container_ids = stdout.decode('utf-8').split()
-        for c in killed_container_ids:
-            print('waited container', c)
-
+        
+        ## make seperate threads for containers
+        threads=[]
+        for container in containers:
+            t=threading.Thread(target=wait_container,args=[container])
+            t.start()
+            threads.append(t)
+        
+        ## join the threads
+        for thread in threads:
+            thread.join()
+        
+        ## cancel the killing thread execution
         timer.cancel()
+

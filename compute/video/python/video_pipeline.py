@@ -663,7 +663,7 @@ if __name__ == '__main__':
     ##############################
     if fps == None or fps == 0:
         print("either video address not valid or not able to extract the fps")
-        sys.exit()
+        sys.exit(1)
    
     # setup backend params
     backend_params = None
