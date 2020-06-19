@@ -646,12 +646,15 @@ if __name__ == '__main__':
         if len(args.area_of_interest) % 2 == 1 or len(args.area_of_interest) < 6:
             print('for area of interest, you should put x, y pairs: suppied {}'.format(len(args.area_of_interest)))
 
-
     ## if log volume is mounted
+    if channel == 'instructor':
+        File='/tmp/back_video.txt'
+    else:
+        File='/tmp/front_video.txt'
     try:
-      log=open('/tmp/log.txt','w')
+      log=open(File,'w')
     except:
-      log=open('log.txt','w')   
+      log=open('video_log.txt','w')   
 
     ###extract starting time #####
     log.write(args.video+" timestamp log\n")

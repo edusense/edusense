@@ -132,9 +132,9 @@ ffmpeg_proc2 = FFMpegReader(ip2)
 
 ## if log volume is mounted
 try:
-  log=open('/log/log.txt','w')
+  log=open('/tmp/audio_log.txt','w')
 except:
-  log=open('log.txt','w')
+  log=open('audio_log.txt','w')
 ###extract starting time #####
 log.write(f"{ip1} timestamp log\n")
 date1,time1=gt.extract_time(ip1,args.ocr_time,args.file_time,log)
