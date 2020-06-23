@@ -84,7 +84,7 @@ ip2 = args.back_url
 backend_url = args.backend_url
 session_id = args.session_id
 schema = 'edusense-audio' if args.schema is None else args.schema
-
+realtime=False
 
 class FFMpegReader:
     def __init__(self, ip):
@@ -135,13 +135,24 @@ try:
   log=open('/tmp/audio_log.txt','w')
 except:
   log=open('audio_log.txt','w')
-###extract starting time #####
-log.write(f"{ip1} timestamp log\n")
-date1,time1=gt.extract_time(ip1,args.ocr_time,args.file_time,log)
-log.write(f"{ip2} timestamp log\n")
-date2,time2=gt.extract_time(ip2,args.ocr_time,args.file_time,log)
-log.close()
 
+## check if real-time video
+if 'RTSP' in ip1 or 'RTSP' in ip2:
+     log.write("using RTSP\n")  
+     realtime=True
+     print("creation_time ",datetime.now().isoformat() + "Z")
+
+else:
+  ###extract starting time #####
+  log.write(f"{ip1} timestamp log\n")
+  date1,time1=gt.extract_time(ip1,args.ocr_time,args.file_time,log)
+  log.write(f"{ip2} timestamp log\n")
+  date2,time2=gt.extract_time(ip2,args.ocr_time,args.file_time,log)
+  log.close()
+  print(date1,str(time1))
+  print(date2,str(time2))
+
+print('........................')
 try:
     while(1):
         
@@ -149,13 +160,16 @@ try:
         np_wav2 = ffmpeg_proc2.read(32000)
         if np_wav1 is None or np_wav2 is None:
             break        
-       
+        
         x1 = waveform_to_examples(np_wav1, RATE)
         x2 = waveform_to_examples(np_wav2, RATE)
+
         mel_feats1 = x1.astype(float_dtype)
         mel_feats2 = x2.astype(float_dtype)
         amp1 = max(abs(np_wav1))
         amp2 = max(abs(np_wav2))
+
+        """
         speech1 = 0
         speech2 = 0
         X = []
@@ -188,12 +202,21 @@ try:
             map(lambda x: list(map(lambda y: round(y, 2), x)), mel_feats1.tolist()[0]))
         mel_feats2 = list(
             map(lambda x: list(map(lambda y: round(y, 2), x)), mel_feats2.tolist()[0]))
+        """
         ## set the time stamps
-        timestamp1=f"{date1}T{str(time1)}Z"
-        timestamp2=f"{date2}T{str(time2)}Z"
+        if (not real_time):
+          timestamp1=f"{date1}T{str(time1)}Z"
+          timestamp2=f"{date2}T{str(time2)}Z"
+        else:
+            timestamp1=datetime.now().isoformat() + "Z"
+            timestamp2=datetime.now().isoformat() + "Z"
+
         print(timestamp1)
         print(timestamp2)
+        print(frame_number)
         print('........................................................................')
+        if frame_number>10:
+            break
         # set the float point
         frames = [
             {
@@ -202,11 +225,11 @@ try:
                 'channel': 'instructor',
                 'audio': {
                     'amplitude': amp1.tolist(),
-                    'melFrequency': mel_feats1,
+                    'melFrequency': None,
                     'inference': {
                         'speech': {
-                            'confidence': speech1.tolist(),
-                            'speaker': prediction_teacher_vs_student
+                            'confidence': None,
+                            'speaker': None
                         }
                     }
                 }
@@ -216,11 +239,11 @@ try:
                 'channel': 'student',
                 'audio': {
                     'amplitude': amp2.tolist(),
-                    'melFrequency': mel_feats2,
+                    'melFrequency': None,
                     'inference': {
                         'speech': {
-                            'confidence': speech2.tolist(),
-                            'speaker': prediction_teacher_vs_student
+                            'confidence': None,
+                            'speaker': None
                         }
                     }
                 }
@@ -228,9 +251,10 @@ try:
         ]
         ## assuming audio is 1 fps
         frame_number += 1
-        time1=time1+timedelta(seconds=1)
-        time2=time2+timedelta(seconds=1)
-
+        if(not real_time):
+           time1=time1+timedelta(seconds=1)
+           time2=time2+timedelta(seconds=1)
+    
         if backend_url is not None:
             app_username = os.getenv("APP_USERNAME", "")
             app_password = os.getenv("APP_PASSWORD", "")
