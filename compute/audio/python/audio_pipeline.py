@@ -17,7 +17,7 @@ import inspect
 import argparse
 from joblib import dump, load
 import time
-from datetime import datetime,timedelta
+from datetime import date,datetime,timedelta
 import json
 import struct
 import requests
@@ -130,6 +130,7 @@ class FFMpegReader:
 ffmpeg_proc1 = FFMpegReader(ip1)
 ffmpeg_proc2 = FFMpegReader(ip2)
 
+
 ## if log volume is mounted
 try:
   log=open('/tmp/audio_log.txt','w')
@@ -137,9 +138,10 @@ except:
   log=open('audio_log.txt','w')
 
 ## check if real-time video
-if 'RTSP' in ip1 or 'RTSP' in ip2:
+if 'RTSP' in ip1 or 'rtsp' in ip2:
      log.write("using RTSP\n")  
      realtime=True
+     log.close()
      print("creation_time ",datetime.now().isoformat() + "Z")
 
 else:
@@ -155,7 +157,11 @@ else:
 print('........................')
 try:
     while(1):
-        
+
+        if realtime:
+           timestamp1=datetime.now().isoformat() + "Z"
+           timestamp2=datetime.now().isoformat() + "Z"
+
         np_wav1 = ffmpeg_proc1.read(32000)
         np_wav2 = ffmpeg_proc2.read(32000)
         if np_wav1 is None or np_wav2 is None:
@@ -163,7 +169,7 @@ try:
         
         x1 = waveform_to_examples(np_wav1, RATE)
         x2 = waveform_to_examples(np_wav2, RATE)
-
+        
         mel_feats1 = x1.astype(float_dtype)
         mel_feats2 = x2.astype(float_dtype)
         amp1 = max(abs(np_wav1))
@@ -204,19 +210,13 @@ try:
             map(lambda x: list(map(lambda y: round(y, 2), x)), mel_feats2.tolist()[0]))
         """
         ## set the time stamps
-        if (not real_time):
-          timestamp1=f"{date1}T{str(time1)}Z"
-          timestamp2=f"{date2}T{str(time2)}Z"
-        else:
-            timestamp1=datetime.now().isoformat() + "Z"
-            timestamp2=datetime.now().isoformat() + "Z"
-
+        if not realtime:
+           timestamp1=f"{date1}T{str(time1)}Z"
+           timestamp2=f"{date2}T{str(time2)}Z"
         print(timestamp1)
         print(timestamp2)
         print(frame_number)
         print('........................................................................')
-        if frame_number>10:
-            break
         # set the float point
         frames = [
             {
@@ -251,7 +251,7 @@ try:
         ]
         ## assuming audio is 1 fps
         frame_number += 1
-        if(not real_time):
+        if not realtime:
            time1=time1+timedelta(seconds=1)
            time2=time2+timedelta(seconds=1)
     

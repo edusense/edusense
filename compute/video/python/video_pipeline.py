@@ -29,7 +29,7 @@ from process import *
 
 default_schema = "edusense-video"
 default_keyword = "edusense-keyword"
-
+RTSP=False
 
 class SocketReaderThread(threading.Thread):
     def __init__(self, queue, server_address, keep_frame_number,
@@ -189,8 +189,9 @@ class ConsumerThread(threading.Thread):
 
                 # process data
                 raw_image, frame_data = self.process_frame(numbered_datum)
-                time=int(frame_data['frameNumber']/self.fps)
-                frame_data['timestamp']=self.start_date+'T'+str(self.start_time +  timedelta(seconds=time))+'Z'
+                if not RTSP:
+                   time=int(frame_data['frameNumber']/self.fps)
+                   frame_data['timestamp']=self.start_date+'T'+str(self.start_time +  timedelta(seconds=time))+'Z'
                 print('...........................')
                 print(frame_data['timestamp'])
                 print(frame_data['frameNumber'])
@@ -655,15 +656,24 @@ if __name__ == '__main__':
       log=open(File,'w')
     except:
       log=open('video_log.txt','w')   
+    
+    if 'rtsp' in args.video:
+        RTSP=True
 
     ###extract starting time #####
-    log.write(args.video+" timestamp log\n")
-    fps,start_date,start_time=gt.extract_time(args.video,args.ocr_time,args.file_time,log)
-    log.close()  
+    if (RTSP):
+        log.write(args.video+" timestamp log\nUsing RTSP\n")
+        fps = None
+        start_time=None
+        start_date=None
+    else:    
+       log.write(args.video+" timestamp log\n")
+       fps,start_date,start_time=gt.extract_time(args.video,args.ocr_time,args.file_time,log)
+       log.close()  
     ##############################
-    if fps == None or fps == 0:
-        print("either video address not valid or not able to extract the fps")
-        sys.exit(1)
+       if fps == None or fps == 0:
+          print("either video address not valid or not able to extract the fps")
+          sys.exit(1)
    
     # setup backend params
     backend_params = None
