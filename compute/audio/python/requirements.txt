@@ -1,6 +1,6 @@
 numpy
 resampy
-keras
+keras==2.3.1
 tensorflow==1.15.0
 pyaudio
 opencv-python
