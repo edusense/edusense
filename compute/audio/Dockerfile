@@ -10,6 +10,8 @@ LABEL maintainer dohyunk@cs.cmu.edu
 # https://github.com/tianon/gosu/INSTALL.md.
 RUN set -eux; \
   apt-get update; \
+  apt-get install -y software-properties-common; \
+  add-apt-repository ppa:jonathonf/ffmpeg-4;  \
   apt-get install -y \
     gosu \
     libsm6 \
@@ -22,7 +24,7 @@ RUN set -eux; \
     python3.7 \
     python3-pip \   
     ffmpeg \
-  #  libav-tools \
+#    libav-tools \
     tesseract-ocr; \
   rm -rf /var/lib/apt/lists/*; \
 # verify that the binary works

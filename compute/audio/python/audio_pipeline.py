@@ -26,7 +26,6 @@ import get_time as gt
 import cv2
 
 frame_number = 0
-
 context = soundtransfer.everything
 trained_model = "models/example_model.hdf5"
 
@@ -78,9 +77,6 @@ args = parser.parse_args()
 
 ip1 = args.front_url
 ip2 = args.back_url
-#proc=subprocess.Popen(['ffmpeg','-i',ip1,'-debug_ts'],stdout= subprocess.PIPE,stderr= subprocess.PIPE)
-
-
 backend_url = args.backend_url
 session_id = args.session_id
 schema = 'edusense-audio' if args.schema is None else args.schema
@@ -138,11 +134,10 @@ except:
   log=open('audio_log.txt','w')
 
 ## check if real-time video
-if 'RTSP' in ip1 or 'rtsp' in ip2:
+if 'rtsp' in ip1 or 'rtsp' in ip2:
      log.write("using RTSP\n")  
      realtime=True
      log.close()
-     print("creation_time ",datetime.now().isoformat() + "Z")
 
 else:
   ###extract starting time #####
@@ -161,21 +156,27 @@ try:
         if realtime:
            timestamp1=datetime.now().isoformat() + "Z"
            timestamp2=datetime.now().isoformat() + "Z"
-
-        np_wav1 = ffmpeg_proc1.read(32000)
-        np_wav2 = ffmpeg_proc2.read(32000)
-        if np_wav1 is None or np_wav2 is None:
-            break        
         
+        np_wav1 = ffmpeg_proc1.read(16000)
+        np_wav2 = ffmpeg_proc2.read(16000)
+        if np_wav1 is None:
+            print("np_wav1")
+        if np_wav2 is None:
+            print("np_wav2")
+        if np_wav1 is None or np_wav2 is None:
+            break       
+
+        """       
         x1 = waveform_to_examples(np_wav1, RATE)
         x2 = waveform_to_examples(np_wav2, RATE)
         
         mel_feats1 = x1.astype(float_dtype)
         mel_feats2 = x2.astype(float_dtype)
+        """
         amp1 = max(abs(np_wav1))
         amp2 = max(abs(np_wav2))
 
-        """
+        """    
         speech1 = 0
         speech2 = 0
         X = []
