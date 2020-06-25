@@ -1,5 +1,6 @@
 import cv2
 import re
+import pytz
 import pytesseract
 from datetime import datetime,timedelta
 
@@ -21,6 +22,17 @@ def convert24hour(hour,PM_time):
         return hour+12
     else:
         return hour
+
+def convert_to_UTC(date,time):
+    str_time=str(time)
+    dt=date+' '+str_time
+    D=datetime.strptime(dt, "%Y-%m-%d %H:%M:%S")
+    timezone = pytz.timezone('America/New_York')
+    t=timezone.localize(D)
+    UTC=t.astimezone(pytz.utc)
+    date=str(UTC.date())
+    time=timedelta(hours=UTC.hour,minutes=UTC.minute,seconds=UTC.second)
+    return(date,time)
 
 ### NOTE-: if AM and PM is not present in timestamp , by default PM
 def clean_OCR_Time(OCR_time):
@@ -118,18 +130,22 @@ def extract_time(video,ocr_bool,file_bool,log):
 
    elif ocr_time_failed and ocr_bool == False:
        log.write(f"Using file extracted time_stamp {file_name_date}T{str(file_name_time)}\n")
+       file_name_date,file_name_time=convert_to_UTC(file_name_date,file_name_time)
        return(file_name_date,file_name_time)
        
    elif file_time_failed and file_bool == False:
        log.write(f"Using OCR extracted time_stamp and OCR date {ocr_date}T{str(ocr_time)}\n")
+       ocr_date,ocr_time=convert_to_UTC(ocr_date,ocr_time)
        return(ocr_date,ocr_time)
 
    else:
        if abs(ocr_time-file_name_time) < threshold_error or ocr_bool == True :
            log.write(f"Using OCR timestamp {file_name_date}T{str(ocr_time)}\n")
+           file_name_date,ocr_time=convert_to_UTC(file_name_date,ocr_time)
            return(file_name_date,ocr_time)
        else:
            log.write(f"Using file_name timestamp {file_name_date}T{str(file_name_time)}\n")
+           file_name_date,file_name_time=convert_to_UTC(file_name_date,file_name_time)
            return(file_name_date,file_name_time)
 
 

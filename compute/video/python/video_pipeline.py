@@ -189,6 +189,7 @@ class ConsumerThread(threading.Thread):
 
                 # process data
                 raw_image, frame_data = self.process_frame(numbered_datum)
+                
                 if not RTSP:
                    time=int(frame_data['frameNumber']/self.fps)
                    frame_data['timestamp']=self.start_date+'T'+str(self.start_time +  timedelta(seconds=time))+'Z'
@@ -196,6 +197,7 @@ class ConsumerThread(threading.Thread):
                 print(frame_data['timestamp'])
                 print(frame_data['frameNumber'])
                 print('...........................')
+                
                 # post data
                 self.post_frame(raw_image, frame_data)
 

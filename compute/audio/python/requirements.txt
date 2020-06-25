@@ -3,6 +3,7 @@ resampy
 keras==2.3.1
 tensorflow==1.15.0
 pyaudio
+pytz
 opencv-python
 pytesseract
 joblib
