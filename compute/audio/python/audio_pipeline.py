@@ -12,6 +12,7 @@ import time
 import subprocess
 import soundtransfer
 import os
+import re
 import sys
 import inspect
 import argparse
@@ -24,6 +25,7 @@ import requests
 import base64
 import get_time as gt
 import cv2
+import threading
 
 frame_number = 0
 context = soundtransfer.everything
@@ -43,6 +45,17 @@ for k in range(len(context)):
 
 def avg(l):
     return sum(l) / float(len(l))
+
+def sampling_rate(video):
+    specs=subprocess.Popen(['ffmpeg','-i',video,'-debug_ts'],stderr= subprocess.PIPE).stderr.read()
+    specs=specs.decode('ascii')
+    Mylist=specs.split(',')
+    sampling=16000
+    for ix in Mylist:
+       if ix.find('Hz') != -1:
+           result=re.findall('\d+', ix)
+           sampling=int(result[0])
+    return sampling
 
 
 # Variables
@@ -65,6 +78,8 @@ parser.add_argument('--back_url', dest='back_url', type=str, nargs='?',
                     required=True, help='URL to rtsp back camera stream')
 parser.add_argument('--backend_url', dest='backend_url', type=str, nargs='?',
                     help='EduSense backend')
+parser.add_argument('--time_duration', dest='time_duration', type=int, nargs='?',
+                    default=-1,help='Set the time duration for file to run')
 parser.add_argument('--session_id', dest='session_id', type=str, nargs='?',
                     help='EduSense session ID')
 parser.add_argument('--schema', dest='schema', type=str, nargs='?',
@@ -93,12 +108,12 @@ class FFMpegReader:
                 self.proc = subprocess.Popen(['ffmpeg',
                                               '-i', str(self.ip), '-nostats', '-loglevel', '0',
                                               '-vn', '-f', 's16le', '-acodec', 'pcm_s16le',
-                                              '-'], stdout=subprocess.PIPE)
+                                              '-'], stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             else:
                 self.proc = subprocess.Popen(['ffmpeg',
                                               '-i', str(self.ip), '-nostats', '-loglevel', '0',
                                               '-vn', '-f', 's16le', '-acodec', 'pcm_s16le',
-                                              '-'], stdout=subprocess.PIPE)
+                                              '-'], stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 
         return self.proc.stdout.read(nbytes)
 
@@ -125,7 +140,8 @@ class FFMpegReader:
 
 ffmpeg_proc1 = FFMpegReader(ip1)
 ffmpeg_proc2 = FFMpegReader(ip2)
-
+rate1=sampling_rate(ip1)
+rate2=sampling_rate(ip2)
 
 ## if log volume is mounted
 try:
@@ -150,32 +166,39 @@ else:
   print(date2,str(time2))
 
 print('........................')
+
+if args.time_duration != -1:
+  start_timer = time.perf_counter()
+
 try:
     while(1):
+        
+        if args.time_duration != -1 and time.perf_counter() - start_timer >= args.time_duration:
+            print('timeout')
+            sys.exit()
 
         if realtime:
-           timestamp1=datetime.now().isoformat() + "Z"
-           timestamp2=datetime.now().isoformat() + "Z"
-        
-        np_wav1 = ffmpeg_proc1.read(16000)
-        np_wav2 = ffmpeg_proc2.read(16000)
-        if np_wav1 is None:
-            print("np_wav1")
-        if np_wav2 is None:
-            print("np_wav2")
+           timestamp1=datetime.utcnow().isoformat() + "Z"
+        np_wav1 = ffmpeg_proc1.read(rate1)
+
+        if realtime:
+           timestamp2=datetime.utcnow().isoformat() + "Z"
+        np_wav2 = ffmpeg_proc2.read(rate2)
+    
         if np_wav1 is None or np_wav2 is None:
             break       
-
-        """       
-        x1 = waveform_to_examples(np_wav1, RATE)
-        x2 = waveform_to_examples(np_wav2, RATE)
         
+        ### DON'T comment this out #####
+
+        x1 = waveform_to_examples(np_wav1, rate1)
+        x2 = waveform_to_examples(np_wav2, rate2)
+    
         mel_feats1 = x1.astype(float_dtype)
         mel_feats2 = x2.astype(float_dtype)
-        """
+            
         amp1 = max(abs(np_wav1))
         amp2 = max(abs(np_wav2))
-
+        ##############################
         """    
         speech1 = 0
         speech2 = 0
@@ -233,7 +256,8 @@ try:
                             'speaker': None
                         }
                     }
-                }
+                },
+                'SamplingRate': rate1
             }, {
                 'frameNumber': frame_number,
                 'timestamp': timestamp2,
@@ -247,7 +271,8 @@ try:
                             'speaker': None
                         }
                     }
-                }
+                },
+                'SamplingRate': rate2
             }
         ]
         ## assuming audio is 1 fps
@@ -275,6 +300,7 @@ try:
             resp = requests.post(frame_url, headers=headers, json=req)
             if (resp.status_code != 200 or 'success' not in resp.json().keys() or not resp.json()['success']):
                 raise RuntimeError(resp.text)
-except:
+except Exception as e:
     raise RuntimeError("error occurred")
+
 
