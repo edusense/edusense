@@ -13,6 +13,7 @@ type AudioFrame struct {
 	Timestamp   time.Time `json:"timestamp" bson:"timestamp"`
 	Channel     string    `json:"channel" bson:"channel"`
 	Audio       Audio     `json:"audio" bson:"audio"`
+	SamplingRate uint32   `json:"SamplingRate" bson:"SamplingRate"`
 }
 
 // Audio defines

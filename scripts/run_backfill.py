@@ -82,7 +82,7 @@ if __name__ == '__main__':
     parser.add_argument('--audio_schema', dest='audio_schema', type=str, nargs='?',
         required=True, help='audio schema for CI')
     parser.add_argument('--timeout', dest='timeout', type=int, nargs='?',
-        required=True, help='timeout for the script',default=7200)
+                 help='timeout for the script',default=7200)
     parser.add_argument('--log_dir', dest='log_dir' ,type=str, nargs='?',
             help='get the logs in a directory')
     parser.add_argument('--video_dir', dest='video_dir', type=str, nargs='?',
