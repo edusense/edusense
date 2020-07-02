@@ -4,6 +4,7 @@
 import argparse
 import base64
 import datetime
+from datetime import timedelta
 import json
 import Queue as queue
 import os
@@ -13,11 +14,12 @@ import sys
 import threading
 import time
 import traceback
-
+import sys
 import cv2
 import numpy
 import requests
 import deepgaze
+import get_time as gt
 
 from centroidtracker import *
 from headpose import *
@@ -27,6 +29,7 @@ from process import *
 
 default_schema = "edusense-video"
 default_keyword = "edusense-keyword"
+RTSP=False
 
 class SocketReaderThread(threading.Thread):
     def __init__(self, queue, server_address, keep_frame_number,
@@ -119,13 +122,16 @@ class SocketReaderThread(threading.Thread):
 
 class ConsumerThread(threading.Thread):
     def __init__(self, input_queue, process_real_time, process_gaze, channel,
-                 area_of_interest, backend_params=None, file_params=None,
+                 area_of_interest,fps,start_date,start_time,backend_params=None, file_params=None,
                  profile=False):
         threading.Thread.__init__(self)
         self.input_queue = input_queue
         self.process_real_time = process_real_time
         self.channel = channel
-
+        self.counter= 0;
+        self.fps=fps;
+        self.start_date=start_date;
+        self.start_time=start_time;
         if area_of_interest is not None:
             self.area_of_interest = np.array(area_of_interest).reshape((-1, 1, 2))
         else:
@@ -183,7 +189,15 @@ class ConsumerThread(threading.Thread):
 
                 # process data
                 raw_image, frame_data = self.process_frame(numbered_datum)
-
+                
+                if not RTSP:
+                   time=int(frame_data['frameNumber']/self.fps)
+                   frame_data['timestamp']=self.start_date+'T'+str(self.start_time +  timedelta(seconds=time))+'Z'
+                print('...........................')
+                print(frame_data['timestamp'])
+                print(frame_data['frameNumber'])
+                print('...........................')
+                
                 # post data
                 self.post_frame(raw_image, frame_data)
 
@@ -212,6 +226,7 @@ class ConsumerThread(threading.Thread):
             interframe_time = 0
 
             frame_number, datum = numbered_datum
+        
             frame_data = json.loads(datum.decode('utf-8'))
             if frame_number is not None:
                 frame_data['frameNumber'] = frame_number
@@ -524,7 +539,8 @@ class ConsumerThread(threading.Thread):
 
 def run_pipeline(server_address, time_duration, process_real_time,
                  process_gaze, keep_frame_number, channel, area_of_interest,
-                 backend_params=None, file_params=None, profile=False):
+                 fps,start_date,start_time,backend_params=None, 
+                 file_params=None, profile=False):
 
     # initialize queues
     q = None
@@ -541,8 +557,8 @@ def run_pipeline(server_address, time_duration, process_real_time,
 
     # initialize video consumers
     consumer_thread = ConsumerThread(q, process_real_time, process_gaze,
-                                     channel, area_of_interest, backend_params,
-                                     file_params, profile)
+                                     channel, area_of_interest, fps,start_date,start_time,
+                                     backend_params,file_params, profile)
 
     # start downstream (consumers)
     consumer_thread.start()
@@ -581,6 +597,12 @@ def run_pipeline(server_address, time_duration, process_real_time,
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='EduSense video computation backend')
+    parser.add_argument('--video', dest='video' ,type=str, nargs='?',
+                         help= 'video address',required=True)
+    parser.add_argument('--ocr_time',dest='ocr_time',action='store_true',
+                         help="use OCR extracted timestamp")
+    parser.add_argument('--file_time',dest='file_time',action='store_true',
+                        help="use file_name timestamp")
     parser.add_argument('--video_sock', dest='video_sock', type=str, nargs='?',
                         help='EduSense video server address')
     parser.add_argument('--tcp_host', dest='tcp_host', type=str, nargs='?',
@@ -627,6 +649,34 @@ if __name__ == '__main__':
         if len(args.area_of_interest) % 2 == 1 or len(args.area_of_interest) < 6:
             print('for area of interest, you should put x, y pairs: suppied {}'.format(len(args.area_of_interest)))
 
+    ## if log volume is mounted
+    if channel == 'instructor':
+        File='/tmp/back_video.txt'
+    else:
+        File='/tmp/front_video.txt'
+    try:
+      log=open(File,'w')
+    except:
+      log=open('video_log.txt','w')   
+    
+    if 'rtsp' in args.video:
+        RTSP=True
+
+    ###extract starting time #####
+    if (RTSP):
+        log.write(args.video+" timestamp log\nUsing RTSP\n")
+        fps = None
+        start_time=None
+        start_date=None
+    else:    
+       log.write(args.video+" timestamp log\n")
+       fps,start_date,start_time=gt.extract_time(args.video,args.ocr_time,args.file_time,log)
+       log.close()  
+    ##############################
+       if fps == None or fps == 0:
+          print("either video address not valid or not able to extract the fps")
+          sys.exit(1)
+   
     # setup backend params
     backend_params = None
     app_username = os.getenv("APP_USERNAME", "")
@@ -657,6 +707,8 @@ if __name__ == '__main__':
     server_address = (args.video_sock
                       if args.use_unix_socket
                       else (args.tcp_host, args.tcp_port))
+    print("starting pipeline i ");
     run_pipeline(server_address, args.time_duration, args.process_real_time,
                  args.process_gaze, args.keep_frame_number, channel,
-                 args.area_of_interest, backend_params, file_params, profile)
+                 args.area_of_interest, fps,start_date,start_time,backend_params, file_params, profile)
+    print("ran pipeline i  ");
