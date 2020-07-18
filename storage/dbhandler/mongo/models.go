@@ -13,6 +13,7 @@ import (
 type Session struct {
 	ID       bson.ObjectId `bson:"_id"`
 	Keyword  string        `bson:"keyword"`
+	Version  string        `bson:"version"`
 	Schemas  []string      `bson:"schemas"`
 	Metadata interface{}   `bson:"metadata"`
 }

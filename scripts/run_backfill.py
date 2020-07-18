@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 import argparse
 import json
 import os
@@ -100,10 +99,15 @@ if __name__ == '__main__':
     app_username = os.getenv("APP_USERNAME", "")
     app_password = os.getenv("APP_PASSWORD", "")
 
+    file_location = '/' + sys.argv[0].strip('script/run_backfill.py') + '/storage/version.txt'
+    f = open(file_location, 'r')
+    version = f.read()
+    version = version.strip('\n')
+
     process = subprocess.Popen([
         'curl',
         '-X', 'POST',
-        '-d', '{\"keyword\": \"%s\", \"data\":{\"from\":\"backfill\"}}' % args.keyword,
+        '-d', '{\"version\": \"%s\", \"keyword\": \"%s\"}' % (version, args.keyword),
         '--header', 'Content-Type: application/json',
         '--basic', '-u', '%s:%s' % (app_username, app_password),
         'https://%s/sessions' % args.backend_url],
@@ -111,6 +115,7 @@ if __name__ == '__main__':
         stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
     print(stdout)
+   
     try:
       output = json.loads(stdout.decode('utf-8'))
       success = output['success']

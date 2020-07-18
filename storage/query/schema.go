@@ -73,6 +73,7 @@ const QuerySchema = `
     type Session {
       id: ID!
       keyword: String!
+      version: String!
       schemas: [String!]!
       createdAt: Time!
       videoFrames(schema: String!, channel: Channel!, frameNumber: FrameNumberQuery, timestamp: TimestampQuery): [VideoFrame!]!

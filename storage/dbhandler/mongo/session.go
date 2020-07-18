@@ -15,12 +15,13 @@ import (
 const sessCol string = "sessions"
 
 // InsertSession inserts a new session.
-func (m *Driver) InsertSession(keyword string, metadata interface{}) (*models.Session, error) {
+func (m *Driver) InsertSession(version, keyword string, metadata interface{}) (*models.Session, error) {
 	// construct mongo specific constructs
 	mID := bson.NewObjectId()
 	mSess := &Session{
 		ID:       mID,
 		Keyword:  keyword,
+		Version:  version,
 		Metadata: metadata,
 	}
 
@@ -35,6 +36,7 @@ func (m *Driver) InsertSession(keyword string, metadata interface{}) (*models.Se
 		ID:        mID.Hex(),
 		Timestamp: mID.Time(),
 		Keyword:   keyword,
+		Version:   version,
 		Schemas:   []string{},
 		Metadata:  metadata,
 	}
@@ -62,10 +64,10 @@ func (m *Driver) GetSession(sessID string) (*models.Session, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	sess := &models.Session{
 		ID:        mSess.ID.Hex(),
 		Keyword:   mSess.Keyword,
+		Version:   mSess.Version,
 		Timestamp: mSess.ID.Time(),
 		Schemas:   mSess.Schemas,
 		Metadata:  mSess.Metadata,
@@ -101,6 +103,7 @@ func (m *Driver) FindSession(filter *models.SessionFilter) ([]models.Session, er
 		sesses[i] = models.Session{
 			ID:        s.ID.Hex(),
 			Keyword:   s.Keyword,
+			Version:   s.Version,
 			Timestamp: s.ID.Time(),
 			Schemas:   s.Schemas,
 			Metadata:  s.Metadata,

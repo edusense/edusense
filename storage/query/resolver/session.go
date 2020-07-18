@@ -74,6 +74,10 @@ func (s *SessionResolver) Keyword(ctx context.Context) (string, error) {
 	return s.Session.Keyword, nil
 }
 
+func (s *SessionResolver) Version(ctx context.Context) (string, error) {
+	        return s.Session.Version, nil
+}
+
 // Schemas extracts schemas from given Session resolver.
 // TODO(DohyunKimOfficial): Currently returning empty list. After plumbing
 // schemas to query and storage infrastructure, we can add schema resolving

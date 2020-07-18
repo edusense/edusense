@@ -11,6 +11,7 @@ import (
 type Session struct {
 	ID        string      `json:"id,omitempty" bson:"id"`
 	Keyword   string      `json:"keyword,omitempty" bson:"keyword"`
+	Version   string      `json:"version,omitempty" bson:"version"`
 	Schemas   []string    `json:"schemas,omitempty" bson:"schemas"`
 	Timestamp time.Time   `json:"timestamp,omitempty" bson:"timestamp"`
 	Metadata  interface{} `json:"metadata,omitempty" bson:"metadata"`

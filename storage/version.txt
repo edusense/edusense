@@ -1,6 +1,1 @@
-This is version 1.0.0 of the storage server. 
-The schema is given in edusense/storage/models.
-
-Major changes include changing schema and refactoring code such that server is not backward compatible.
-Minor changes include schema changes and refactoring code with backward compatibility.
-Patches include refactoring code and bug fixes with backward compatibility, without changing schema.
+1.1.0

@@ -46,7 +46,7 @@ func InsertSessionEndpoint(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sess, err := driver.InsertSession(req.Keyword, req.Metadata)
+	sess, err := driver.InsertSession(req.Version, req.Keyword, req.Metadata)
 	if err != nil {
 		resp := &InsertSessionResponse{
 			Success:   false,

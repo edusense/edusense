@@ -12,7 +12,7 @@ import (
 type DatabaseDriver interface {
 	// InsertSession inserts a new frame. It returns error if identical session
 	/// exists
-	InsertSession(keyword string, metadata interface{}) (*models.Session, error)
+	InsertSession(version, keyword string, metadata interface{}) (*models.Session, error)
 	// UpdateSession updates frame with given session ID. It returns error if
 	// there is no session
 	UpdateSession(sessID string, metadata interface{}) (*models.Session, error)
