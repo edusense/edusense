@@ -136,12 +136,19 @@ else:
 print('........................')
 
 if args.time_duration != -1:
-  start_timer = time.perf_counter()
+  if not realtime:
+      stop_time=time1+timedelta(seconds=args.time_duration)
+  else:
+      start_timer = time.perf_counter()
 
 try:
     while(1):
         
-        if args.time_duration != -1 and time.perf_counter() - start_timer >= args.time_duration:
+        if not realtime and args.time_duration != -1 and time1 > stop_time:
+            print('timeout')
+            sys.exit()
+
+        if realtime and args.time_duration != -1 and time.perf_counter() - start_timer > args.time_duration:
             print('timeout')
             sys.exit()
 

@@ -250,6 +250,7 @@ if __name__ == '__main__':
             '--back_url', os.path.join('/app', 'video', args.back_video),
             '--backend_url', args.backend_url,
             '--session_id', session_id,
+            '--time_duration', str(args.time_duration + 60) if args.time_duration >= 0 else '-1',
             '--schema', args.audio_schema],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
