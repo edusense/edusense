@@ -15,7 +15,42 @@ import (
 const sessCol string = "sessions"
 
 // InsertSession inserts a new session.
-func (m *Driver) InsertSession(version, keyword string, metadata interface{}) (*models.Session, error) {
+func (m *Driver) InsertSession(version, keyword, overwrite string, metadata interface{}) (*models.Session, error) {
+	if overwrite == "True" {
+		//If overwrite == True, deletes the last session with the same keyword
+
+		//get earlier sessions with same keyword
+		var prevSess []Session
+		err := m.DB.C(sessCol).Find(bson.M{"keyword": keyword}).All(&prevSess)
+		if err != nil {
+			return nil, err
+		}
+
+		if (len(prevSess) > 0) {
+			s := prevSess[len(prevSess)-1]
+
+			//delete document from sessions
+			err_doc := m.DB.C(sessCol).Remove(bson.M{"_id": s.ID})
+			if err_doc != nil {
+				return nil, err_doc
+			}
+
+			//delete previous audio collection with same keyword
+			audioCol := "session-" + s.ID.Hex() + "-classinsight-graphql-audio"
+			err_aud := m.DB.C(audioCol).DropCollection()
+			if err_aud != nil {
+				return nil, err_aud
+			}
+
+			//delete previous video collection with same keyword
+			videoCol := "session-" + s.ID.Hex() + "-classinsight-graphql-video"
+			err_vid := m.DB.C(videoCol).DropCollection()
+			if err_vid != nil {
+				return nil, err_vid
+			}
+		}
+	}
+
 	// construct mongo specific constructs
 	mID := bson.NewObjectId()
 	mSess := &Session{
@@ -24,7 +59,6 @@ func (m *Driver) InsertSession(version, keyword string, metadata interface{}) (*
 		Version:  version,
 		Metadata: metadata,
 	}
-
 	// insert
 	err := m.DB.C("sessions").Insert(mSess)
 	if err != nil {

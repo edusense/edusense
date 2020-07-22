@@ -91,6 +91,8 @@ if __name__ == '__main__':
                         ' realtime')
     parser.add_argument('--tensorflow_gpu', dest='tensorflow_gpu', type=str, nargs='?',
                         default='-1', help='tensorflow gpus')
+    parser.add_argument('--overwrite', dest='overwrite', type=str, nargs='?', default='False',
+                        help='To enable overwriting previous backfilled session, enter: True')
     args = parser.parse_args()
 
     uid = os.getuid()
@@ -98,16 +100,26 @@ if __name__ == '__main__':
 
     app_username = os.getenv("APP_USERNAME", "")
     app_password = os.getenv("APP_PASSWORD", "")
+   
+    #Loading storage server version name
+    if sys.argv[0] == 'run_backfill.py':
+        file_location = '../storage/version.txt'
+    else:
+        try:
+            file_location = '/' + sys.argv[0].strip('script/run_backfill.py') + '/storage/version.txt'
+            f = open(file_location, 'r')
+        except:
+            file_location = sys.argv[0].strip('script/run_backfill.py') + '/storage/version.txt'
+            f = open(file_location, 'r')
 
-    file_location = '/' + sys.argv[0].strip('script/run_backfill.py') + '/storage/version.txt'
-    f = open(file_location, 'r')
     version = f.read()
     version = version.strip('\n')
 
+    #Calling sessions API endpoint
     process = subprocess.Popen([
         'curl',
         '-X', 'POST',
-        '-d', '{\"version\": \"%s\", \"keyword\": \"%s\"}' % (version, args.keyword),
+        '-d', '{\"version\": \"%s\", \"keyword\": \"%s\", \"overwrite\": \"%s\"}' % (version, args.keyword, args.overwrite),
         '--header', 'Content-Type: application/json',
         '--basic', '-u', '%s:%s' % (app_username, app_password),
         'https://%s/sessions' % args.backend_url],
