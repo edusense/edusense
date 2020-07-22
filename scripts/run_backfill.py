@@ -115,7 +115,6 @@ if __name__ == '__main__':
     version = f.read()
     version = version.strip('\n')
 
-    print(app_username, app_password, args.keyword, version)
     #Calling sessions API endpoint
     process = subprocess.Popen([
         'curl',
