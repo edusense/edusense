@@ -33,6 +33,10 @@ type InsertClassroomRequest struct {
 	NewClass        models.Classroom        `json:"newClass,omitempty"`
 }
 
+type InsertCourseRequest struct {
+	NewCourse        models.Course		`json:"newCourse,omitempty"`
+}
+
 type InsertClassroomResponse struct {
 	Success   bool   `json:"success"`
 	Error     string `json:"error,omitempty"`

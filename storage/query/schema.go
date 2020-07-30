@@ -30,7 +30,8 @@ const QuerySchema = `
 
     type Query {
       sessions (sessionId: ID, keyword: String): [Session!]!
-      classrooms : [Classroom!]!
+      classrooms: [Classroom!]!
+      courses: [Course!]!  
     }
 
     type Classroom {
@@ -51,7 +52,19 @@ const QuerySchema = `
       podiumBoundary: [[Float!]!]!
       projectorBoundary: [[Float!]!]!
 
-      courses: [[String!]!]!
+      courseList: [[String!]!]!
+    }
+
+    type Course {
+      classID: String!
+      section: String!
+      semester: String!
+      year: Int!
+      lectureType: String!
+
+      instructors: [[String!]!]!
+      teachingAssistants: [[String!]!]!
+      initialEnrollment: Int!
     }
 
     enum RangeQueryOperator {

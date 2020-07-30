@@ -10,8 +10,8 @@ type Classroom struct {
 	Floor			string		`json:"floor,omitempty" bson:"floor"`
 	Dimensions		[]float32	`json:"dimensions,omitempty" bson:"dimensions"`
 	DimensionsScale		string		`json:"dimensionsScale,omitempty" bson:"dimensionsScale"`
-	NumberOfSeats		uint32		`json:"numberOfSeats,omitempty" bson:"numberOfSeats"`
-	NumberOfWindows		uint32		`json:"numberOfWindows,omitempty" bson:"numberOfWindows"`
+	NumberOfSeats		uint16		`json:"numberOfSeats,omitempty" bson:"numberOfSeats"`
+	NumberOfWindows		uint16		`json:"numberOfWindows,omitempty" bson:"numberOfWindows"`
 
 	FrontCameraModel	string		`json:"frontCameraModel,omitempty" bson:"frontCameraModel"`
 	RearCameraModel		string		`json:"rearCameraModel,omitempty" bson:"rearCameraModel"`
@@ -22,6 +22,6 @@ type Classroom struct {
 	PodiumBoundary		[][]float32     `json:"podiumBoundary,omitempty" bson:"podiumBoundary"`
 	ProjectorBoundary	[][]float32     `json:"projectorBoundary,omitempty" bson:"projectorBoundary"`
 
-	Courses			[][]string	`json:"courses,omitempty" bson:"courses"`
+	CourseList		[][]string	`json:"courseList,omitempty" bson:"courseList"`
 }
 

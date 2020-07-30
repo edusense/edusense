@@ -33,6 +33,9 @@ type DatabaseDriver interface {
 	InsertClassroomCollection (classroom models.Classroom) error
 	GetClassroom(filter *models.SessionFilter) ([]models.Classroom, error)
 
+	//Inserting db handler functions for classroom collection
+	InsertCourseCollection (course models.Course) error
+	GetCourse(filter *models.SessionFilter) ([]models.Course, error)
 
 	// Get frames by filter
 	// GetFrameByFilter returns list of frames by given frame filters.

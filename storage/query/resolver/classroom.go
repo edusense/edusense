@@ -15,7 +15,7 @@ import (//"fmt"
 
 // SessionResolver queries database and resolves query-agnostic Session model.
 type ClassroomResolver struct {
-	Classroom_metadata    models.Classroom
+	ClassroomMetadata    models.Classroom
 }
 
 
@@ -42,7 +42,7 @@ func (q QueryResolver) Classrooms (ctx context.Context) ([]*ClassroomResolver, e
 
 	resolvers := make([]*ClassroomResolver, len(sessions))
 	for i, f := range sessions {
-		resolvers[i] = &ClassroomResolver{Classroom_metadata : f}
+		resolvers[i] = &ClassroomResolver{ClassroomMetadata : f}
 	}
 
 	return resolvers, nil
@@ -50,61 +50,61 @@ func (q QueryResolver) Classrooms (ctx context.Context) ([]*ClassroomResolver, e
 
 // ID extracts Session ID from given Session resolver.
 func (s *ClassroomResolver) Building(ctx context.Context) (string, error) {
-	return s.Classroom_metadata.Building, nil
+	return s.ClassroomMetadata.Building, nil
 }
 
 func (s *ClassroomResolver) Room(ctx context.Context) (string, error) {
-	return s.Classroom_metadata.Room, nil
+	return s.ClassroomMetadata.Room, nil
 }
 
 func (s *ClassroomResolver) Floor(ctx context.Context) (string, error) {
-	return s.Classroom_metadata.Floor, nil
+	return s.ClassroomMetadata.Floor, nil
 }
 
 func (s *ClassroomResolver) Dimensions(ctx context.Context) ([]float64, error) {
-	dimensions := make([]float64, len(s.Classroom_metadata.Dimensions))
-	for i := range s.Classroom_metadata.Dimensions {
-		dimensions[i] = float64(s.Classroom_metadata.Dimensions[i])
+	dimensions := make([]float64, len(s.ClassroomMetadata.Dimensions))
+	for i := range s.ClassroomMetadata.Dimensions {
+		dimensions[i] = float64(s.ClassroomMetadata.Dimensions[i])
 	}
 
 	return dimensions, nil
 }
 
 func (s *ClassroomResolver) DimensionsScale(ctx context.Context) (string, error) {
-	return s.Classroom_metadata.DimensionsScale, nil
+	return s.ClassroomMetadata.DimensionsScale, nil
 }
 
 func (s *ClassroomResolver) NumberOfSeats(ctx context.Context) (int32, error) {
-	return int32(s.Classroom_metadata.NumberOfSeats), nil
+	return int32(s.ClassroomMetadata.NumberOfSeats), nil
 }
 
 func (s *ClassroomResolver) NumberOfWindows(ctx context.Context) (int32, error) {
-	return int32(s.Classroom_metadata.NumberOfWindows), nil
+	return int32(s.ClassroomMetadata.NumberOfWindows), nil
 }
 
 func (s *ClassroomResolver) FrontCameraModel(ctx context.Context) (string, error) {
-	return s.Classroom_metadata.FrontCameraModel, nil
+	return s.ClassroomMetadata.FrontCameraModel, nil
 }
 
 func (s *ClassroomResolver) RearCameraModel(ctx context.Context) (string, error) {
-	return s.Classroom_metadata.RearCameraModel, nil
+	return s.ClassroomMetadata.RearCameraModel, nil
 }
 
 func (s *ClassroomResolver) FrontCameraIP(ctx context.Context) (string, error) {
-	return s.Classroom_metadata.FrontCameraIP, nil
+	return s.ClassroomMetadata.FrontCameraIP, nil
 }
 
 func (s *ClassroomResolver) RearCameraIP(ctx context.Context) (string, error) {
-	return s.Classroom_metadata.RearCameraIP, nil
+	return s.ClassroomMetadata.RearCameraIP, nil
 }
 
 func (s *ClassroomResolver) BlackboardBoundary(ctx context.Context) ([][]float64, error) {
-	if len(s.Classroom_metadata.BlackboardBoundary) == 0 {
+	if len(s.ClassroomMetadata.BlackboardBoundary) == 0 {
 		return [][]float64{}, nil
 	}
 
-	blackboard := make([][]float64, len(s.Classroom_metadata.BlackboardBoundary))
-	for i, m := range s.Classroom_metadata.BlackboardBoundary {
+	blackboard := make([][]float64, len(s.ClassroomMetadata.BlackboardBoundary))
+	for i, m := range s.ClassroomMetadata.BlackboardBoundary {
 		arr := make([]float64, len(m))
 		for j, k := range m {
 			arr[j] = float64(k)
@@ -116,12 +116,12 @@ func (s *ClassroomResolver) BlackboardBoundary(ctx context.Context) ([][]float64
 }
 
 func (s *ClassroomResolver) PodiumBoundary(ctx context.Context) ([][]float64, error) {
-	if len(s.Classroom_metadata.PodiumBoundary) == 0 {
+	if len(s.ClassroomMetadata.PodiumBoundary) == 0 {
 		return [][]float64{}, nil
 	}
 
-	podium := make([][]float64, len(s.Classroom_metadata.PodiumBoundary))
-	for i, m := range s.Classroom_metadata.PodiumBoundary {
+	podium := make([][]float64, len(s.ClassroomMetadata.PodiumBoundary))
+	for i, m := range s.ClassroomMetadata.PodiumBoundary {
 		arr := make([]float64, len(m))
 		for j, k := range m {
 			arr[j] = float64(k)
@@ -134,12 +134,12 @@ func (s *ClassroomResolver) PodiumBoundary(ctx context.Context) ([][]float64, er
 
 
 func (s *ClassroomResolver) ProjectorBoundary(ctx context.Context) ([][]float64, error) {
-	if len(s.Classroom_metadata.ProjectorBoundary) == 0 {
+	if len(s.ClassroomMetadata.ProjectorBoundary) == 0 {
 		return [][]float64{}, nil
 	}
 
-	projector := make([][]float64, len(s.Classroom_metadata.ProjectorBoundary))
-	for i, m := range s.Classroom_metadata.ProjectorBoundary {
+	projector := make([][]float64, len(s.ClassroomMetadata.ProjectorBoundary))
+	for i, m := range s.ClassroomMetadata.ProjectorBoundary {
 		arr := make([]float64, len(m))
 		for j, k := range m {
 			arr[j] = float64(k)
@@ -150,7 +150,7 @@ func (s *ClassroomResolver) ProjectorBoundary(ctx context.Context) ([][]float64,
 	return projector, nil
 }
 
-func (s *ClassroomResolver) Courses(ctx context.Context) ([][]string, error) {
-	return s.Classroom_metadata.Courses, nil
+func (s *ClassroomResolver) CourseList(ctx context.Context) ([][]string, error) {
+	return s.ClassroomMetadata.CourseList, nil
 }
 
