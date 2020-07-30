@@ -30,6 +30,28 @@ const QuerySchema = `
 
     type Query {
       sessions (sessionId: ID, keyword: String): [Session!]!
+      classrooms : [Classroom!]!
+    }
+
+    type Classroom {
+      building: String!
+      room: String!
+      floor: String!
+      dimensions: [Float!]!
+      dimensionsScale: String!
+      numberOfSeats: Int!
+      numberOfWindows: Int!
+
+      frontCameraModel: String!
+      rearCameraModel: String!
+      frontCameraIP: String!
+      rearCameraIP: String!
+
+      blackboardBoundary: [[Float!]!]!
+      podiumBoundary: [[Float!]!]!
+      projectorBoundary: [[Float!]!]!
+
+      courses: [[String!]!]!
     }
 
     enum RangeQueryOperator {

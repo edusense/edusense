@@ -3,7 +3,7 @@
 
 package mongo
 
-import ("fmt"
+import (//"fmt"
 	//"errors"
 
 	bson "github.com/globalsign/mgo/bson"
@@ -12,7 +12,6 @@ import ("fmt"
 
 
 func (m *Driver) InsertClassroomCollection (classroom models.Classroom) error {
-	fmt.Println("Adding classroom....")
 	// insert
 	err := m.DB.C("classroom").Insert(&classroom)
 	if err != nil {

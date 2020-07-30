@@ -29,6 +29,17 @@ type InsertSessionResponse struct {
 	ErrorCode uint32 `json:"errorCode,omitempty"`
 }
 
+type InsertClassroomRequest struct {
+	NewClass        models.Classroom        `json:"newClass,omitempty"`
+}
+
+type InsertClassroomResponse struct {
+	Success   bool   `json:"success"`
+	Error     string `json:"error,omitempty"`
+	ErrorCode uint32 `json:"errorCode,omitempty"`
+}
+
+
 // InsertFrameRequest defines request format for insert free-form frame
 // requests.
 type InsertFrameRequest struct {

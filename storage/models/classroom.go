@@ -11,17 +11,17 @@ type Classroom struct {
 	Dimensions		[]float32	`json:"dimensions,omitempty" bson:"dimensions"`
 	DimensionsScale		string		`json:"dimensionsScale,omitempty" bson:"dimensionsScale"`
 	NumberOfSeats		uint32		`json:"numberOfSeats,omitempty" bson:"numberOfSeats"`
-	NumberofWindows		uint32		`json:"numberOfWindows,omitempty" bson:"numberOfWindows"`
+	NumberOfWindows		uint32		`json:"numberOfWindows,omitempty" bson:"numberOfWindows"`
 
 	FrontCameraModel	string		`json:"frontCameraModel,omitempty" bson:"frontCameraModel"`
 	RearCameraModel		string		`json:"rearCameraModel,omitempty" bson:"rearCameraModel"`
 	FrontCameraIP		string		`json:"frontCameraIP,omitempty" bson:"frontCameraIP"`
 	RearCameraIP		string          `json:"rearCameraIP,omitempty" bson:"rearCameraIP"`
 
-	BlackboardBoundary	[]float32	`json:"blackboardBoundary,omitempty" bson:"blackboardBoundary"`
-	PodiumBoundary		[]float32       `json:"podiumBoundary,omitempty" bson:"podiumBoundary"`
-	ProjectorBoundary	[]float32       `json:"projectorBoundary,omitempty" bson:"projectorBoundary"`
+	BlackboardBoundary	[][]float32	`json:"blackboardBoundary,omitempty" bson:"blackboardBoundary"`
+	PodiumBoundary		[][]float32     `json:"podiumBoundary,omitempty" bson:"podiumBoundary"`
+	ProjectorBoundary	[][]float32     `json:"projectorBoundary,omitempty" bson:"projectorBoundary"`
 
-	Courses			[]string	`json:"courses,omitempty" bson:"courses"`
+	Courses			[][]string	`json:"courses,omitempty" bson:"courses"`
 }
 
