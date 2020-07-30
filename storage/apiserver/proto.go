@@ -15,6 +15,7 @@ type AuthErrorResponse struct {
 // InsertSessionRequest defines request format for insert session requests.
 type InsertSessionRequest struct {
 	Keyword    string      `json:"keyword,omitempty"`
+	Developer  string      `json:"developer,omitempty"`
 	Version    string      `json:"version,omitempty"`
 	Overwrite  string      `json:"overwrite,omitempty"`
 	Metadata   interface{} `json:"metadata,omitempty"`

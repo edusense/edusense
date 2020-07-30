@@ -15,7 +15,7 @@ import (
 const sessCol string = "sessions"
 
 // InsertSession inserts a new session.
-func (m *Driver) InsertSession(version, keyword, overwrite string, metadata interface{}) (*models.Session, error) {
+func (m *Driver) InsertSession(developer, version, keyword, overwrite string, metadata interface{}) (*models.Session, error) {
 	if overwrite == "True" {
 		//If overwrite == True, deletes the last session with the same keyword
 
@@ -54,10 +54,12 @@ func (m *Driver) InsertSession(version, keyword, overwrite string, metadata inte
 	// construct mongo specific constructs
 	mID := bson.NewObjectId()
 	mSess := &Session{
-		ID:       mID,
-		Keyword:  keyword,
-		Version:  version,
-		Metadata: metadata,
+		ID:        mID,
+		Timestamp: mID.Time(),
+		Keyword:   keyword,
+		Version:   version,
+		Developer: developer,
+		Metadata:  metadata,
 	}
 	// insert
 	err := m.DB.C("sessions").Insert(mSess)
@@ -71,6 +73,7 @@ func (m *Driver) InsertSession(version, keyword, overwrite string, metadata inte
 		Timestamp: mID.Time(),
 		Keyword:   keyword,
 		Version:   version,
+		Developer: developer,
 		Schemas:   []string{},
 		Metadata:  metadata,
 	}

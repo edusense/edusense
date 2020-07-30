@@ -45,7 +45,8 @@ func InsertSessionEndpoint(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
 		return
 	}
-	sess, err := driver.InsertSession(req.Version, req.Keyword, req.Overwrite, req.Metadata)
+
+	sess, err := driver.InsertSession(req.Developer, req.Version, req.Keyword, req.Overwrite, req.Metadata)
 	if err != nil {
 		resp := &InsertSessionResponse{
 			Success:   false,

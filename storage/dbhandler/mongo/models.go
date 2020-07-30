@@ -11,11 +11,13 @@ import (
 
 // Session specifies bson-specific formatting of session object.
 type Session struct {
-	ID       bson.ObjectId `bson:"_id"`
-	Keyword  string        `bson:"keyword"`
-	Version  string        `bson:"version"`
-	Schemas  []string      `bson:"schemas"`
-	Metadata interface{}   `bson:"metadata"`
+	ID        bson.ObjectId `bson:"_id"`
+	Keyword   string        `bson:"keyword"`
+	Developer string        `bson:"developer"`
+	Version   string        `bson:"version"`
+	Timestamp time.Time     `bson:"timestamp"`
+	Schemas   []string      `bson:"schemas"`
+	Metadata  interface{}   `bson:"metadata"`
 }
 
 // Frame specifies bson-specific formatting of freeframe object.
