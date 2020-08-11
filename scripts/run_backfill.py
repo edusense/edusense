@@ -8,6 +8,35 @@ import tempfile
 import time
 import threading
 
+def get_parameters(run_command):
+    uid = os.getuid()
+    gid = os.getgid()
+
+    app_username = os.getenv("APP_USERNAME", "")
+    app_password = os.getenv("APP_PASSWORD", "")
+
+    #Loading storage server version name
+    if run_command == 'run_backfill.py':    
+        file_location = '../storage/version.txt'
+    else:
+        try:
+            file_location = '/' + run_command.strip('script/run_backfill.py') + '/storage/version.txt'
+            f = open(file_location, 'r')
+        except:
+            file_location = run_command.strip('script/run_backfill.py') + '/storage/version.txt'
+            f = open(file_location, 'r')
+
+    version = f.read()
+    version = version.strip('\n')
+
+    #Getting current user
+    process = subprocess.Popen(['whoami'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = process.communicate()
+    developer = stdout.decode('utf-8')[:-1]
+
+    return uid, gid, app_username, app_password, version, developer
+
+
 def kill_all_containers():
     print('killing all containers')
 
@@ -95,31 +124,13 @@ if __name__ == '__main__':
                         help='To enable overwriting previous backfilled session, enter: True')
     args = parser.parse_args()
 
-    uid = os.getuid()
-    gid = os.getgid()
-
-    app_username = os.getenv("APP_USERNAME", "")
-    app_password = os.getenv("APP_PASSWORD", "")
-   
-    #Loading storage server version name
-    if sys.argv[0] == 'run_backfill.py':
-        file_location = '../storage/version.txt'
-    else:
-        try:
-            file_location = '/' + sys.argv[0].strip('script/run_backfill.py') + '/storage/version.txt'
-            f = open(file_location, 'r')
-        except:
-            file_location = sys.argv[0].strip('script/run_backfill.py') + '/storage/version.txt'
-            f = open(file_location, 'r')
-
-    version = f.read()
-    version = version.strip('\n')
+    uid, gid, app_username, app_password, version, developer = get_parameters(sys.argv[0]) 
 
     #Calling sessions API endpoint
     process = subprocess.Popen([
         'curl',
         '-X', 'POST',
-        '-d', '{\"version\": \"%s\", \"keyword\": \"%s\", \"overwrite\": \"%s\"}' % (version, args.keyword, args.overwrite),
+        '-d', '{\"developer\": \"%s\", \"version\": \"%s\", \"keyword\": \"%s\", \"overwrite\": \"%s\"}' % (developer, version, args.keyword, args.overwrite),
         '--header', 'Content-Type: application/json',
         '--basic', '-u', '%s:%s' % (app_username, app_password),
         'https://%s/sessions' % args.backend_url],

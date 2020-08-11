@@ -35,8 +35,65 @@ func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	w.Write(response)
 }
 
-// InsertSessionEndpoint responds to legacy InsertSession endpoint
-// (POST /sessions).
+// Endpoint to insert a Classroom. Could combine classroom and course endpoint as metadata endpoint
+func InsertClassroomEndpoint(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	var req InsertClassroomRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+
+	err := driver.InsertClassroomCollection(req.NewClass)
+	if err != nil {
+		resp := &InsertClassroomResponse{
+			Success:   false,
+			Error:     err.Error(),
+			ErrorCode: 1,
+		}
+		respondWithJSON(w, http.StatusOK, resp)
+		return
+	}
+
+	resp := &InsertClassroomResponse{
+		Success:   true,
+	}
+
+	respondWithJSON(w, http.StatusOK, resp)
+}
+
+
+// Endpoint to insert a course. Could combine classroom and course endpoint as metadata endpoint
+func InsertCourseEndpoint(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	var req InsertCourseRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+
+	err := driver.InsertCourseCollection(req.NewCourse)
+	if err != nil {
+		resp := &InsertClassroomResponse{
+			Success:   false,
+			Error:     err.Error(),
+			ErrorCode: 1,
+		}
+		respondWithJSON(w, http.StatusOK, resp)
+		return
+	}
+
+	//Using InsertClassroomResponse to respond to course query as well
+	resp := &InsertClassroomResponse{
+		Success:   true,
+	}
+
+	respondWithJSON(w, http.StatusOK, resp)
+}
+
+
 func InsertSessionEndpoint(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
@@ -45,7 +102,8 @@ func InsertSessionEndpoint(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
 		return
 	}
-	sess, err := driver.InsertSession(req.Version, req.Keyword, req.Overwrite, req.Metadata)
+
+	sess, err := driver.InsertSession(req.Developer, req.Version, req.Keyword, req.Overwrite, req.Metadata)
 	if err != nil {
 		resp := &InsertSessionResponse{
 			Success:   false,
@@ -263,6 +321,8 @@ func main() {
 	// Mutation REST Endpoints
 	// Get class information. Legacy endpoints only for posting sessions/frames.
 	// TODO(DohyunKimOfficial): Implement proper mutation in GraphQL
+	router.HandleFunc("/classroom", auth.BasicAuth(InsertClassroomEndpoint)).Methods("POST")
+	router.HandleFunc("/course", auth.BasicAuth(InsertCourseEndpoint)).Methods("POST")
 	router.HandleFunc("/sessions", auth.BasicAuth(InsertSessionEndpoint)).Methods("POST")
 	router.HandleFunc("/sessions/{session_id}/{type}/frames/{schema}/{channel}/", auth.BasicAuth(InsertFrameEndpoint)).Methods("POST")
 

@@ -2,7 +2,6 @@
 // Use of this source code is governed by BSD 3-clause license.
 
 package main
-
 import (
 	"log"
 	"net/http"

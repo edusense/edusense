@@ -15,6 +15,7 @@ type AuthErrorResponse struct {
 // InsertSessionRequest defines request format for insert session requests.
 type InsertSessionRequest struct {
 	Keyword    string      `json:"keyword,omitempty"`
+	Developer  string      `json:"developer,omitempty"`
 	Version    string      `json:"version,omitempty"`
 	Overwrite  string      `json:"overwrite,omitempty"`
 	Metadata   interface{} `json:"metadata,omitempty"`
@@ -27,6 +28,21 @@ type InsertSessionResponse struct {
 	Error     string `json:"error,omitempty"`
 	ErrorCode uint32 `json:"errorCode,omitempty"`
 }
+
+type InsertClassroomRequest struct {
+	NewClass        models.Classroom        `json:"newClass,omitempty"`
+}
+
+type InsertCourseRequest struct {
+	NewCourse        models.Course		`json:"newCourse,omitempty"`
+}
+
+type InsertClassroomResponse struct {
+	Success   bool   `json:"success"`
+	Error     string `json:"error,omitempty"`
+	ErrorCode uint32 `json:"errorCode,omitempty"`
+}
+
 
 // InsertFrameRequest defines request format for insert free-form frame
 // requests.

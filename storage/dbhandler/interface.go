@@ -12,7 +12,7 @@ import (
 type DatabaseDriver interface {
 	// InsertSession inserts a new frame. It returns error if identical session
 	/// exists
-	InsertSession(version, keyword, overwrite string, metadata interface{}) (*models.Session, error)
+	InsertSession(developer, version, keyword, overwrite string, metadata interface{}) (*models.Session, error)
 	// UpdateSession updates frame with given session ID. It returns error if
 	// there is no session
 	UpdateSession(sessID string, metadata interface{}) (*models.Session, error)
@@ -28,6 +28,14 @@ type DatabaseDriver interface {
 	InsertQueriableVideoFrame(sessID, schema, channel string, frame models.VideoFrame) error
 	// InsertQueriableAudioFrame inserts a GraphQL-queriable audio frame.
 	InsertQueriableAudioFrame(sessID, schema, channel string, frame models.AudioFrame) error
+
+	//Inserting db handler functions for classroom collection
+	InsertClassroomCollection (classroom models.Classroom) error
+	GetClassroom(filter *models.SessionFilter) ([]models.Classroom, error)
+
+	//Inserting db handler functions for classroom collection
+	InsertCourseCollection (course models.Course) error
+	GetCourse(filter *models.SessionFilter) ([]models.Course, error)
 
 	// Get frames by filter
 	// GetFrameByFilter returns list of frames by given frame filters.
