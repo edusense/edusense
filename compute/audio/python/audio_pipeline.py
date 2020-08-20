@@ -18,6 +18,9 @@ import json
 import requests
 import base64
 import get_time as gt
+import socket
+import pickle
+import threading
 
 frame_number = 0
 
