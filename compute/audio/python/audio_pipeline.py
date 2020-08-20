@@ -54,6 +54,8 @@ parser.add_argument('--session_id', dest='session_id', type=str, nargs='?',
                     help='EduSense session ID')
 parser.add_argument('--schema', dest='schema', type=str, nargs='?',
                     help='EduSense schema')
+parser.add_argument('--keyword', dest='keyword', type=str, nargs='?',
+                    help='Keyword for Class Session') # Only for running the audio_pipeline by itself for RPi debugging
 parser.add_argument('--ocr_time',dest='ocr_time',action='store_true',help="use OCR extracted timestamp")
 parser.add_argument('--file_time',dest='file_time',action='store_true',help="use file_name timestamp")
 
