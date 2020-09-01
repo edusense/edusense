@@ -64,6 +64,7 @@ parser.add_argument('--file_time',dest='file_time',action='store_true',help="use
 
 args = parser.parse_args()
 
+is_it_time = False
 
 ip1 = args.front_url
 ip2 = args.back_url
@@ -125,6 +126,11 @@ class RPiReader:
                 	print(len(self.data))
                 	if len(b"".join(self.data[len(self.data)-2:])) == 1651 or len(self.msg) == 1651: break # Try breaking on >1651 to make it more robust
                 self.ans = pickle.loads(b"".join(self.data))
+                if is_it_time == True:
+                     print("Closing")
+                     self.s.shutdown(SHUT_RDWR)
+                     self.s.close()
+                     break
                 return self.ans
             except OSError:
                 print ("Connection closed. Something may be wrong with the Pi")
@@ -219,6 +225,8 @@ if args.time_duration != -1:
   else:
       start_timer = time.perf_counter()
 
+print (rpi_proc.port)
+
 try:
     while(1):
         
@@ -228,6 +236,8 @@ try:
 
         if realtime and args.time_duration != -1 and time.perf_counter() - start_timer > args.time_duration:
             print('timeout')
+            is_it_time = True
+            time.sleep(3)
             sys.exit()
 
         if realtime:
@@ -299,7 +309,7 @@ try:
             rpi_json = [
                 {
                 'frameNumber': frame_number,
-                'timestamp': timestamp,
+                'timestamp': None,
                 'channel': 'raspi',
                 'audio': {
                    'SSL': rpi_dic["SSL"],
@@ -315,7 +325,7 @@ try:
            time1=time1+timedelta(seconds=1)
            time2=time2+timedelta(seconds=1)
     
-        if False: # backend_url is not None:
+        if backend_url is not None:
             app_username = os.getenv("APP_USERNAME", "")
             app_password = os.getenv("APP_PASSWORD", "")
             credential = '{}:{}'.format(app_username, app_password)
