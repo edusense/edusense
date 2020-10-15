@@ -599,10 +599,6 @@ if __name__ == '__main__':
         description='EduSense video computation backend')
     parser.add_argument('--video', dest='video' ,type=str, nargs='?',
                          help= 'video address',required=True)
-    parser.add_argument('--ocr_time',dest='ocr_time',action='store_true',
-                         help="use OCR extracted timestamp")
-    parser.add_argument('--file_time',dest='file_time',action='store_true',
-                        help="use file_name timestamp")
     parser.add_argument('--video_sock', dest='video_sock', type=str, nargs='?',
                         help='EduSense video server address')
     parser.add_argument('--tcp_host', dest='tcp_host', type=str, nargs='?',
@@ -670,7 +666,7 @@ if __name__ == '__main__':
         start_date=None
     else:    
        log.write(args.video+" timestamp log\n")
-       fps,start_date,start_time=gt.extract_time(args.video,args.ocr_time,args.file_time,log)
+       fps,start_date,start_time=gt.extract_time(args.video,log)
        log.close()  
     ##############################
        if fps == None or fps == 0:

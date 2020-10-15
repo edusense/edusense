@@ -52,8 +52,6 @@ parser.add_argument('--session_id', dest='session_id', type=str, nargs='?',
                     help='EduSense session ID')
 parser.add_argument('--schema', dest='schema', type=str, nargs='?',
                     help='EduSense schema')
-parser.add_argument('--ocr_time',dest='ocr_time',action='store_true',help="use OCR extracted timestamp")
-parser.add_argument('--file_time',dest='file_time',action='store_true',help="use file_name timestamp")
 
 args = parser.parse_args()
 
@@ -126,9 +124,9 @@ if 'rtsp' in ip1 or 'rtsp' in ip2:
 else:
   ###extract starting time #####
   log.write(f"{ip1} timestamp log\n")
-  date1,time1=gt.extract_time(ip1,args.ocr_time,args.file_time,log)
+  date1,time1=gt.extract_time(ip1,log)
   log.write(f"{ip2} timestamp log\n")
-  date2,time2=gt.extract_time(ip2,args.ocr_time,args.file_time,log)
+  date2,time2=gt.extract_time(ip2,log)
   log.close()
   print(date1,str(time1))
   print(date2,str(time2))

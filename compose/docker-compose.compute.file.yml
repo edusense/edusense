@@ -22,6 +22,8 @@ services:
       - "--process_gaze"
       - "--keep_frame_number"
       - "--profile"
+      - "--video"
+      - "/input/video.avi"  
       - "--video_out"
       - "video.avi"
       - "--image_out"
@@ -40,6 +42,7 @@ services:
     networks:
       - edusense_backend
     volumes:
+      - ./input:/input
       - ./output:/output
       - data-volume:/app/sock
     environment:

@@ -23,17 +23,6 @@ def convert24hour(hour,PM_time):
     else:
         return hour
 
-def convert_to_UTC(date,time):
-    str_time=str(time)
-    dt=date+' '+str_time
-    D=datetime.strptime(dt, "%Y-%m-%d %H:%M:%S")
-    timezone = pytz.timezone('America/New_York')
-    t=timezone.localize(D)
-    UTC=t.astimezone(pytz.utc)
-    date=str(UTC.date())
-    time=timedelta(hours=UTC.hour,minutes=UTC.minute,seconds=UTC.second)
-    return(date,time)
-
 ### NOTE-: if AM and PM is not present in timestamp , by default PM
 def clean_OCR_Time(OCR_time):
    ## split the time-date
@@ -74,6 +63,28 @@ def clean_OCR_Time(OCR_time):
    time_OCR=timedelta(hours=hour_OCR,minutes=Min_OCR,seconds=sec_OCR)
    return (split[0],time_OCR)
 
+def convert_to_UTC(date,time):
+
+    str_time=str(time)
+    dt=date+' '+str_time
+    timezone = pytz.timezone('America/New_York')
+    try:
+       D=datetime.strptime(dt, "%Y-%m-%d %H:%M:%S")
+    except Exception as e :
+       try:
+         D=datetime.strptime(dt, "%m-%d-%y %H:%M:%S")
+       except Exception as e :
+         try:
+           D=datetime.strptime(dt, "%d-%m-%y %H:%M:%S")
+         except Exception as e :
+           return(date,time)
+
+    t=timezone.localize(D)
+    UTC=t.astimezone(pytz.utc)
+    date=str(UTC.date())
+    time=timedelta(hours=UTC.hour,minutes=UTC.minute,seconds=UTC.second)
+    return(date,time)
+
 def extract_date(video):
    split=video.split('/')
    video_name=''
@@ -96,8 +107,8 @@ def extract_date(video):
    return (date,time_delta)
 
 
-def extract_time(video,ocr_bool,file_bool,log):
-   
+def extract_time(video,log):
+     
    print(pytesseract.get_tesseract_version())
    threshold_error=timedelta(hours=1,minutes=0)
    ocr_time_failed=False;
@@ -109,42 +120,46 @@ def extract_time(video,ocr_bool,file_bool,log):
     
    try: 
      file_name_date,file_name_time=extract_date(video)
+     ## check date format
+     date_match=datetime.strptime(file_name_date, "%Y-%m-%d")
    except Exception as e:
        log.write("ERROR in extracting the date-time from the file_name\n")
-       log.write(f"{e}\n")
+       log.write(str(e)+"\n")
        file_time_failed=True;
 
    try:
       video_object=cv2.VideoCapture(video)
+      print(video)
       ret,frame=video_object.read()
+      print(ret)
       ocr_time_stamp=get_timestamp(frame)
       ocr_date,ocr_time=clean_OCR_Time(ocr_time_stamp)
    except Exception as e:
-       log.write("ERROR in extracting the date-time from the OCR\n")
-       log.write(f"{e}\n")
+       log.write(video+"ERROR in extracting the date-time from the OCR\n")
+       log.write(str(e)+"\n")
        ocr_time_failed=True;
 
    if(file_time_failed and ocr_time_failed):
-       log.write(f"Using a default time_stamp {default_date}T{str(default_time)}\n")
+       log.write("Using a default time_stamp "+default_date+'T'+str(default_time)+"\n")
        return (default_date,default_time)
 
-   elif ocr_time_failed and ocr_bool == False:
-       log.write(f"Using file extracted time_stamp {file_name_date}T{str(file_name_time)}\n")
+   elif ocr_time_failed:
+       log.write("Using file extracted time_stamp "+file_name_date+"T"+str(file_name_time)+"\n")
        file_name_date,file_name_time=convert_to_UTC(file_name_date,file_name_time)
        return(file_name_date,file_name_time)
        
-   elif file_time_failed and file_bool == False:
-       log.write(f"Using OCR extracted time_stamp and OCR date {ocr_date}T{str(ocr_time)}\n")
+   elif file_time_failed:
+       log.write("Using OCR extracted time_stamp and OCR date "+ocr_date+"T"+str(ocr_time)+"\n")
        ocr_date,ocr_time=convert_to_UTC(ocr_date,ocr_time)
        return(ocr_date,ocr_time)
 
    else:
-       if abs(ocr_time-file_name_time) < threshold_error or ocr_bool == True :
-           log.write(f"Using OCR timestamp {file_name_date}T{str(ocr_time)}\n")
+       if abs(ocr_time-file_name_time) < threshold_error :
+           log.write("Using OCR timestamp "+file_name_date+"T"+str(ocr_time)+"\n")
            file_name_date,ocr_time=convert_to_UTC(file_name_date,ocr_time)
            return(file_name_date,ocr_time)
        else:
-           log.write(f"Using file_name timestamp {file_name_date}T{str(file_name_time)}\n")
+           log.write("Using file_name timestamp "+file_name_date+"T"+str(file_name_time)+"\n")
            file_name_date,file_name_time=convert_to_UTC(file_name_date,file_name_time)
            return(file_name_date,file_name_time)
 
