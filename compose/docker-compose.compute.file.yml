@@ -28,15 +28,6 @@ services:
       - "video.avi"
       - "--image_out"
       - "--json_out"
-      - "--area_of_interest"
-      - "2955"
-      - "1620"
-      - "2955"
-      - "540"
-      - "985"
-      - "540"
-      - "985"
-      - "1920"
     ports:
       - "5000:5000"
     networks:
