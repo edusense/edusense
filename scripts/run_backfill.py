@@ -18,6 +18,7 @@ def get_parameters(run_command):
     #Loading storage server version name
     if run_command == 'run_backfill.py':    
         file_location = '../storage/version.txt'
+        f = open(file_location, 'r')
     else:
         try:
             file_location = '/' + run_command.strip('script/run_backfill.py') + '/storage/version.txt'
