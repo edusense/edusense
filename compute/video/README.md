@@ -8,6 +8,10 @@ automated multi-container setup provided [here](/compose/README.md) or use an au
 <b>Note-:</b>  Video pipeline takes input from OpenPose pipeline via either local unix socket (demonstrated below, remember 
 to use the same log directory for both openpose and video pipeline) or TCP socket
 
+<b>Note-:</b> Manual setup is intended for debugging purposes, not for pushing analysis data to the storage backend.
+
+
+
 #### Build image
 ```
 docker build .
@@ -28,7 +32,6 @@ docker run \
 --rm \            
 tagname \ <b> tagname =name of the image</b>
 --video_sock /tmp/unix.front.sock  \
---schema classinsight-graphql-video \ <b> schema name for the database</b>
 --use_unix_socket \
 --keep_frame_number \
 --process_gaze \
