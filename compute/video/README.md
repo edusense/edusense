@@ -30,7 +30,7 @@ docker run \
 -v logDir:/tmp  \ <b> logDir= physical directory, present in the system, with user-level rwx permsission </b>
 -v videoDir:/app/source \ <b> videoDir= Directory in which the video is present </b>
 --rm \            
-tagname \ <b> tagname =name of the image</b>
+tagname \ <b> tagname= name of the image</b>
 --video_sock /tmp/unix.front.sock  \
 --use_unix_socket \
 --keep_frame_number \
@@ -38,7 +38,7 @@ tagname \ <b> tagname =name of the image</b>
 --profile \
 --time_duration 60 \ <b> processes 60 (sec) of the video (configurable) </b>
 --process_real_time  \
---video videoName  \ <b> videoName= name of the video, present in the directory</b>
+--video /app/source/videoName  \ <b> videoName= name of the video, present in the directory</b>
 
 </pre>
 
