@@ -25,7 +25,7 @@ docker run \
 -v videoDir:/app/source \ <b> videoDir= Directory in which the video is present </b>
 --rm \
 tagname \ <b> tagname =name of the image</b>
---front_url /app/source/front_video  \ <b> front_video= student facing video </b>
---back_url /app/source/back_video  \<b> front_video= instructor facing video </b>
---time_duration 60  \<b>processes 60 (sec) of the video (configurable)</b>
+--front_url /app/source/front_video  \  <b> front_video= student facing video </b>
+--back_url /app/source/back_video  \ <b> front_video= instructor facing video </b>
+--time_duration 60  \ <b> processes 60 (sec) of the video (configurable)</b>
 </pre>
