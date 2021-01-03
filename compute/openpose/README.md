@@ -25,7 +25,7 @@ nvidia-docker run \
 -v logDir:/tmp  \ <b> logDir= physical directory, present in the system, with user-level rwx permsission </b>
 -v videoDir:/app/video \ <b> videoDir= Directory in which the video is present </b>
 tagname \ <b> tagname= name of the image</b>
---video video_name \ <b> video_name= name of the video </b>
+--video /app/video/video_name \ <b> video_name= name of the video </b>
 --num_gpu_start 0  \
 --num_gpu 1 \   <b>assign 1 GPU starting from num_gpu_start</b>
 --use_unix_socket \
