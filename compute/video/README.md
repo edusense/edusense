@@ -39,7 +39,6 @@ docker run \
 --time_duration <timeout: processing time duration>  \
 --process_real_time  \
 --video <videoname = name of the video> \
-
 ```
 
 <b>Note-:</b> The above command represents a rather small section of the configurable arguments, 
