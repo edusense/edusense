@@ -17,24 +17,26 @@ You may also want to name the image like below:
 docker build . -t <tag_name>
 ```
 #### Running Container
-<pre>
+```
 nvidia-docker run \
---name  "containername" \ <b>choose any unique name for container</b>
+--name <unique name for container> \
 --rm \
 -e LOCAL_USER_ID=$(id -u) \
--v logDir:/tmp  \ <b> logDir= physical directory, present in the system, with user-level rwx permsission </b>
--v videoDir:/app/video \ <b> videoDir= Directory in which the video is present </b>
-tagname \ <b> tagname= name of the image</b>
---video /app/video/video_name \ <b> video_name= name of the video </b>
---num_gpu_start 0  \
---num_gpu 1 \   <b>assign 1 GPU starting from num_gpu_start</b>
+-v <log_dir: path of the log dir>:/tmp \
+-v <video_dir: path of the video directory>:/app/video \
+<image name for the container/tag_name with which the image is built>\
+--video /app/video/<videoname = name of the video> \
+--num_gpu_start <GPU number assigned to be assigned to the container>  \
+--num_gpu <Number of GPU assigned to the container(preferred 1)> \ 
 --use_unix_socket \
 --unix_socket /tmp/unix.front.sock \
 --display 0 \
 --render_pose 0 \
 --raw_image \
 --process_real_time \
-</pre>
+```
+<b>Note-:</b> For real-time processing, pass the RTSP URL to ip_camera argument
+
 ## Developer Guide
 
 ### Keeping up with OpenPose Releases
