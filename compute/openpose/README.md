@@ -26,7 +26,7 @@ nvidia-docker run \
 -v <video_dir: path of the video directory>:/app/video \
 <image name for the container/tag_name with which the image is built>\
 --video /app/video/<videoname = name of the video> \
---num_gpu_start <GPU number assigned to be assigned to the container>  \
+--num_gpu_start <GPU number to be assigned to the container>  \
 --num_gpu <Number of GPU assigned to the container(preferred 1)> \ 
 --use_unix_socket \
 --unix_socket /tmp/unix.front.sock \
