@@ -17,15 +17,16 @@ You may also want to name the image like below:
 docker build . -t <tag_name>
 ```
 #### Running Container
-<pre>
+Make a log directory (log_dir) and pass the path to the docker run command. Make sure, to have a front(student facing) and back(instructor facing) video in the same video directory, pass the the directory path and the video name to the docker run command.
+```
 docker run \
---name "containername" \ <b>choose any unique name for container</b>
+--name <unique name for container> \
 -e LOCAL_USER_ID=$(id -u) \
--v logDir:/tmp  \ <b> logDir= physical directory, present in the system, with user-level rwx permsission </b>
--v videoDir:/app/source \ <b> videoDir= Directory in which the video is present </b>
+-v <log_dir: path of the log dir>:/tmp  \
+-v <video_dir: path of the video directory>:/app/source \
 --rm \
-tagname \ <b> tagname =name of the image</b>
---front_url /app/source/front_video  \  <b> front_video= student facing video </b>
---back_url /app/source/back_video  \ <b> front_video= instructor facing video </b>
---time_duration 60  \ <b> processes 60 (sec) of the video (configurable)</b>
-</pre>
+tagname <image name> \
+--front_url <student facing video/RTP URL>  \
+--back_url <instructor facing video/RTP URL>  \
+--time_duration <timeout: processing time duration>  \
+```
