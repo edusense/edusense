@@ -6,7 +6,7 @@ import base64
 import datetime
 from datetime import timedelta
 import json
-import Queue as queue
+import queue
 import os
 import socket
 import struct

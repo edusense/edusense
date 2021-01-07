@@ -3,18 +3,19 @@
 
 import math
 import os
-
+from os import path
 import cv2
 import numpy as np
 from scipy.spatial import distance as dist
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.externals import joblib
+import pickle
+import joblib
 
 model_dir = os.getenv('MODEL_DIR', './models')
 clf_sit_stand = joblib.load(os.path.join(model_dir, 'stand_svc.pkl'))
 clf_posture = joblib.load(os.path.join(model_dir, 'posture.pkl'))
-clf_smile = joblib.load(os.path.join(model_dir, 'smile_svc.pkl'))
-clf_mouth = joblib.load(os.path.join(model_dir, 'mouth_svc.pkl'))
+##clf_smile = joblib.load(os.path.join(model_dir, 'smile_svc.pkl'))
+##clf_mouth = joblib.load(os.path.join(model_dir, 'mouth_svc.pkl'))
 
 def unit_vector(vector):
     if np.linalg.norm(vector) == 0:
