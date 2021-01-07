@@ -30,4 +30,4 @@ docker run \
 --back_url /app/source/<instructor facing video>  \
 --time_duration <timeout: processing time duration>  \
 ```
-<b>Note-:</b> For real-time processing, pass the RTP URL to the front_url and back_url arguments 
+<b>Note-:</b> For real-time processing, pass the RTSP URL to the front_url and back_url arguments 
