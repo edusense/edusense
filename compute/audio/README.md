@@ -17,7 +17,7 @@ You may also want to name the image like below:
 docker build . -t <tag_name>
 ```
 #### Running Container
-Make a log directory (log_dir) and pass the path to the docker run command. Make sure, to have a front(student facing) and back(instructor facing) video in the same video directory, pass the the directory path and the video name to the docker run command.
+Make a log directory (log_dir) and pass the path to the docker run command. Make sure, to have a front(student facing) and back(instructor facing) video in the same video directory, pass the directory path and the video names to the docker run command.
 ```
 docker run \
 --name <unique name for container> \
