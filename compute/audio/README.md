@@ -26,7 +26,8 @@ docker run \
 -v <video_dir: path of the video directory>:/app/source \
 --rm \
 <image name for the container/tag_name with which the image is built>\
---front_url <student facing video/RTP URL>  \
---back_url <instructor facing video/RTP URL>  \
+--front_url /app/source/<student facing video>  \
+--back_url /app/source/<instructor facing video>  \
 --time_duration <timeout: processing time duration>  \
 ```
+<b>Note-:</b> For real-time processing, pass the RTP URL to the front_url and back_url arguments 
