@@ -25,7 +25,7 @@ docker run \
 -v <log_dir: path of the log dir>:/tmp  \
 -v <video_dir: path of the video directory>:/app/source \
 --rm \
-tagname <image name> \
+<image name for the container/tag_name with which the image is built>\
 --front_url <student facing video/RTP URL>  \
 --back_url <instructor facing video/RTP URL>  \
 --time_duration <timeout: processing time duration>  \
