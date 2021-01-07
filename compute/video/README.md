@@ -22,25 +22,25 @@ You may also want to name the image like below:
 docker build . -t <tag_name>
 ```
 #### Running Container
-<pre>
+Make a log directory (log_dir) and pass the path to the docker run command. Make sure, to have a video in a video directory,pass the the directory path and the video name to the docker run command.
+```
 docker run \
---name "containername" \ <b>choose any unique name for container</b>
+--name <unique name for container> \
 -e LOCAL_USER_ID=$(id -u) \       
 -e CUDA_VISIBLE_DEVICES=-1 \
--v logDir:/tmp  \ <b> logDir= physical directory, present in the system, with user-level rwx permsission </b>
--v videoDir:/app/source \ <b> videoDir= Directory in which the video is present </b>
---rm \            
-tagname \ <b> tagname= name of the image</b>
+-v <log_dir: path of the log dir>:/tmp \
+-v <video_dir: path of the video directory>:/app/source \
+<image name for the container/tag_name with which the image is built>\
 --video_sock /tmp/unix.front.sock  \
 --use_unix_socket \
 --keep_frame_number \
 --process_gaze \
 --profile \
---time_duration 60 \ <b> processes 60 (sec) of the video (configurable) </b>
+--time_duration <timeout: processing time duration>  \
 --process_real_time  \
---video /app/source/videoName  \ <b> videoName= name of the video, present in the directory</b>
+--video <videoname = name of the video> \
 
-</pre>
+```
 
 <b>Note-:</b> The above command represents a rather small section of the configurable arguments, 
 all the configurable flags can be found [here](/compute/video/python/video_pipeline.py)
