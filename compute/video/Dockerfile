@@ -1,7 +1,7 @@
 # Copyright (c) 2017-2019 Carnegie Mellon University. All rights reserved.
 # Use of this source code is governed by BSD 3-clause license.
 
-FROM ubuntu:18.04
+FROM nvidia/cuda:10.2-base
 LABEL maintainer pdheer@andrew.cmu.edu
 
 

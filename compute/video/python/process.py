@@ -164,7 +164,7 @@ def predict_armpose(body_points):
         fv = fv.reshape(1,-1)
         out = clf_posture.predict(fv)
 
-        out_posture = out[0]
+        out_posture = out[0].decode("utf-8")
         if out_posture == 'hands_raised':
             out_posture = 'other'
             color = (255,0,255)
@@ -225,7 +225,7 @@ def predict_sit_stand(body_points):
         fv = np.array(fv)
         fv = fv.reshape(1,-1)
         out = clf_sit_stand.predict(fv)
-        out = out[0]
+        out = out[0].decode("utf-8")
         if out == 'stand':
             out_stand = "stand"
             color = (0,255,127)
