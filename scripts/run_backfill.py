@@ -18,6 +18,7 @@ def get_parameters(run_command):
     #Loading storage server version name
     if run_command == 'run_backfill.py':    
         file_location = '../storage/version.txt'
+        f = open(file_location, 'r') 
     else:
         try:
             file_location = '/' + run_command.strip('script/run_backfill.py') + '/storage/version.txt'
@@ -160,9 +161,9 @@ if __name__ == '__main__':
             args.log_dir=tmp_dir
             print('create temporary directory', tmp_dir)
         process = subprocess.Popen([
-            'nvidia-docker', 'run', '-d',
+            'docker', 'run', '-d',
+            '--gpus all',
             '-e', 'LOCAL_USER_ID=%s' % uid,
-            '-e', 'CUDA_VISIBLE_DEVICES=%s' % args.tensorflow_gpu,
             '-e', 'APP_USERNAME=%s' % app_username,
             '-e', 'APP_PASSWORD=%s' % app_password,
             '-v', '%s:/app/source' %args.video_dir,
@@ -177,6 +178,7 @@ if __name__ == '__main__':
             '--keep_frame_number',
             '--process_gaze',
             '--profile',
+            '--gaze_3d',
             '--time_duration', str(args.time_duration + 60) if args.time_duration >= 0 else '-1'] + real_time_flag,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
@@ -189,6 +191,7 @@ if __name__ == '__main__':
 
         process = subprocess.Popen([
             'docker', 'run', '-d',
+            '--gpus all',
             '-e', 'LOCAL_USER_ID=%s' % uid,
             '-e', 'APP_USERNAME=%s' % app_username,
             '-e', 'APP_PASSWORD=%s' % app_password,
@@ -205,6 +208,7 @@ if __name__ == '__main__':
             '--time_duration', str(args.time_duration + 60) if args.time_duration >= 0 else '-1',
             '--process_gaze',
             '--profile',
+            '--gaze_3d',
             '--instructor'] + real_time_flag,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)

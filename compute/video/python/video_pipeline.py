@@ -380,9 +380,14 @@ class ConsumerThread(threading.Thread):
                 face = get_face(pose)
 
                 if (self.gaze_3d):
-                    print("[DEBUG] Using new gaze module.")
-                    tvec, rvec = gaze_3d.get_3d_pose(raw_image, face)
-                    pitch, roll, yaw = rvec
+                    if face is not None:
+                        bboxes = [
+                            face[0][0], face[0][1], face[1][0], face[1][1]
+                        ]
+                        bboxes = np.array(bboxes)
+                        bboxes = bboxes.reshape(-1, 4)
+                        tvec, rvec = gaze_3d.get_3d_pose(raw_image, bboxes)
+                        pitch, roll, yaw = rvec
 
                 elif (self.process_gaze):
                     tvec = get_3d_head_position(pose, raw_image.shape)
