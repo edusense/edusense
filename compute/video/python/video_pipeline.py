@@ -204,7 +204,7 @@ class ConsumerThread(threading.Thread):
                 for i in range(cnt):
                     self.input_queue.task_done()
             else:
-                raw_image, frame_data = self.process_frame(numbered_datum)
+                raw_image, frame_data = self.process_frame(self.input_queue.get())
                 time = float(frame_data['frameNumber'] / self.fps)
                 frame_data['timestamp'] = self.start_date + 'T' + str(
                     self.start_time + timedelta(seconds=time)) + 'Z'
