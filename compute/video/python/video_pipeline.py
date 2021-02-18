@@ -204,7 +204,17 @@ class ConsumerThread(threading.Thread):
                 for i in range(cnt):
                     self.input_queue.task_done()
             else:
-                self.process_frame(self.input_queue.get())
+                raw_image, frame_data = self.process_frame(numbered_datum)
+                time = float(frame_data['frameNumber'] / self.fps)
+                frame_data['timestamp'] = self.start_date + 'T' + str(
+                    self.start_time + timedelta(seconds=time)) + 'Z'
+                print('...........................')
+                print(frame_data['timestamp'])
+                print(frame_data['frameNumber'])
+                print('...........................')
+
+                # post data
+                self.post_frame(raw_image, frame_data)
                 self.input_queue.task_done()
 
     def stop(self):
@@ -666,7 +676,7 @@ if __name__ == '__main__':
         start_date=None
     else:    
        log.write(args.video+" timestamp log\n")
-       fps,start_date,start_time=gt.extract_time(args.video,log)
+       fps,start_date,start_time= gt.extract_time(args.video,log)
        log.close()  
     ##############################
        if fps == None or fps == 0:
