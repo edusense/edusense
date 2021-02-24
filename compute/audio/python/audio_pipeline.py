@@ -6,6 +6,7 @@ import vggish_params
 import numpy as np
 from scipy.io import wavfile
 import time
+import librosa
 import subprocess
 import os
 import re
@@ -125,6 +126,7 @@ else:
   ###extract starting time #####
   log.write(f"{ip1} timestamp log\n")
   date1,time1=gt.extract_time(ip1,log)
+  print("Initial Date & Time",date1,time1)
   log.write(f"{ip2} timestamp log\n")
   date2,time2=gt.extract_time(ip2,log)
   log.close()
@@ -132,6 +134,10 @@ else:
   print(date2,str(time2))
 
 print('........................')
+
+## temp code to dump audio info in file
+student_audio_info = []
+instructor_audio_info = []
 
 if args.time_duration != -1:
   if not realtime:
@@ -141,7 +147,7 @@ if args.time_duration != -1:
 
 try:
     while(1):
-        
+        print("Ongoing Time", time1)
         if not realtime and args.time_duration != -1 and time1 > stop_time:
             print('timeout')
             sys.exit()
@@ -154,18 +160,25 @@ try:
            timestamp1=datetime.utcnow().isoformat() + "Z"
         np_wav1 = ffmpeg_proc1.read(rate1)
 
+
         if realtime:
            timestamp2=datetime.utcnow().isoformat() + "Z"
         np_wav2 = ffmpeg_proc2.read(rate2)
     
         if np_wav1 is None or np_wav2 is None:
-            break       
-        
+            break
+        # print("Wav1:", len(np_wav1), np_wav1.mean(), np_wav1.max(), np_wav1.shape)
+
+        ### New code for Mel Frequency Detection
+        mel_spect1 = librosa.feature.melspectrogram(y=np_wav1, sr=rate1, n_fft=4096, hop_length=2048)
+        mel_spect1 = librosa.power_to_db(mel_spect1, ref=1)
+        mel_spect2 = librosa.feature.melspectrogram(y=np_wav2, sr=rate2, n_fft=4096, hop_length=2048)
+        mel_spect2 = librosa.power_to_db(mel_spect2, ref=1)
         ### DON'T comment this out #####
 
         x1 = waveform_to_examples(np_wav1, rate1)
         x2 = waveform_to_examples(np_wav2, rate2)
-    
+
         mel_feats1 = x1.astype(float_dtype)
         mel_feats2 = x2.astype(float_dtype)
             
@@ -188,7 +201,7 @@ try:
                 'channel': 'instructor',
                 'audio': {
                     'amplitude': amp1.tolist(),
-                    'melFrequency': None,
+                    'melFrequency': mel_spect1.tolist(),
                     'inference': {
                         'speech': {
                             'confidence': None,
@@ -203,7 +216,7 @@ try:
                 'channel': 'student',
                 'audio': {
                     'amplitude': amp2.tolist(),
-                    'melFrequency': None,
+                    'melFrequency': mel_spect2.tolist(),
                     'inference': {
                         'speech': {
                             'confidence': None,
@@ -216,6 +229,10 @@ try:
         ]
         ## assuming audio is 1 fps
         frame_number += 1
+        instructor_audio_info.append(frames[0])
+        student_audio_info.append(frames[1])
+
+        ## Temp code: Write frames into json file
         if not realtime:
            time1=time1+timedelta(seconds=1)
            time2=time2+timedelta(seconds=1)
@@ -242,4 +259,13 @@ try:
 except Exception as e:
     raise RuntimeError("error occurred")
 
-
+## temp code to dump audio info in file
+DUMP_DIR = '/Users/ppatida2/Edusense/data/audio_spectrogram_experiments'
+audio_student_filename = args.back_url.split("/")[-1].split(".")[0]
+audio_instructor_filename = args.front_url.split("/")[-1].split(".")[0]
+student_file_ptr = open(f'{DUMP_DIR}/{audio_student_filename}.json','w')
+json.dump(student_audio_info, student_file_ptr)
+student_file_ptr.close()
+instructor_file_ptr = open(f'{DUMP_DIR}/{audio_instructor_filename}.json','w')
+json.dump(instructor_audio_info, instructor_file_ptr)
+instructor_file_ptr.close()
