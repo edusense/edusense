@@ -161,8 +161,8 @@ if __name__ == '__main__':
             args.log_dir=tmp_dir
             print('create temporary directory', tmp_dir)
         process = subprocess.Popen([
-            'docker', 'run', '-d',
-            '--gpus all',
+            'docker', 'run','-d',
+            '--gpus','all',
             '-e', 'LOCAL_USER_ID=%s' % uid,
             '-e', 'APP_USERNAME=%s' % app_username,
             '-e', 'APP_PASSWORD=%s' % app_password,
@@ -176,9 +176,9 @@ if __name__ == '__main__':
             '--schema', args.video_schema,
             '--use_unix_socket',
             '--keep_frame_number',
+            '--gaze_3d',
             '--process_gaze',
             '--profile',
-            '--gaze_3d',
             '--time_duration', str(args.time_duration + 60) if args.time_duration >= 0 else '-1'] + real_time_flag,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
@@ -191,7 +191,7 @@ if __name__ == '__main__':
 
         process = subprocess.Popen([
             'docker', 'run', '-d',
-            '--gpus all',
+            '--gpus','all',
             '-e', 'LOCAL_USER_ID=%s' % uid,
             '-e', 'APP_USERNAME=%s' % app_username,
             '-e', 'APP_PASSWORD=%s' % app_password,
@@ -206,9 +206,9 @@ if __name__ == '__main__':
             '--use_unix_socket',
             '--keep_frame_number',
             '--time_duration', str(args.time_duration + 60) if args.time_duration >= 0 else '-1',
+            '--gaze_3d',
             '--process_gaze',
             '--profile',
-            '--gaze_3d',
             '--instructor'] + real_time_flag,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)

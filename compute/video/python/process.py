@@ -291,6 +291,7 @@ def prune_body_pts(body_keypoints):
     return body_keypoints
 
 def get_face(pose):
+    crop_margin = 85
     x1 = pose[0][0]
     y1 = pose[0][1]
     x2 = pose[1][0]
@@ -298,8 +299,8 @@ def get_face(pose):
     if x1 == 0 or x2 == 0 or y1 ==0 or y2 == 0:
         return None
 
-    p1 = (int(x1-32),int(y1-32))
-    p2 = (int(x1+32),int(y1+32))
+    p1 = (int(max(0, x1-crop_margin)),int(max(0, y1-crop_margin)))
+    p2 = (int(x1+crop_margin),int(y1+crop_margin))
 
     return (p1,p2)
 

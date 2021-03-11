@@ -14,6 +14,7 @@ from gaze.utils.cv_plot import plot_pose_box
 
 from undistort import * 
 import matplotlib.pyplot as plt
+from scipy.spatial.transform import Rotation as R
 
 STD_SIZE = 120
 
@@ -110,7 +111,7 @@ class GazeInference(object):
         pts_res = []
         Ps = []
         tvecs = []
-        points_2d = None
+        points_2d = []
         for i, bbox in enumerate(bboxes):
             
             bbox = bbox[:4]
@@ -139,7 +140,35 @@ class GazeInference(object):
             P, pose = parse_pose(param)
             Ps.append(P)
             
+            r = R.from_euler('xyz', [-pose[1] , -pose[0], -pose[2]], degrees=False)
+            rot_matrix = r.as_dcm()
+
+            rvec_, _ = cv2.Rodrigues(rot_matrix)
+            tvec_ = np.array([0.0, 0.0, 1.0], np.float)
+
+            axis = np.float32([[0.0, 0.0, 1.0]])
+
+            cam_w = roi_box[2] - roi_box[0]
+            cam_h = roi_box[3] - roi_box[1]
+            c_x = cam_w / 2
+            c_y = cam_h / 2
+            f_x = c_x / np.tan(60/2 * np.pi / 180)
+            f_y = f_x
+            camera_matrix = np.float32([[f_x, 0.0, c_x],
+                                        [0.0, f_y, c_y],
+                                        [0.0, 0.0, 1.0] ])
+            
+            camera_distortion = np.float32([0.0, 0.0, 0.0, 0.0, 0.0])
+            
+            imgpts, _ = cv2.projectPoints(axis, rvec_, tvec_, camera_matrix, camera_distortion)
+            imgpts = imgpts.squeeze()
+
+            p_start = [ int((roi_box[0] + roi_box[2]) / 2), int((roi_box[1] + roi_box[3]) / 2) ]
+            p_stop  = [ int(roi_box[0] + imgpts[0]), int(roi_box[1] + imgpts[1])]
+
             pred_gaze[i] = np.array(pose).reshape(3)
+
+            points_2d.append([p_start,p_stop])
         
         tvecs = np.array(tvecs).reshape(-1, 3)
         

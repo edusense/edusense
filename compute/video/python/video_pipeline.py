@@ -20,6 +20,7 @@ import numpy
 import requests
 import deepgaze
 import get_time as gt
+import math
 
 import gaze_3d
 from centroidtracker import *
@@ -205,7 +206,15 @@ class ConsumerThread(threading.Thread):
                 for i in range(cnt):
                     self.input_queue.task_done()
             else:
-                self.process_frame(self.input_queue.get())
+
+                raw_image,frame_data = self.process_frame(self.input_queue.get())
+                print('...........................')
+                print(frame_data['timestamp'])
+                print(frame_data['frameNumber'])
+                print('...........................')
+
+                # post data
+                self.post_frame(raw_image, frame_data)
                 self.input_queue.task_done()
 
     def stop(self):
@@ -377,7 +386,7 @@ class ConsumerThread(threading.Thread):
                 pitch = None
                 roll = None
                 gaze_vector = None
-                face = get_face(pose)
+                face = get_face(pose) 
 
                 if (self.gaze_3d):
                     if face is not None:
@@ -386,8 +395,24 @@ class ConsumerThread(threading.Thread):
                         ]
                         bboxes = np.array(bboxes)
                         bboxes = bboxes.reshape(-1, 4)
-                        tvec, rvec = gaze_3d.get_3d_pose(raw_image, bboxes)
+                        # print(face)
+                        print('.......')
+                        tvec, rvec, point_2d,face = gaze_3d.get_3d_pose(raw_image, bboxes,face) ##TODO-: change the face variablr
+                        print(point_2d)
+                        tvec = tvec.tolist()                                               
+                        rvec = rvec.tolist()
+                        # print(face)
+                        if point_2d[0][0] is not None:
+                            gaze_vector = point_2d
+
                         pitch, roll, yaw = rvec
+
+                        if pitch is not None:    
+                            # convert to degree
+                            pitch = (pitch * 180) / math.pi
+                            roll  = (roll * 180) / math.pi
+                            yaw   = (yaw * 180) / math.pi
+
 
                 elif (self.process_gaze):
                     tvec = get_3d_head_position(pose, raw_image.shape)
