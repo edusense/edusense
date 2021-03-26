@@ -224,6 +224,33 @@ const QuerySchema = `
       confidence: Float!
       speaker: Speaker!
     }
+
+    type AnalysisFrame {
+      frameNumber: Int!
+      timestamp:  Time!
+      channel: Channel!
+      analysisData: AnalysisData!
+    }
+    
+    type AnalysisData {
+      students: [PersonAnalysis]
+      instructors: [PersonAnalysis]
+    }
+    
+    type PersonAnalysis {
+      posture: PostureAnalysis
+      face: FaceAnalysis
+    }
+    
+    type PostureAnalysis {
+      upright: Bool!
+      attention: Float!
+    }
+    
+    type FaceAnalysis {
+      emotion Float!
+      gaze Float!
+    }
   `
 
 // MustParseSchema parses the GraphQL schema. If parse fails, it will crash
