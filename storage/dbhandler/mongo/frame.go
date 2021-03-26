@@ -89,6 +89,32 @@ func (m *Driver) InsertQueriableAudioFrame(sessID, schema, channel string, frame
 	return nil
 }
 
+// InsertQueriableSAnalysisFrame inserts a graphQL-queriable video frame.
+func (m *Driver) InsertQueriableAnalysisFrame(sessID, schema, channel string, frame models.AnalysisFrame) error {
+	// setup DB-specific frame struct
+	// identically defined, insert frame
+
+	// check whether valid session ID, does not check whether the session is
+	// already registered in sessions collection
+	if !bson.IsObjectIdHex(sessID) {
+		return errors.New("invalid session id")
+	}
+
+	// type-cast to object id from string
+	mID := bson.ObjectIdHex(sessID)
+
+	// get collection name for frames
+	frameCol := formatSessionCollection(mID, schema)
+
+	// insert frame
+	err := m.DB.C(frameCol).Insert(&frame)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // GetFrameByFilter returns list of free-form frames by given frame filter.
 // TODO(DohyunKimOfficial): This function has been discarded when moving to
 // GraphQL. This should be properly implemented again in future.
@@ -260,6 +286,37 @@ func (m *Driver) GetQueriableVideoFrameByFrameNumber(sessID, schema, channel str
 func (m *Driver) GetQueriableAudioFrameByFrameNumber(sessID, schema, channel string, frameNumber uint32) ([]models.AudioFrame, error) {
 	// DB-specific constructs
 	var mFrames []models.AudioFrame
+	var err error
+
+	// check whether valid session ID, does not check whether the session is
+	// already registered in sessions collection
+	if !bson.IsObjectIdHex(sessID) {
+		return nil, errors.New("invalid session id")
+	}
+
+	// type-cast to objectid from string
+	mID := bson.ObjectIdHex(sessID)
+
+	// get collection that contains the sessions
+	frameCol := formatSessionCollection(mID, schema)
+	err = m.DB.C(frameCol).Find(
+		bson.M{"$and": []bson.M{
+			bson.M{"frameNumber": frameNumber},
+			bson.M{"channel": channel}}}).All(&mFrames)
+	if err != nil {
+		return nil, err
+	}
+
+	// transform into DB-neutral construct
+
+	return mFrames, nil
+}
+
+// GetQueriableAnalysisFrameByFrameNumber returns list of graphQL-queriable analysis
+// framss by given frame number.
+func (m *Driver) GetQueriableAnalysisFrameByFrameNumber(sessID, schema, channel string, frameNumber uint32) ([]models.AnalysisFrame, error) {
+	// DB-specific constructs
+	var mFrames []models.AnalysisFrame
 	var err error
 
 	// check whether valid session ID, does not check whether the session is

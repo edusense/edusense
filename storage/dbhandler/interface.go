@@ -27,7 +27,10 @@ type DatabaseDriver interface {
 	// InsertQueriableVideoFrame inserts a GraphQL-queriable video frame.
 	InsertQueriableVideoFrame(sessID, schema, channel string, frame models.VideoFrame) error
 	// InsertQueriableAudioFrame inserts a GraphQL-queriable audio frame.
-	InsertQueriableAudioFrame(sessID, schema, channel string, frame models.AudioFrame) error
+	InsertQueriableAudioFrame(sessID, schema, channel string, frame models.AudioFrame) 
+	// InsertQueriableAnalysisFrame inserts a GraphQL-queriable frame that has been processed by the analysis pipeline.
+	InsertQueriableAnalysisFrame(sessID, schema, channel string, frame models.AnalysisFrame) error
+
 
 	//Inserting db handler functions for classroom collection
 	InsertClassroomCollection (classroom models.Classroom) error
@@ -55,6 +58,9 @@ type DatabaseDriver interface {
 	// GetQueriableAudioFrameByFrameNumber returns a graphQL-queriable audio
 	// frame by given frame number.
 	GetQueriableAudioFrameByFrameNumber(sessID, schema, channel string, frameNumber uint32) ([]models.AudioFrame, error)
+	// GetQueriableAnalysisFrameByFrameNumber returns a graphQL-queriable analysis
+	// frame by given frame number.
+	GetQueriableAnalysisFrameByFrameNumber(sessID, schema, channel string, frameNumber uint32) ([]models.AnalysisFrame, error)
 
 	// GetMostRecentFrame returns a list of the most recent free-form frames.
 	GetMostRecentFrame(sessID, schema, channel string) ([]interface{}, error)
