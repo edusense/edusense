@@ -64,6 +64,13 @@ type InsertQueriableAudioFrameRequest struct {
 	Frames []models.AudioFrame `json:"frames,omitempty"`
 }
 
+// InsertQueriableAnalysisFrameRequest defines request format for insert analysis
+// frame requests. Formatting the request info this format is important to make
+// inserted frame compatible to GraphQL query schema.
+type InsertQueriableAnalysisFrameRequest struct {
+	Frames []models.AnalysisFrame `json:"frames,omitempty"`
+}
+
 // InsertFrameResponse defines response format for insert frame requests.
 type InsertFrameResponse struct {
 	Success   bool   `json:"success"`

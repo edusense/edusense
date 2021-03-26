@@ -209,6 +209,29 @@ func InsertFrameEndpoint(w http.ResponseWriter, r *http.Request) {
 			respondWithJSON(w, http.StatusOK, resp)
 			return
 		}
+	} else if mediaType == "analysis" {
+		var analysisReq InsertQueriableAnalysisFrameRequest
+		if err := json.NewDecoder(r.Body).Decode(&analysisReq); err == nil {
+			for _, frame := range analysisReq.Frames {
+				if err = driver.InsertQueriableAnalysisFrame(sessID, schema, channel, frame); err != nil {
+					resp := &InsertFrameResponse{
+						Success:   false,
+						Error:     err.Error(),
+						ErrorCode: 2,
+					}
+					respondWithJSON(w, http.StatusOK, resp)
+					return
+				}
+			}
+		} else {
+			resp := &InsertFrameResponse{
+				Success:   false,
+				Error:     err.Error(),
+				ErrorCode: 1,
+			}
+			respondWithJSON(w, http.StatusOK, resp)
+			return
+		}
 	} else {
 		var req InsertFrameRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err == nil {
