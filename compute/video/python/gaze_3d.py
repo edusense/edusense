@@ -30,7 +30,7 @@ def get_3d_pose(frame, face_points,original_face):
     faces[0][3] += face_points[0][1]
     
     # Get Gaze
-    pred_gazes, _, points_2d, tvecs = gaze.run(frame, face_points, frame_debug=None)
+    pred_gazes, _, points_2d, tvecs = gaze.run(frame, faces, frame_debug=None)
 
     if not pred_gazes.shape[0] == 1:
         print("No or more than one face found in the image.")
