@@ -1,8 +1,8 @@
 # Copyright (c) 2017-2019 Carnegie Mellon University. All rights reserved.
 # Use of this source code is governed by BSD 3-clause license.
 
-from vggish_input import waveform_to_examples
-import vggish_params
+# from vggish_input import waveform_to_examples
+# import vggish_params
 import numpy as np
 from scipy.io import wavfile
 import time
@@ -14,7 +14,7 @@ import sys
 import argparse
 from joblib import dump, load
 import time
-from datetime import date,datetime,timedelta
+from datetime import date, datetime, timedelta
 import json
 import requests
 import base64
@@ -22,15 +22,16 @@ import get_time as gt
 
 frame_number = 0
 
+
 def sampling_rate(video):
-    specs=subprocess.Popen(['ffmpeg','-i',video,'-debug_ts'],stderr= subprocess.PIPE).stderr.read()
-    specs=specs.decode('ascii')
-    Mylist=specs.split(',')
-    sampling=16000
+    specs = subprocess.Popen(['ffmpeg', '-i', video, '-debug_ts'], stderr=subprocess.PIPE).stderr.read()
+    specs = specs.decode('ascii')
+    Mylist = specs.split(',')
+    sampling = 16000
     for ix in Mylist:
-       if ix.find('Hz') != -1:
-           result=re.findall('\d+', ix)
-           sampling=int(result[0])
+        if ix.find('Hz') != -1:
+            result = re.findall('\d+', ix)
+            sampling = int(result[0])
     return sampling
 
 
@@ -48,7 +49,7 @@ parser.add_argument('--back_url', dest='back_url', type=str, nargs='?',
 parser.add_argument('--backend_url', dest='backend_url', type=str, nargs='?',
                     help='EduSense backend')
 parser.add_argument('--time_duration', dest='time_duration', type=int, nargs='?',
-                    default=-1,help='Set the time duration for file to run')
+                    default=-1, help='Set the time duration for file to run')
 parser.add_argument('--session_id', dest='session_id', type=str, nargs='?',
                     help='EduSense session ID')
 parser.add_argument('--schema', dest='schema', type=str, nargs='?',
@@ -56,31 +57,36 @@ parser.add_argument('--schema', dest='schema', type=str, nargs='?',
 
 args = parser.parse_args()
 
-
-ip1 = args.front_url
-ip2 = args.back_url
+# ip1 = args.front_url
+# ip2 = args.back_url
+video_keyword = 'classinsight-cmu_36200S_ph_a22_201906121030'
+video_file_dir = f'/Users/ppatida2/Edusense/benchmarking_videos/{video_keyword}'
+video_file_prefix = f'{video_file_dir}/{video_keyword}'
+ip1 = f'{video_file_prefix}-front.avi'
+ip2 = f'{video_file_prefix}-back.avi'
 backend_url = args.backend_url
 session_id = args.session_id
 schema = 'edusense-audio' if args.schema is None else args.schema
-realtime=False
+realtime = False
+
 
 class FFMpegReader:
     def __init__(self, ip):
         self.proc = None
         self.ip = ip
-    
+
     def _procread(self, nbytes):
         if self.proc is None:
             if 'rtsp' in self.ip:
                 self.proc = subprocess.Popen(['ffmpeg',
                                               '-i', str(self.ip), '-nostats', '-loglevel', '0',
                                               '-vn', '-f', 's16le', '-acodec', 'pcm_s16le',
-                                              '-'], stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                                              '-'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             else:
                 self.proc = subprocess.Popen(['ffmpeg',
                                               '-i', str(self.ip), '-nostats', '-loglevel', '0',
                                               '-vn', '-f', 's16le', '-acodec', 'pcm_s16le',
-                                              '-'], stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                                              '-'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         return self.proc.stdout.read(nbytes)
 
@@ -107,31 +113,31 @@ class FFMpegReader:
 
 ffmpeg_proc1 = FFMpegReader(ip1)
 ffmpeg_proc2 = FFMpegReader(ip2)
-rate1=sampling_rate(ip1)
-rate2=sampling_rate(ip2)
+rate1 = sampling_rate(ip1)
+rate2 = sampling_rate(ip2)
 
 ## if log volume is mounted
 try:
-  log=open('/tmp/audio_log.txt','w')
+    log = open('/tmp/audio_log.txt', 'w')
 except:
-  log=open('audio_log.txt','w')
+    log = open('audio_log.txt', 'w')
 
 ## check if real-time video
 if 'rtsp' in ip1 or 'rtsp' in ip2:
-     log.write("using RTSP\n")  
-     realtime=True
-     log.close()
+    log.write("using RTSP\n")
+    realtime = True
+    log.close()
 
 else:
-  ###extract starting time #####
-  log.write(f"{ip1} timestamp log\n")
-  date1,time1=gt.extract_time(ip1,log)
-  print("Initial Date & Time",date1,time1)
-  log.write(f"{ip2} timestamp log\n")
-  date2,time2=gt.extract_time(ip2,log)
-  log.close()
-  print(date1,str(time1))
-  print(date2,str(time2))
+    ###extract starting time #####
+    log.write(f"{ip1} timestamp log\n")
+    date1, time1 = gt.extract_time(ip1, log)
+    print("Initial Date & Time", date1, time1)
+    log.write(f"{ip2} timestamp log\n")
+    date2, time2 = gt.extract_time(ip2, log)
+    log.close()
+    print(date1, str(time1))
+    print(date2, str(time2))
 
 print('........................')
 
@@ -140,13 +146,13 @@ student_audio_info = []
 instructor_audio_info = []
 
 if args.time_duration != -1:
-  if not realtime:
-      stop_time=time1+timedelta(seconds=args.time_duration)
-  else:
-      start_timer = time.perf_counter()
+    if not realtime:
+        stop_time = time1 + timedelta(seconds=args.time_duration)
+    else:
+        start_timer = time.perf_counter()
 
 try:
-    while(1):
+    while (1):
         print("Ongoing Time", time1)
         if not realtime and args.time_duration != -1 and time1 > stop_time:
             print('timeout')
@@ -157,38 +163,45 @@ try:
             sys.exit()
 
         if realtime:
-           timestamp1=datetime.utcnow().isoformat() + "Z"
+            timestamp1 = datetime.utcnow().isoformat() + "Z"
         np_wav1 = ffmpeg_proc1.read(rate1)
 
-
         if realtime:
-           timestamp2=datetime.utcnow().isoformat() + "Z"
+            timestamp2 = datetime.utcnow().isoformat() + "Z"
         np_wav2 = ffmpeg_proc2.read(rate2)
-    
+
         if np_wav1 is None or np_wav2 is None:
             break
         # print("Wav1:", len(np_wav1), np_wav1.mean(), np_wav1.max(), np_wav1.shape)
 
         ### New code for Mel Frequency Detection
-        mel_spect1 = librosa.feature.melspectrogram(y=np_wav1, sr=rate1, n_fft=4096, hop_length=2048)
-        mel_spect1 = librosa.power_to_db(mel_spect1, ref=1)
-        mel_spect2 = librosa.feature.melspectrogram(y=np_wav2, sr=rate2, n_fft=4096, hop_length=2048)
-        mel_spect2 = librosa.power_to_db(mel_spect2, ref=1)
-        ### DON'T comment this out #####
+        mel_spect1 = librosa.feature.melspectrogram(y=np_wav1, sr=rate1, n_fft=4000, hop_length=4000)
+        power_spect1 = librosa.power_to_db(mel_spect1, ref=np.max)
+        mfcc_spect1 = librosa.feature.mfcc(S=power_spect1)
+        poly_spect1 = librosa.feature.poly_features(S=power_spect1, order=3)
 
-        x1 = waveform_to_examples(np_wav1, rate1)
-        x2 = waveform_to_examples(np_wav2, rate2)
+        # mel_spect1 = librosa.power_to_db(mel_spect1, ref=1)
+        mel_spect2 = librosa.feature.melspectrogram(y=np_wav2, sr=rate2, n_fft=4000, hop_length=4000)
+        power_spect2 = librosa.power_to_db(mel_spect2, ref=np.max)
+        mfcc_spect2 = librosa.feature.mfcc(S=power_spect2)
+        poly_spect2 = librosa.feature.poly_features(S=power_spect2, order=3)
 
-        mel_feats1 = x1.astype(float_dtype)
-        mel_feats2 = x2.astype(float_dtype)
-            
+        # mel_spect2 = librosa.power_to_db(mel_spect2, ref=1)
+
+        # x1 = waveform_to_examples(np_wav1, rate1)
+        # x2 = waveform_to_examples(np_wav2, rate2)
+        #
+        # mel_feats1 = x1.astype(float_dtype)
+        # mel_feats2 = x2.astype(float_dtype)
+
+        # Hyteresis
         amp1 = max(abs(np_wav1))
         amp2 = max(abs(np_wav2))
         ##############################
         ## set the time stamps
         if not realtime:
-           timestamp1=f"{date1}T{str(time1)}Z"
-           timestamp2=f"{date2}T{str(time2)}Z"
+            timestamp1 = f"{date1}T{str(time1)}Z"
+            timestamp2 = f"{date2}T{str(time2)}Z"
         print(timestamp1)
         print(timestamp2)
         print(frame_number)
@@ -202,6 +215,8 @@ try:
                 'audio': {
                     'amplitude': amp1.tolist(),
                     'melFrequency': mel_spect1.tolist(),
+                    'mfccFeatures': mfcc_spect1.tolist(),
+                    'polyFeatures': poly_spect1.tolist(),
                     'inference': {
                         'speech': {
                             'confidence': None,
@@ -217,6 +232,8 @@ try:
                 'audio': {
                     'amplitude': amp2.tolist(),
                     'melFrequency': mel_spect2.tolist(),
+                    'mfccFeatures': mfcc_spect2.tolist(),
+                    'polyFeatures': poly_spect2.tolist(),
                     'inference': {
                         'speech': {
                             'confidence': None,
@@ -234,9 +251,9 @@ try:
 
         ## Temp code: Write frames into json file
         if not realtime:
-           time1=time1+timedelta(seconds=1)
-           time2=time2+timedelta(seconds=1)
-    
+            time1 = time1 + timedelta(seconds=1)
+            time2 = time2 + timedelta(seconds=1)
+
         if backend_url is not None:
             app_username = os.getenv("APP_USERNAME", "")
             app_password = os.getenv("APP_PASSWORD", "")
@@ -245,13 +262,13 @@ try:
                 'Authorization': ('Basic %s' % base64.standard_b64encode(credential.encode('ascii')).decode('ascii')),
                 'Content-Type': 'application/json'}
             frame_url = 'https://' + args.backend_url + '/sessions/' + \
-                session_id + '/audio/frames/' + schema + '/instructor/'
+                        session_id + '/audio/frames/' + schema + '/instructor/'
             req = {'frames': [frames[0]]}
             resp = requests.post(frame_url, headers=headers, json=req)
             if (resp.status_code != 200 or 'success' not in resp.json().keys() or not resp.json()['success']):
                 raise RuntimeError(resp.text)
             frame_url = 'https://' + args.backend_url + '/sessions/' + \
-                session_id + '/audio/frames/' + schema + '/student/'
+                        session_id + '/audio/frames/' + schema + '/student/'
             req = {'frames': [frames[1]]}
             resp = requests.post(frame_url, headers=headers, json=req)
             if (resp.status_code != 200 or 'success' not in resp.json().keys() or not resp.json()['success']):
@@ -260,12 +277,13 @@ except Exception as e:
     raise RuntimeError("error occurred")
 
 ## temp code to dump audio info in file
-DUMP_DIR = '/Users/ppatida2/Edusense/data/audio_spectrogram_experiments'
-audio_student_filename = args.back_url.split("/")[-1].split(".")[0]
-audio_instructor_filename = args.front_url.split("/")[-1].split(".")[0]
-student_file_ptr = open(f'{DUMP_DIR}/{audio_student_filename}.json','w')
+# DUMP_DIR = '/Users/ppatida2/Edusense/data/audio_spectrogram_experiments'
+DUMP_DIR = video_file_dir
+audio_student_filename = ip2.split("/")[-1].split(".")[0]
+audio_instructor_filename = ip1.split("/")[-1].split(".")[0]
+student_file_ptr = open(f'{DUMP_DIR}/{audio_student_filename}_featured.json', 'w')
 json.dump(student_audio_info, student_file_ptr)
 student_file_ptr.close()
-instructor_file_ptr = open(f'{DUMP_DIR}/{audio_instructor_filename}.json','w')
+instructor_file_ptr = open(f'{DUMP_DIR}/{audio_instructor_filename}_featured.json', 'w')
 json.dump(instructor_audio_info, instructor_file_ptr)
 instructor_file_ptr.close()
