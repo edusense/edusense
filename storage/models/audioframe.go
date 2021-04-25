@@ -20,6 +20,8 @@ type AudioFrame struct {
 type Audio struct {
 	Amplitude    float32        `json:"amplitude" bson:"amplitude"`
 	MelFrequency [][]float32    `json:"melFrequency" bson:"melFrequency"`
+	MfccFeatures [][]float32    `json:"mfccFeatures" bson:"mfccFeatures"`
+	PolyFeatures [][]float32    `json:"polyFeatures" bson:"mfccFeatures"`
 	Inference    AudioInference `json:"inference" bson:"inference"`
 }
 
