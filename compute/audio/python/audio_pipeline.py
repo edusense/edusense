@@ -136,10 +136,6 @@ else:
 
 print('........................')
 
-## temp code to dump audio info in file
-student_audio_info = []
-instructor_audio_info = []
-
 if args.time_duration != -1:
     if not realtime:
         stop_time = time1 + timedelta(seconds=args.time_duration)
@@ -249,10 +245,8 @@ try:
         ]
         ## assuming audio is 1 fps
         frame_number += 1
-        instructor_audio_info.append(frames[0])
-        student_audio_info.append(frames[1])
 
-        ## Temp code: Write frames into json file
+
         if not realtime:
             time1 = time1 + timedelta(seconds=1)
             time2 = time2 + timedelta(seconds=1)
