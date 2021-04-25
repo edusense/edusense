@@ -77,7 +77,7 @@ try:
     # resp = requests.post("http://localhost:3000/sessions/6053a21fdab4eb7dcb32773d/analysis/frames/xxx/student/",
     #                         headers=backend_params['headers'],
     #                         json={'frames': [frame_data]})
-    resp = requests.post("http://localhost:3000/sessions/6053a21fdab4eb7dcb32773a/audio/frames/xxx/student/",
+    resp = requests.post("http://localhost:9000/sessions/6053a21fdab4eb7dcb32773d/audio/frames/xxx/student/",
                             headers=backend_params['headers'],
                             json={'frames': [frame_data]})
     print("****resp returned")
