@@ -207,6 +207,8 @@ const QuerySchema = `
     type Audio {
       amplitude: Float!,
       melFrequency: [[Float!]!]!
+      mfccFeatures: [[Float!]!]!
+      polyFeatures: [[Float!]!]!
       inference: AudioInference!
     }
 
