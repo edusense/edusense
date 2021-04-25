@@ -57,13 +57,8 @@ parser.add_argument('--schema', dest='schema', type=str, nargs='?',
 
 args = parser.parse_args()
 
-# ip1 = args.front_url
-# ip2 = args.back_url
-video_keyword = 'classinsight-cmu_36200S_ph_a22_201906121030'
-video_file_dir = f'/Users/ppatida2/Edusense/benchmarking_videos/{video_keyword}'
-video_file_prefix = f'{video_file_dir}/{video_keyword}'
-ip1 = f'{video_file_prefix}-front.avi'
-ip2 = f'{video_file_prefix}-back.avi'
+ip1 = args.front_url
+ip2 = args.back_url
 backend_url = args.backend_url
 session_id = args.session_id
 schema = 'edusense-audio' if args.schema is None else args.schema
@@ -175,18 +170,26 @@ try:
         # print("Wav1:", len(np_wav1), np_wav1.mean(), np_wav1.max(), np_wav1.shape)
 
         ### New code for Mel Frequency Detection
-        mel_spect1 = librosa.feature.melspectrogram(y=np_wav1, sr=rate1, n_fft=4000, hop_length=4000)
-        power_spect1 = librosa.power_to_db(mel_spect1, ref=np.max)
-        mfcc_spect1 = librosa.feature.mfcc(S=power_spect1)
-        poly_spect1 = librosa.feature.poly_features(S=power_spect1, order=3)
+        if len(np_wav1) > 0:
+            mel_spect1 = librosa.feature.melspectrogram(y=np_wav1, sr=rate1, n_fft=4000, hop_length=4000)
+            power_spect1 = librosa.power_to_db(mel_spect1, ref=np.max)
+            mfcc_spect1 = librosa.feature.mfcc(S=power_spect1)
+            poly_spect1 = librosa.feature.poly_features(S=power_spect1, order=3)
+        else:
+            mel_spect1 = None
+            mfcc_spect1 = None
+            poly_spect1 = None
 
-        # mel_spect1 = librosa.power_to_db(mel_spect1, ref=1)
-        mel_spect2 = librosa.feature.melspectrogram(y=np_wav2, sr=rate2, n_fft=4000, hop_length=4000)
-        power_spect2 = librosa.power_to_db(mel_spect2, ref=np.max)
-        mfcc_spect2 = librosa.feature.mfcc(S=power_spect2)
-        poly_spect2 = librosa.feature.poly_features(S=power_spect2, order=3)
 
-        # mel_spect2 = librosa.power_to_db(mel_spect2, ref=1)
+        if len(np_wav2) > 0:
+            mel_spect2 = librosa.feature.melspectrogram(y=np_wav2, sr=rate2, n_fft=4000, hop_length=4000)
+            power_spect2 = librosa.power_to_db(mel_spect2, ref=np.max)
+            mfcc_spect2 = librosa.feature.mfcc(S=power_spect2)
+            poly_spect2 = librosa.feature.poly_features(S=power_spect2, order=3)
+        else:
+            mel_spect2 = None
+            mfcc_spect2 = None
+            poly_spect2 = None
 
         # x1 = waveform_to_examples(np_wav1, rate1)
         # x2 = waveform_to_examples(np_wav2, rate2)
@@ -275,15 +278,3 @@ try:
                 raise RuntimeError(resp.text)
 except Exception as e:
     raise RuntimeError("error occurred")
-
-## temp code to dump audio info in file
-# DUMP_DIR = '/Users/ppatida2/Edusense/data/audio_spectrogram_experiments'
-DUMP_DIR = video_file_dir
-audio_student_filename = ip2.split("/")[-1].split(".")[0]
-audio_instructor_filename = ip1.split("/")[-1].split(".")[0]
-student_file_ptr = open(f'{DUMP_DIR}/{audio_student_filename}_featured.json', 'w')
-json.dump(student_audio_info, student_file_ptr)
-student_file_ptr.close()
-instructor_file_ptr = open(f'{DUMP_DIR}/{audio_instructor_filename}_featured.json', 'w')
-json.dump(instructor_audio_info, instructor_file_ptr)
-instructor_file_ptr.close()
