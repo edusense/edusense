@@ -22,6 +22,10 @@ import get_time as gt
 
 frame_number = 0
 
+## temp fix for librosa import issue during running with docker
+import os
+os.environ[ 'NUMBA_CACHE_DIR' ] = '/tmp/'
+
 
 def sampling_rate(video):
     specs = subprocess.Popen(['ffmpeg', '-i', video, '-debug_ts'], stderr=subprocess.PIPE).stderr.read()
