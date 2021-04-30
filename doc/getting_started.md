@@ -21,14 +21,64 @@ deployments.
 
 ### Dependencies
 
-1. Install **nvidia-docker**: [nvidia-docker2 installation doc](https://github.com/NVIDIA/nvidia-docker/wiki/Installation-(version-2.0)).
+1. Download **cuda** : [cuda installation](https://developer.nvidia.com/cuda-downloads). Reboot the machine, after installing cuda
+
+2. Check the driver : 
+```
+lspci -nnk
+```
+Output should contain:
+<pre>
+00:05.0 VGA compatible controller [0300]: NVIDIA Corporation GP102 [GeForce GTX 1080 Ti] [10de:1b06] (rev a1)
+    Subsystem: eVga.com. Corp. GP102 [GeForce GTX 1080 Ti] [3842:5390]
+    Kernel driver in use: <b>nvidia</b>
+    Kernel modules: nvidiafb, nouveau, nvidia_drm, nvidia
+00:06.0 Audio device [0403]: NVIDIA Corporation GP102 HDMI Audio Controller [10de:10ef] (rev a1)
+    Subsystem: eVga.com. Corp. GP102 HDMI Audio Controller [3842:5390]
+    Kernel driver in use: snd_hda_intel
+    Kernel modules: snd_hda_intel
+</pre>
+3.  **Optional** If nouveau driver grabs GPUs in step 2, follow the instructions for blacklisting nouveau.
+
+Open /etc/modprobe.d/blacklist-nvidia-nouveau.conf and add
+```
+blacklist nouveau
+options nouveau modeset=0
+```
+Then run
+```
+sudo update-initramfs -u
+```
+Reboot the machine and confirm the driver in use-:
+```
+lspci -nnk | grep "NVIDIA"
+```
+The output should look like:
+<pre>
+00:05.0 VGA compatible controller [0300]: NVIDIA Corporation GP102 [GeForce GTX 1080 Ti] [10de:1b06] (rev a1)
+    Subsystem: eVga.com. Corp. GP102 [GeForce GTX 1080 Ti] [3842:5390]
+    Kernel driver in use: <b>nvidia</b>
+    Kernel modules: nvidiafb, nouveau
+00:06.0 Audio device [0403]: NVIDIA Corporation GP102 HDMI Audio Controller [10de:10ef] (rev a1)
+    Subsystem: eVga.com. Corp. GP102 HDMI Audio Controller [3842:5390]
+    Kernel driver in use: snd_hda_intel
+    Kernel modules: snd_hda_intel
+</pre>
+
+4. Install **nvidia-docker**: [nvidia-docker installation doc](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker).
     * When you are done installing Docker, please make sure you also follow post-installation [steps](https://docs.docker.com/install/linux/linux-postinstall)
     * Note: With Docker >= 19.03, GPUs are natively supported by Docker daemon,
       but `docker-compose` does not support GPU allocation as of now. We stick
       to to-be-deprecated nvidia-docker for current deployment. Once the new
       version of docker-compose gets released, we will explore ways to use the
       new functionality.
-2. Install **docker-compose**: [docker-compose installation doc](https://docs.docker.com/compose/install/)
+     
+5. Run-:
+```
+docker run --runtime=nvidia --rm nvidia/cuda nvidia-smi
+```
+
+6. Install **docker-compose**: [docker-compose installation doc](https://docs.docker.com/compose/install/)
 
 ## EduSense Component Overview
 

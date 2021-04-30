@@ -1,5 +1,42 @@
 EduSense Openpose
 =================
+This is a repository for the openpose component of Edusense.
+## Getting Started
+This instruction is for manually setting up openpose pipeline. For those who are new to Edusense, we recommend to take a look at 
+automated multi-container setup provided [here](/compose/README.md) or use an automated script provided [here](/scripts).
+
+<b>Note-:</b>  Openpose pipeline processes the video, extracts the keypoints and sends them to the video pipeline via either local unix socket (demonstrated below, remember to use the same log directory for both openpose and video pipeline) or TCP socket
+
+#### Build image
+```
+docker build .
+```
+
+You may also want to name the image like below:
+```
+docker build . -t <tag_name>
+```
+#### Running Container
+Make a log directory (log_dir) and pass the path to the docker run command. Make sure, to have a video in a video directory,pass the directory path and the video name to the docker run command.
+```
+nvidia-docker run \
+--name <unique name for container> \
+--rm \
+-e LOCAL_USER_ID=$(id -u) \
+-v <log_dir: path of the log dir>:/tmp \
+-v <video_dir: path of the video directory>:/app/video \
+<image name for the container/tag_name with which the image is built>\
+--video /app/video/<videoname = name of the video> \
+--num_gpu_start <GPU number to be assigned to the container>  \
+--num_gpu <Number of GPU assigned to the container(preferred 1)> \ 
+--use_unix_socket \
+--unix_socket /tmp/unix.front.sock \
+--display 0 \
+--render_pose 0 \
+--raw_image \
+--process_real_time \
+```
+<b>Note-:</b> For real-time processing, pass the RTSP URL to ip_camera argument
 
 ## Developer Guide
 
