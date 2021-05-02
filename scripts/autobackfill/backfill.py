@@ -5,6 +5,7 @@ import csv
 import subprocess
 import os
 import time
+import logging
 
 
 def rsync_fetch_files(front_url, front_filename, back_url, back_filename):
@@ -15,7 +16,7 @@ def rsync_fetch_files(front_url, front_filename, back_url, back_filename):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
-    print('rsync done in %f seconds' % (time.time() - start_time))
+    logging.debug('rsync done in %f seconds' % (time.time() - start_time))
 
     start_time = time.time()
     # fetch back file
@@ -24,25 +25,28 @@ def rsync_fetch_files(front_url, front_filename, back_url, back_filename):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
-    print('rsync done in %f seconds' % (time.time() - start_time))
+    logging.debug('rsync done in %f seconds' % (time.time() - start_time))
 
 
 def mount_fetch_files(front_url, back_url):
-
+    logging.debug('starting to fetch files from mount')
     # fetch front file
     start_time = time.time()
     subprocess.call('cp %s %s' %
                     (front_url, args.backfill_base_path), shell=True)
-    print('cp done in %f seconds' % (time.time() - start_time))
+    logging.debug('cp done in %f seconds' % (time.time() - start_time))
 
     # fetch back file
     start_time = time.time()
     subprocess.call('cp %s %s' %
                     (back_url, args.backfill_base_path), shell=True)
-    print('cp done in %f seconds' % (time.time() - start_time))
+    logging.debug('cp done in %f seconds' % (time.time() - start_time))
 
 
 if __name__ == '__main__':
+    logging.basicConfig(filename='autobackfill.log', level=logging.DEBUG)
+    logging.debug("Backfill.py")
+
     parser = argparse.ArgumentParser(description='EduSense backfill')
     parser.add_argument('--schedule_file', dest='scheduler_file', type=str, nargs='?',
                         required=True, help='schedule file')
@@ -67,14 +71,19 @@ if __name__ == '__main__':
         reader = csv.reader(f)
         schedule = list(reader)
 
+    logging.debug(" Opened scheduler_file")
+
     hasMount = False
     if args.sync_mode == 'mount':
         if args.mount_base_path is None:
-            print("No mount given, default to rsync")
+            logging.debug(" No mount given, default to rsync")
         else:
             hasMount = True
 
     for s in schedule:
+        logging.debug(" looking at ")
+        logging.debug(s)
+
         keyword = s[0]
         time_duration = s[1]
         front_url = s[2]
@@ -82,13 +91,18 @@ if __name__ == '__main__':
         back_url = s[3]
         back_filename = s[3].split('/')[-1]
 
-        print(keyword, time_duration, front_filename, back_filename)
+        logging.debug("{0} {1} {2} {3}".format(
+            keyword, time_duration, front_filename, back_filename))
 
         if hasMount:
+            logging.debug(" In mount")
             classes = mount_fetch_files(front_url, back_url)
         else:
+            logging.debug(" In rsync")
             classes = rsync_fetch_files(
                 front_url, front_filename, back_url, back_filename)
+
+        logging.debug(" Finished getting files, about to call run_backfill.py")
 
         backfill_script = os.path.join(
             args.backfill_base_path, 'run_backfill.py')
@@ -105,8 +119,11 @@ if __name__ == '__main__':
             stderr=subprocess.PIPE,
             env=os.environ.copy())
         stdout, stderr = process.communicate()
-        print(stdout)
-        print(stderr)
+        logging.debug(" Output from run_backfill")
+        logging.debug(stdout)
+        logging.debug(" Error from run_backfill")
+        logging.debug(stderr)
 
         os.remove(os.path.join(args.backfill_base_path, front_filename))
         os.remove(os.path.join(args.backfill_base_path, back_filename))
+        logging.debug(" Files removed")

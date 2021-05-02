@@ -7,14 +7,21 @@ import subprocess
 import sys
 import tempfile
 import csv
+import logging
 
 # duration for each class
 metadata = {
-
+    '05418A': 10
 }
 
 
+def writelog(message, f):
+    if f is not None:
+        f.write(message + '\n')
+
+
 def rsync_get_classes():
+    logging.debug("* in rsync_get_files")
     rsync_path = 'classinsight@%s:%s/video_backup' % (
         args.rsync_host, args.rsync_base_path)
     process = subprocess.Popen([
@@ -81,6 +88,13 @@ def mount_get_classes():
 
 
 if __name__ == '__main__':
+    try:
+        os.remove('autobackfill.log')
+    except:
+        pass
+
+    logging.basicConfig(filename='autobackfill.log', level=logging.DEBUG)
+    logging.debug("Autobackfill.py")
 
     parser = argparse.ArgumentParser(description='prepare backfill')
     parser.add_argument('--rsync_host', dest='rsync_host', type=str, nargs='?',
@@ -105,18 +119,27 @@ if __name__ == '__main__':
         raise Exception('sync_mode must be either \'rsync\' or \'mount\'')
 
     if args.sync_mode == 'mount':
+        logging.debug(" Mount")
         if args.mount_base_path is None:
+            logging.debug(" No mount given, default to rsync")
             classes = rsync_get_classes()
         else:
             classes = mount_get_classes()
     elif args.sync_mode == 'rsync':
+        logging.debug(" Rsync")
         classes = rsync_get_classes()
+
+    logging.debug(" Parsed classes")
+    logging.debug(classes)
 
     schedules = []
     for k, v in classes.items():
         if 'front' in v.keys() and 'back' in v.keys():
             schedules.append([k, metadata[k.split('_')[1]],
                              v['front'].strip(), v['back'].strip()])
+
+    logging.debug(" Parsed schedules")
+    logging.debug(schedules)
 
     process_time = datetime.datetime.now().strftime('%Y%m%d%H%M')
     directory = os.path.join(args.backfill_base_path,
@@ -135,8 +158,11 @@ if __name__ == '__main__':
             for s in subschedules[i]:
                 writer.writerow(s)
 
+    logging.debug(" About to call backfill.py")
+
     processes = []
     for i in range(len(subschedules)):
+        logging.debug("* in %d subschedule" % (i))
         process = subprocess.Popen([
             '/usr/bin/python3', os.path.join(
                 args.backfill_base_path, 'backfill.py'),
@@ -153,6 +179,8 @@ if __name__ == '__main__':
             env=os.environ.copy())
         processes.append(process)
 
+        break
+
     for i in range(len(subschedules)):
         stdout, stderr = processes[i].communicate()
 
@@ -161,3 +189,5 @@ if __name__ == '__main__':
 
         with open(os.path.join(directory, 'schedule-%s.stderr' % i), 'a') as f:
             f.write(stderr.decode('utf-8'))
+
+        break
