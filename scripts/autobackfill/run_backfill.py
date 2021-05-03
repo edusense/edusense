@@ -27,13 +27,15 @@ def get_parameters(run_command):
         f = open(file_location, 'r')
     else:
         try:
-            file_location = '/' + \
-                run_command.strip('script/run_backfill.py') + \
-                '/storage/version.txt'
+            # file_location = '/' + \
+            #     run_command.strip('script/run_backfill.py') + \
+            #     '/storage/version.txt'
+            file_location = '/home/neeharika/pranav/edusense/storage/version.txt'
             f = open(file_location, 'r')
         except:
-            file_location = run_command.strip(
-                'script/run_backfill.py') + '/storage/version.txt'
+            # file_location = run_command.strip(
+            #     'script/run_backfill.py') + '/storage/version.txt'
+            file_location = '/home/neeharika/pranav/edusense/storage/version.txt'
             f = open(file_location, 'r')
 
     version = f.read()
@@ -142,6 +144,8 @@ if __name__ == '__main__':
                         default='-1', help='tensorflow gpus')
     parser.add_argument('--overwrite', dest='overwrite', type=str, nargs='?', default='False',
                         help='To enable overwriting previous backfilled session, enter: True')
+    parser.add_argument('--backfillFPS', dest='backfillFPS', type=str, nargs='?',
+                        required=False, help='FPS for backfill',default=0)
     args = parser.parse_args()
 
     uid, gid, app_username, app_password, version, developer = get_parameters(
@@ -184,9 +188,9 @@ if __name__ == '__main__':
             args.log_dir = tmp_dir
             logging.debug('create temporary directory %s' % (tmp_dir))
         process = subprocess.Popen([
-            'nvidia-docker', 'run', '-d',
+            'docker', 'run','-d',
+            '--gpus','all',
             '-e', 'LOCAL_USER_ID=%s' % uid,
-            '-e', 'CUDA_VISIBLE_DEVICES=%s' % args.tensorflow_gpu,
             '-e', 'APP_USERNAME=%s' % app_username,
             '-e', 'APP_PASSWORD=%s' % app_password,
             '-v', '%s:/app/source' % args.video_dir,
@@ -199,8 +203,8 @@ if __name__ == '__main__':
             '--schema', args.video_schema,
             '--use_unix_socket',
             '--keep_frame_number',
+            '--backfillFPS',args.backfillFPS,
             '--process_gaze',
-            '--profile',
             '--time_duration', str(args.time_duration + 60) if args.time_duration >= 0 else '-1'] + real_time_flag,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
@@ -216,7 +220,8 @@ if __name__ == '__main__':
                       (front_video_container_id))
 
         process = subprocess.Popen([
-            'docker', 'run', '-d',
+            'docker', 'run','-d',
+            '--gpus','all',
             '-e', 'LOCAL_USER_ID=%s' % uid,
             '-e', 'APP_USERNAME=%s' % app_username,
             '-e', 'APP_PASSWORD=%s' % app_password,
@@ -229,11 +234,10 @@ if __name__ == '__main__':
             '--session_id', session_id,
             '--schema', args.video_schema,
             '--use_unix_socket',
+            '--backfillFPS',args.backfillFPS,
             '--keep_frame_number',
             '--time_duration', str(args.time_duration +
                                    60) if args.time_duration >= 0 else '-1',
-            '--process_gaze',
-            '--profile',
             '--instructor'] + real_time_flag,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)

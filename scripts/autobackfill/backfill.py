@@ -64,6 +64,8 @@ if __name__ == '__main__':
                         required=True, help='connect mode to sync sessions, rsync or mount. check the schedule file for which should be used')
     parser.add_argument('--mount_base_path', dest='mount_base_path', type=str, nargs='?',
                         required=False, help='path of mount')
+    parser.add_argument('--backfillFPS', dest='backfillFPS', type=str, nargs='?',
+                        required=False, help='FPS for backfill',default=0)
     args = parser.parse_args()
 
     schedule = []
@@ -106,7 +108,8 @@ if __name__ == '__main__':
 
         backfill_script = os.path.join(
             args.backfill_base_path, 'run_backfill.py')
-
+        
+        logging.debug("GPU number = " +str(args.gpu_number))
         process = subprocess.Popen([
             '/usr/bin/python3', backfill_script, '--front_video', front_filename, '--back_video', back_filename,
             '--keyword', keyword, '--backend_url', args.backend_url,
@@ -114,7 +117,8 @@ if __name__ == '__main__':
                 args.gpu_number+1), '--back_num_gpu', '1',
             '--time_duration', str(
                 time_duration), '--video_schema', 'classinsight-graphql-video', '--audio_schema', 'classinsight-graphql-audio',
-            '--video_dir', args.backfill_base_path, '--developer', args.developer, '--process_real_time'],
+            '--video_dir', args.backfill_base_path, '--developer', args.developer,
+            '--backfillFPS',args.backfillFPS],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             env=os.environ.copy())
