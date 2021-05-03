@@ -27,22 +27,10 @@ def get_parameters(run_command):
         f = open(file_location, 'r')
     else:
         try:
-<<<<<<< HEAD
             file_location = '../../storage/version.txt'
             f = open(file_location, 'r')
         except:
             file_location = '../../storage/version.txt'
-=======
-            # file_location = '/' + \
-            #     run_command.strip('script/run_backfill.py') + \
-            #     '/storage/version.txt'
-            file_location = '/home/neeharika/pranav/edusense/storage/version.txt'
-            f = open(file_location, 'r')
-        except:
-            # file_location = run_command.strip(
-            #     'script/run_backfill.py') + '/storage/version.txt'
-            file_location = '/home/neeharika/pranav/edusense/storage/version.txt'
->>>>>>> 096eb7fa87e7b26835487544f421df58114bb821
             f = open(file_location, 'r')
 
     version = f.read()
