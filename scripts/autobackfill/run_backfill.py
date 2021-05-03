@@ -23,17 +23,14 @@ def get_parameters(run_command):
 
     # Loading storage server version name
     if run_command == 'run_backfill.py':
-        file_location = '../storage/version.txt'
+        file_location = '../../storage/version.txt'
         f = open(file_location, 'r')
     else:
         try:
-            file_location = '/' + \
-                run_command.strip('script/run_backfill.py') + \
-                '/storage/version.txt'
+            file_location = '../../storage/version.txt'
             f = open(file_location, 'r')
         except:
-            file_location = run_command.strip(
-                'script/run_backfill.py') + '/storage/version.txt'
+            file_location = '../../storage/version.txt'
             f = open(file_location, 'r')
 
     version = f.read()
@@ -160,8 +157,10 @@ if __name__ == '__main__':
         stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
 
-    logging.debug(" all stdout from session")
+    logging.debug("stdout from session")
     logging.debug(stdout)
+    logging.debug("stderr from session")
+    logging.debug(stderr)
 
     try:
         output = json.loads(stdout.decode('utf-8'))
