@@ -31,6 +31,7 @@ from process import *
 default_schema = "edusense-video"
 default_keyword = "edusense-keyword"
 RTSP=False
+skipframe = 0
 
 class SocketReaderThread(threading.Thread):
     def __init__(self, queue, server_address, keep_frame_number,
@@ -124,13 +125,15 @@ class SocketReaderThread(threading.Thread):
 class ConsumerThread(threading.Thread):
     def __init__(self, input_queue, process_real_time, process_gaze, gaze_3d, channel,
                  area_of_interest,fps,start_date,start_time,backend_params=None, file_params=None,
-                 profile=False):
+                 profile=False,skipframe=0):
         threading.Thread.__init__(self)
         self.input_queue = input_queue
         self.process_real_time = process_real_time
         self.channel = channel
         self.counter= 0;
+        self.skipframe = skipframe
         self.fps=fps;
+        self.currentframe = 1;
         self.start_date=start_date;
         self.start_time=start_time;
         if area_of_interest is not None:
@@ -206,6 +209,13 @@ class ConsumerThread(threading.Thread):
                 for i in range(cnt):
                     self.input_queue.task_done()
             else:
+
+                while self.currentframe < self.skipframe:
+                    self.currentframe = self.currentframe+1
+                    self.input_queue.get()
+                    self.input_queue.task_done()
+                
+                self.currentframe = 1
                 raw_image, frame_data = self.process_frame(self.input_queue.get())
                 time = float(frame_data['frameNumber'] / self.fps)
                 frame_data['timestamp'] = self.start_date + 'T' + str(
@@ -578,7 +588,7 @@ class ConsumerThread(threading.Thread):
 def run_pipeline(server_address, time_duration, process_real_time,
                  process_gaze, gaze_3d, keep_frame_number, channel, area_of_interest,
                  fps,start_date,start_time,backend_params=None, 
-                 file_params=None, profile=False):
+                 file_params=None, profile=False,skipframe=0):
 
     # initialize queues
     q = None
@@ -596,7 +606,7 @@ def run_pipeline(server_address, time_duration, process_real_time,
     # initialize video consumers
     consumer_thread = ConsumerThread(q, process_real_time, process_gaze, gaze_3d,
                                      channel, area_of_interest, fps,start_date,start_time,
-                                     backend_params,file_params, profile)
+                                     backend_params,file_params, profile,skipframe)
 
     # start downstream (consumers)
     consumer_thread.start()
@@ -669,6 +679,8 @@ if __name__ == '__main__':
                         'area. --area_of_interest <x1> <y1> <x2> <y2>')
     parser.add_argument('--profile', dest='profile', action='store_true',
                         help='if set, profile performance')
+    parser.add_argument('--backfillFPS',dest='backfillFPS',type=float,
+                        help='frames per sec for backfilling',default=0)
     parser.add_argument('--instructor', dest='instructor', action='store_true',
                         help='if set, run instructor view')
     parser.add_argument('--video_out', dest='video_out', type=str, nargs='?')
@@ -712,7 +724,13 @@ if __name__ == '__main__':
        if fps == None or fps == 0:
           print("either video address not valid or not able to extract the fps")
           sys.exit(1)
-   
+    
+    if args.backfillFPS != 0:
+      skipframe = int(float(fps)/float(args.backfillFPS)) -1
+    
+    if skipframe < 0:
+        skipframe = 0
+
     # setup backend params
     backend_params = None
     app_username = os.getenv("APP_USERNAME", "")
@@ -746,5 +764,5 @@ if __name__ == '__main__':
     print("starting pipeline i ");
     run_pipeline(server_address, args.time_duration, args.process_real_time,
                  args.process_gaze, args.gaze_3d, args.keep_frame_number, channel,
-                 args.area_of_interest, fps,start_date,start_time,backend_params, file_params, profile)
+                 args.area_of_interest, fps,start_date,start_time,backend_params, file_params, profile,skipframe)
     print("ran pipeline i  ");

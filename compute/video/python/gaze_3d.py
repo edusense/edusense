@@ -21,7 +21,7 @@ def get_3d_pose(frame, face_points,original_face):
     
 
     if faces.shape[0] == 0:
-        print("Faces not found in the image.")
+        ##print("Faces not found in the image.")
         return np.array([None, None, None]), np.array([None, None, None]), np.array([[None, None], [None, None]]),original_face
     
     faces[0][0] += face_points[0][0]
@@ -33,7 +33,7 @@ def get_3d_pose(frame, face_points,original_face):
     pred_gazes, _, points_2d, tvecs = gaze.run(frame, faces, frame_debug=None)
 
     if not pred_gazes.shape[0] == 1:
-        print("No or more than one face found in the image.")
+        ##print("No or more than one face found in the image.")
         return np.array([None, None, None]), np.array([None, None, None]), np.array([[None, None], [None, None]]),original_face
 
     faces = faces[0][:4]
