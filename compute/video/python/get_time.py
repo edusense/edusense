@@ -1,7 +1,7 @@
 import cv2
 import re
 import pytz
-import pytesseract
+# import pytesseract
 from datetime import datetime,timedelta
 
 
@@ -11,7 +11,8 @@ def get_timestamp(frame):
       cropped_image=gray[80:150,3000:3800]
       cropped_image=cv2.resize(cropped_image,(800,100))
       binary = cv2.adaptiveThreshold(cropped_image,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,11,60)
-      text = pytesseract.image_to_string(binary,config='--psm 13  -c tessedit_char_whitelist=:-0123456789APM" " ')
+      # text = pytesseract.image_to_string(binary,config='--psm 13  -c tessedit_char_whitelist=:-0123456789APM" " ')
+      text = ''
       return text;
 
 
@@ -109,7 +110,7 @@ def extract_date(video):
 
 def extract_time(video,log):
      
-   print(pytesseract.get_tesseract_version())
+   # print(pytesseract.get_tesseract_version())
    threshold_error=timedelta(hours=1,minutes=0)
    ocr_time_failed=False;
    file_time_failed=False;

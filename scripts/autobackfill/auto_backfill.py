@@ -14,6 +14,9 @@ metadata = {
     # '05418A': 10
 }
 
+NUM_GPUS = 4
+
+
 
 def writelog(message, f):
     if f is not None:
@@ -135,6 +138,12 @@ if __name__ == '__main__':
     logging.debug(classes)
 
     schedules = []
+    num_schedules = NUM_GPUS // 2
+
+    if num_schedules < 1:
+        logging.error("Number of GPUs less than 2. exiting..")
+        exit(0)
+
     for k, v in classes.items():
         if 'front' in v.keys() and 'back' in v.keys():
             COURSE = k.split('_')[1]
@@ -157,9 +166,9 @@ if __name__ == '__main__':
 
     ##[[], [], [], []]
     ## round-robin to divide the task
-    subschedules = [list() for i in range(4)]
+    subschedules = [list() for i in range(num_schedules)]
     for i in range(len(schedules)):
-        subschedules[i % 4].append(schedules[i])
+        subschedules[i % num_schedules].append(schedules[i])
 
     for i in range(len(subschedules)):
         with open(os.path.join(directory, 'schedule-%d.csv' % i), 'w') as f:
@@ -190,8 +199,6 @@ if __name__ == '__main__':
             env=os.environ.copy())
         processes.append(process)
 
-        break
-
     for i in range(len(subschedules)):
         stdout, stderr = processes[i].communicate()
 
@@ -200,5 +207,3 @@ if __name__ == '__main__':
 
         with open(os.path.join(directory, 'schedule-%s.stderr' % i), 'a') as f:
             f.write(stderr.decode('utf-8'))
-
-        break

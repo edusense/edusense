@@ -6,3 +6,4 @@ pytesseract==0.3.4
 joblib==0.15.1
 requests==2.24.0
 wget==3.2
+librosa==0.8.0
