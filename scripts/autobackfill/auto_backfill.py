@@ -11,7 +11,7 @@ import logging
 
 # duration for each class
 metadata = {
-    '05418A': 10
+    # '05418A': 10
 }
 
 
@@ -113,6 +113,8 @@ if __name__ == '__main__':
                         required=True, help='connect mode to sync sessions, rsync or mount')
     parser.add_argument('--mount_base_path', dest='mount_base_path', type=str, nargs='?',
                         required=False, help='path of mount')
+    parser.add_argument('--backfillFPS', dest='backfillFPS', type=str, nargs='?',
+                        required=False, help='FPS for backfill',default=0)
     args = parser.parse_args()
 
     if args.sync_mode != 'rsync' and args.sync_mode != 'mount':
@@ -135,12 +137,17 @@ if __name__ == '__main__':
     schedules = []
     for k, v in classes.items():
         if 'front' in v.keys() and 'back' in v.keys():
-            schedules.append([k, metadata[k.split('_')[1]],
-                             v['front'].strip(), v['back'].strip()])
+            COURSE = k.split('_')[1]
+            if COURSE in metadata.keys():
+                time = metadata[COURSE]
+            else:
+                time = -1
+            
+            schedules.append([k,time,v['front'].strip(), v['back'].strip()])
 
     logging.debug(" Parsed schedules")
     logging.debug(schedules)
-
+    ## make the directory
     process_time = datetime.datetime.now().strftime('%Y%m%d%H%M')
     directory = os.path.join(args.backfill_base_path,
                              '%s:%s' % (args.keyword, process_time))
@@ -148,6 +155,8 @@ if __name__ == '__main__':
     access_rights = 0o770
     os.makedirs(directory, access_rights, exist_ok=True)
 
+    ##[[], [], [], []]
+    ## round-robin to divide the task
     subschedules = [list() for i in range(4)]
     for i in range(len(schedules)):
         subschedules[i % 4].append(schedules[i])
@@ -161,18 +170,20 @@ if __name__ == '__main__':
     logging.debug(" About to call backfill.py")
 
     processes = []
+
     for i in range(len(subschedules)):
         logging.debug("* in %d subschedule" % (i))
         process = subprocess.Popen([
             '/usr/bin/python3', os.path.join(
                 args.backfill_base_path, 'backfill.py'),
             '--schedule_file', os.path.join(directory, 'schedule-%d.csv' % i),
-            '--gpu_number', '%d' % ((i+1)*2),
+            '--gpu_number', '%d' % (i*2),
             '--backfill_base_path', args.backfill_base_path,
             '--backend_url', args.backend_url,
             '--rsync_host', args.rsync_host,
             '--developer', args.developer,
             '--sync_mode', args.sync_mode,
+            '--backfillFPS',args.backfillFPS,
             '--mount_base_path', args.mount_base_path],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,

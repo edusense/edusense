@@ -2,10 +2,22 @@
 Try full autobackfill pipeline
 export APP_USERNAME="edusense-test-user"
 export APP_PASSWORD="Xy3424dBxYxnbB3421a4"
-auto_backfill.py --rsync_host storage.classinsight.io --rsync_bavolume1/sensei/classinsight/2019S --backfill_base_path $(pwd) --keyword cmu_05418A_ghc_4102_201905011200 --backend_ure-dev-1.andrew.cmu.edu:3003 --developer prasoon --sync_mode mount --mount_base_path /mnt/ci-nas-classes/classinsight/
+python3 auto_backfill.py --rsync_host storage.classinsight.io --rsync_base_path /volume1/sensei/classinsight/2019S \
+--backfill_base_path $(pwd) --keyword cmu_05418A_ghc_4102_201905011200 --backend_url edusense-dev-1.andrew.cmu.edu:3003 --developer pranav \
+--sync_mode mount --mount_base_path /mnt/ci-nas-classes/classinsight/2019S --backfillFPS 1
+
 
 Try backfill alone:
 python3 backfill.py --schedule_file cmu_05418A_ghc_4102_201905011200:202104301227/schedule-0.csv --gpu_number 0 --backfill_base_path $(pwd) --backend_url edusense-dev-1.andrew.cmu.edu:3003 --rsync_host storage.classinsight.io --developer prasoon --sync_mode mount --mount_base_path /mnt/ci-nas-classes/classinsight/2019S
 
 Try run_backfill alone:
 python3 run_backfill.py --front_video classinsight-cmu_05418A_ghc_4102_201905011200-front.avi --back_video classinsight-cmu_05418A_ghc_4102_201905011200-back.avi --keyword cmu_05418A_ghc_4102_201905011200 --backend_url edusense-dev-1.andrew.cmu.edu:3003 --front_num_gpu_start 0 --front_num_gpu 1 --back_num_gpu_start 1 --back_num_gpu 1 --time_duration 10 --video_schema classinsight-graphql-video --audio_schema classinsight-graphql-audio --video_dir . --developer prasoon --process_real_time
+
+Running backfill
+
+python3 run_backfill.py --front_video classinsight-cmu_88888D_407sc_104_201808301210-front.avi \
+--back_video classinsight-cmu_88888D_407sc_104_201808301210-back.avi \
+--video_dir /home/edusense/test_video --keyword auto_backfill_test \
+--front_num_gpu_start 0 --front_num_gpu 1 --back_num_gpu_start 1 --back_num_gpu 1 \
+--video_schema classinsight-graphql-video --audio_schema classinsight-graphql-audio --process_real_time \
+--backend_url edusense-dev-1.andrew.cmu.edu:3003 --developer prasoon --time_duration -1
