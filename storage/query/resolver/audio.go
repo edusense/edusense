@@ -37,6 +37,40 @@ func (a *AudioResolver) MelFrequency(ctx context.Context) ([][]float64, error) {
 	return freqs, nil
 }
 
+func (a *AudioResolver) MfccFeatures(ctx context.Context) ([][]float64, error) {
+	if len(a.Audio.MfccFeatures) == 0 {
+		return [][]float64{}, nil
+	}
+
+	freqs := make([][]float64, len(a.Audio.MfccFeatures))
+	for i, m := range a.Audio.MfccFeatures {
+		arr := make([]float64, len(m))
+		for j, k := range m {
+			arr[j] = float64(k)
+		}
+		freqs[i] = arr
+	}
+
+	return freqs, nil
+}
+
+func (a *AudioResolver) PolyFeatures(ctx context.Context) ([][]float64, error) {
+	if len(a.Audio.PolyFeatures) == 0 {
+		return [][]float64{}, nil
+	}
+
+	freqs := make([][]float64, len(a.Audio.PolyFeatures))
+	for i, m := range a.Audio.PolyFeatures {
+		arr := make([]float64, len(m))
+		for j, k := range m {
+			arr[j] = float64(k)
+		}
+		freqs[i] = arr
+	}
+
+	return freqs, nil
+}
+
 // Inference extracts inference object field from given Audio resolver.
 func (a *AudioResolver) Inference(ctx context.Context) (*AudioInferenceResolver, error) {
 	return &AudioInferenceResolver{Inference: a.Audio.Inference}, nil

@@ -53,7 +53,7 @@ To run, you can give the same parameters with LOCAL_USER_ID environment
 variable.
 ```
 export LOCAL_USER_ID=$(id -u)
-docker run <image_name> <arguments>
+docker --net="host" run <image_name> <arguments>
 ```
 
 ### Command Line Arguments & Environment Variables

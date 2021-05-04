@@ -3,18 +3,19 @@
 
 import math
 import os
-
+from os import path
 import cv2
 import numpy as np
 from scipy.spatial import distance as dist
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.externals import joblib
+import pickle
+import joblib
 
 model_dir = os.getenv('MODEL_DIR', './models')
 clf_sit_stand = joblib.load(os.path.join(model_dir, 'stand_svc.pkl'))
 clf_posture = joblib.load(os.path.join(model_dir, 'posture.pkl'))
-clf_smile = joblib.load(os.path.join(model_dir, 'smile_svc.pkl'))
-clf_mouth = joblib.load(os.path.join(model_dir, 'mouth_svc.pkl'))
+##clf_smile = joblib.load(os.path.join(model_dir, 'smile_svc.pkl'))
+##clf_mouth = joblib.load(os.path.join(model_dir, 'mouth_svc.pkl'))
 
 def unit_vector(vector):
     if np.linalg.norm(vector) == 0:
@@ -163,7 +164,7 @@ def predict_armpose(body_points):
         fv = fv.reshape(1,-1)
         out = clf_posture.predict(fv)
 
-        out_posture = out[0]
+        out_posture = out[0].decode("utf-8")
         if out_posture == 'hands_raised':
             out_posture = 'other'
             color = (255,0,255)
@@ -224,7 +225,7 @@ def predict_sit_stand(body_points):
         fv = np.array(fv)
         fv = fv.reshape(1,-1)
         out = clf_sit_stand.predict(fv)
-        out = out[0]
+        out = out[0].decode("utf-8")
         if out == 'stand':
             out_stand = "stand"
             color = (0,255,127)
@@ -290,6 +291,7 @@ def prune_body_pts(body_keypoints):
     return body_keypoints
 
 def get_face(pose):
+    crop_margin = 85
     x1 = pose[0][0]
     y1 = pose[0][1]
     x2 = pose[1][0]
@@ -297,8 +299,8 @@ def get_face(pose):
     if x1 == 0 or x2 == 0 or y1 ==0 or y2 == 0:
         return None
 
-    p1 = (int(x1-32),int(y1-32))
-    p2 = (int(x1+32),int(y1+32))
+    p1 = (int(max(0, x1-crop_margin)),int(max(0, y1-crop_margin)))
+    p2 = (int(x1+crop_margin),int(y1+crop_margin))
 
     return (p1,p2)
 

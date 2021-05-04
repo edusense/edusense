@@ -6,7 +6,7 @@ import base64
 import datetime
 from datetime import timedelta
 import json
-import Queue as queue
+import queue
 import os
 import socket
 import struct
@@ -20,16 +20,18 @@ import numpy
 import requests
 import deepgaze
 import get_time as gt
+import math
 
+import gaze_3d
 from centroidtracker import *
 from headpose import *
 from render import *
 from process import *
 
-
 default_schema = "edusense-video"
 default_keyword = "edusense-keyword"
 RTSP=False
+skipframe = 0
 
 class SocketReaderThread(threading.Thread):
     def __init__(self, queue, server_address, keep_frame_number,
@@ -121,15 +123,17 @@ class SocketReaderThread(threading.Thread):
 
 
 class ConsumerThread(threading.Thread):
-    def __init__(self, input_queue, process_real_time, process_gaze, channel,
+    def __init__(self, input_queue, process_real_time, process_gaze, gaze_3d, channel,
                  area_of_interest,fps,start_date,start_time,backend_params=None, file_params=None,
-                 profile=False):
+                 profile=False,skipframe=0):
         threading.Thread.__init__(self)
         self.input_queue = input_queue
         self.process_real_time = process_real_time
         self.channel = channel
         self.counter= 0;
+        self.skipframe = skipframe
         self.fps=fps;
+        self.currentframe = 1;
         self.start_date=start_date;
         self.start_time=start_time;
         if area_of_interest is not None:
@@ -163,6 +167,7 @@ class ConsumerThread(threading.Thread):
 
         # configure machine learning
         self.process_gaze = process_gaze
+        self.gaze_3d = gaze_3d
 
         self.profile = profile
 
@@ -204,7 +209,24 @@ class ConsumerThread(threading.Thread):
                 for i in range(cnt):
                     self.input_queue.task_done()
             else:
-                self.process_frame(self.input_queue.get())
+
+                while self.currentframe < self.skipframe:
+                    self.currentframe = self.currentframe+1
+                    self.input_queue.get()
+                    self.input_queue.task_done()
+                
+                self.currentframe = 1
+                raw_image, frame_data = self.process_frame(self.input_queue.get())
+                time = float(frame_data['frameNumber'] / self.fps)
+                frame_data['timestamp'] = self.start_date + 'T' + str(
+                    self.start_time + timedelta(seconds=time)) + 'Z'
+                print('...........................')
+                print(frame_data['timestamp'])
+                print(frame_data['frameNumber'])
+                print('...........................')
+
+                # post data
+                self.post_frame(raw_image, frame_data)
                 self.input_queue.task_done()
 
     def stop(self):
@@ -376,9 +398,35 @@ class ConsumerThread(threading.Thread):
                 pitch = None
                 roll = None
                 gaze_vector = None
-                face = get_face(pose)
+                face = get_face(pose) 
 
-                if (self.process_gaze):
+                if (self.gaze_3d):
+                    if face is not None:
+                        bboxes = [
+                            face[0][0], face[0][1], face[1][0], face[1][1]
+                        ]
+                        bboxes = np.array(bboxes)
+                        bboxes = bboxes.reshape(-1, 4)
+                        # print(face)
+                        print('.......')
+                        tvec, rvec, point_2d,face = gaze_3d.get_3d_pose(raw_image, bboxes,face) ##TODO-: change the face variablr
+                        print(point_2d)
+                        tvec = tvec.tolist()                                               
+                        rvec = rvec.tolist()
+                        # print(face)
+                        if point_2d[0][0] is not None:
+                            gaze_vector = point_2d
+
+                        pitch, roll, yaw = rvec
+
+                        if pitch is not None:    
+                            # convert to degree
+                            pitch = (pitch * 180) / math.pi
+                            roll  = (roll * 180) / math.pi
+                            yaw   = (yaw * 180) / math.pi
+
+
+                elif (self.process_gaze):
                     tvec = get_3d_head_position(pose, raw_image.shape)
                     # face box
                     if face is not None:
@@ -538,9 +586,9 @@ class ConsumerThread(threading.Thread):
 
 
 def run_pipeline(server_address, time_duration, process_real_time,
-                 process_gaze, keep_frame_number, channel, area_of_interest,
+                 process_gaze, gaze_3d, keep_frame_number, channel, area_of_interest,
                  fps,start_date,start_time,backend_params=None, 
-                 file_params=None, profile=False):
+                 file_params=None, profile=False,skipframe=0):
 
     # initialize queues
     q = None
@@ -556,9 +604,9 @@ def run_pipeline(server_address, time_duration, process_real_time,
                                        profile)
 
     # initialize video consumers
-    consumer_thread = ConsumerThread(q, process_real_time, process_gaze,
+    consumer_thread = ConsumerThread(q, process_real_time, process_gaze, gaze_3d,
                                      channel, area_of_interest, fps,start_date,start_time,
-                                     backend_params,file_params, profile)
+                                     backend_params,file_params, profile,skipframe)
 
     # start downstream (consumers)
     consumer_thread.start()
@@ -621,6 +669,8 @@ if __name__ == '__main__':
                         'realtime')
     parser.add_argument('--process_gaze', dest='process_gaze',
                         action='store_true', help='if set, process gaze')
+    parser.add_argument('--gaze_3d', dest='gaze_3d',
+                        action='store_true', help='if set, process new gaze')
     parser.add_argument('--keep_frame_number', dest='keep_frame_number',
                         action='store_true', help='if set, keep frame number '
                         'given by openpose, otherwise issue new frame number')
@@ -629,6 +679,8 @@ if __name__ == '__main__':
                         'area. --area_of_interest <x1> <y1> <x2> <y2>')
     parser.add_argument('--profile', dest='profile', action='store_true',
                         help='if set, profile performance')
+    parser.add_argument('--backfillFPS',dest='backfillFPS',type=float,
+                        help='frames per sec for backfilling',default=0)
     parser.add_argument('--instructor', dest='instructor', action='store_true',
                         help='if set, run instructor view')
     parser.add_argument('--video_out', dest='video_out', type=str, nargs='?')
@@ -666,13 +718,19 @@ if __name__ == '__main__':
         start_date=None
     else:    
        log.write(args.video+" timestamp log\n")
-       fps,start_date,start_time=gt.extract_time(args.video,log)
+       fps,start_date,start_time= gt.extract_time(args.video,log)
        log.close()  
     ##############################
        if fps == None or fps == 0:
           print("either video address not valid or not able to extract the fps")
           sys.exit(1)
-   
+    
+    if args.backfillFPS != 0:
+      skipframe = int(float(fps)/float(args.backfillFPS)) -1
+    
+    if skipframe < 0:
+        skipframe = 0
+
     # setup backend params
     backend_params = None
     app_username = os.getenv("APP_USERNAME", "")
@@ -705,6 +763,6 @@ if __name__ == '__main__':
                       else (args.tcp_host, args.tcp_port))
     print("starting pipeline i ");
     run_pipeline(server_address, args.time_duration, args.process_real_time,
-                 args.process_gaze, args.keep_frame_number, channel,
-                 args.area_of_interest, fps,start_date,start_time,backend_params, file_params, profile)
+                 args.process_gaze, args.gaze_3d, args.keep_frame_number, channel,
+                 args.area_of_interest, fps,start_date,start_time,backend_params, file_params, profile,skipframe)
     print("ran pipeline i  ");
