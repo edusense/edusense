@@ -78,7 +78,7 @@ def wait_container(container):
     ## logging.debug is not thread-safe
     # acquire a lock
     lock.acquire()
-    logging.debug("%s: %s exited with status code %s" %(args.keyword, container_dict[container], status))
+    logging.debug("%s: %s exited with status code %s" % (args.keyword, container_dict[container], status))
     # remove the container from global list and dict
     # in a thread-safe way
     containers.remove(container)
@@ -129,13 +129,13 @@ if __name__ == '__main__':
                         required=True, help='directory for video')
     parser.add_argument('--process_real_time', dest='process_real_time',
                         action='store_true', help='if set, skip frames to keep'
-                        ' realtime')
+                                                  ' realtime')
     parser.add_argument('--tensorflow_gpu', dest='tensorflow_gpu', type=str, nargs='?',
                         default='-1', help='tensorflow gpus')
     parser.add_argument('--overwrite', dest='overwrite', type=str, nargs='?', default='False',
                         help='To enable overwriting previous backfilled session, enter: True')
     parser.add_argument('--backfillFPS', dest='backfillFPS', type=str, nargs='?',
-                        required=False, help='FPS for backfill',default=0)
+                        required=False, help='FPS for backfill', default=0)
     args = parser.parse_args()
 
     uid, gid, app_username, app_password, version, developer = get_parameters(
@@ -149,7 +149,7 @@ if __name__ == '__main__':
     #     '--header', 'Content-Type: application/json',
     #     '--basic', '-u', '%s:%s' % (app_username, app_password),
     #     'https://%s/sessions' % args.backend_url]
-    
+
     # logging.debug(curl_comm)
 
     # Calling sessions API endpoint
@@ -160,14 +160,14 @@ if __name__ == '__main__':
             developer, version, args.keyword, args.overwrite),
         '--header', 'Content-Type: application/json',
         '--basic', '-u', '%s:%s' % (app_username, app_password),
-        'https://%s/sessions' % args.backend_url],
+              'https://%s/sessions' % args.backend_url],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
 
-    logging.debug("%s: stdout from session" %(args.keyword))
+    logging.debug("%s: stdout from session" % (args.keyword))
     logging.debug(stdout)
-    logging.debug("%s: stderr from session" %(args.keyword))
+    logging.debug("%s: stderr from session" % (args.keyword))
     logging.debug(stderr)
 
     try:
@@ -186,24 +186,25 @@ if __name__ == '__main__':
         else []
 
     vid_comm = [
-            'docker', 'run','-d',
-            '--gpus','all',
-            '-e', 'LOCAL_USER_ID=%s' % uid,
-            '-e', 'APP_USERNAME=%s' % app_username,
-            '-e', 'APP_PASSWORD=%s' % app_password,
-            '-v', '%s:/app/source' % args.video_dir,
-            '-v', '%s:/tmp' % args.log_dir,
-            'edusense/video:'+args.dev,
-            '--video', os.path.join('/app', 'source', args.front_video),
-            '--video_sock', '/tmp/unix.front.sock',
-            '--backend_url', args.backend_url,
-            '--session_id', session_id,
-            '--schema', args.video_schema,
-            '--use_unix_socket',
-            '--keep_frame_number',
-            '--backfillFPS',args.backfillFPS,
-            '--process_gaze',
-            '--time_duration', str(args.time_duration + 60) if args.time_duration >= 0 else '-1'] + real_time_flag
+                   'docker', 'run', '-d',
+                   '--gpus', 'device=%d' % (args.front_num_gpu_start),
+                   '-e', 'LOCAL_USER_ID=%s' % uid,
+                   '-e', 'APP_USERNAME=%s' % app_username,
+                   '-e', 'APP_PASSWORD=%s' % app_password,
+                   '-v', '%s:/app/source' % args.video_dir,
+                   '-v', '%s:/tmp' % args.log_dir,
+                         'edusense/video:' + args.dev,
+                   '--video', os.path.join('/app', 'source', args.front_video),
+                   '--video_sock', '/tmp/unix.front.sock',
+                   '--backend_url', args.backend_url,
+                   '--session_id', session_id,
+                   '--schema', args.video_schema,
+                   '--use_unix_socket',
+                   '--keep_frame_number',
+                   '--backfillFPS', args.backfillFPS,
+                   '--process_gaze',
+                   '--time_duration',
+                   str(args.time_duration + 60) if args.time_duration >= 0 else '-1'] + real_time_flag
     logging.debug(vid_comm)
 
     # create temp directory
@@ -212,30 +213,31 @@ if __name__ == '__main__':
             args.log_dir = tmp_dir
             logging.debug('%s: create temporary directory %s' % (args.keyword, tmp_dir))
         process = subprocess.Popen([
-            'docker', 'run','-d',
-            '--gpus','all',
-            '-e', 'LOCAL_USER_ID=%s' % uid,
-            '-e', 'APP_USERNAME=%s' % app_username,
-            '-e', 'APP_PASSWORD=%s' % app_password,
-            '-v', '%s:/app/source' % args.video_dir,
-            '-v', '%s:/tmp' % args.log_dir,
-            'edusense/video:'+args.dev,
-            '--video', os.path.join('/app', 'source', args.front_video),
-            '--video_sock', '/tmp/unix.front.sock',
-            '--backend_url', args.backend_url,
-            '--session_id', session_id,
-            '--schema', args.video_schema,
-            '--use_unix_socket',
-            '--keep_frame_number',
-            '--backfillFPS',args.backfillFPS,
-            '--process_gaze',
-            '--time_duration', str(args.time_duration + 60) if args.time_duration >= 0 else '-1'] + real_time_flag,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
+                                       'docker', 'run', '-d',
+                                       '--gpus', 'device=%d' % (args.front_num_gpu_start),
+                                       '-e', 'LOCAL_USER_ID=%s' % uid,
+                                       '-e', 'APP_USERNAME=%s' % app_username,
+                                       '-e', 'APP_PASSWORD=%s' % app_password,
+                                       '-v', '%s:/app/source' % args.video_dir,
+                                       '-v', '%s:/tmp' % args.log_dir,
+                                                 'edusense/video:' + args.dev,
+                                       '--video', os.path.join('/app', 'source', args.front_video),
+                                       '--video_sock', '/tmp/unix.front.sock',
+                                       '--backend_url', args.backend_url,
+                                       '--session_id', session_id,
+                                       '--schema', args.video_schema,
+                                       '--use_unix_socket',
+                                       '--keep_frame_number',
+                                       '--backfillFPS', args.backfillFPS,
+                                       '--process_gaze',
+                                       '--time_duration',
+                                       str(args.time_duration + 60) if args.time_duration >= 0 else '-1'] + real_time_flag,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
-        logging.debug("%s: Output of front video container:" %(args.keyword))
+        logging.debug("%s: Output of front video container:" % (args.keyword))
         logging.debug(stdout)
-        logging.debug("%s: Error of front video container:" %(args.keyword))
+        logging.debug("%s: Error of front video container:" % (args.keyword))
         logging.debug(stderr)
         front_video_container_id = stdout.decode('utf-8').strip()
         containers.append(front_video_container_id)
@@ -244,31 +246,31 @@ if __name__ == '__main__':
                       (args.keyword, front_video_container_id))
 
         process = subprocess.Popen([
-            'docker', 'run','-d',
-            '--gpus','all',
-            '-e', 'LOCAL_USER_ID=%s' % uid,
-            '-e', 'APP_USERNAME=%s' % app_username,
-            '-e', 'APP_PASSWORD=%s' % app_password,
-            '-v', '%s:/tmp' % args.log_dir,
-            '-v', '%s:/app/source' % args.video_dir,
-            'edusense/video:'+args.dev,
-            '--video', os.path.join('/app', 'source', args.back_video),
-            '--video_sock', '/tmp/unix.back.sock',
-            '--backend_url', args.backend_url,
-            '--session_id', session_id,
-            '--schema', args.video_schema,
-            '--use_unix_socket',
-            '--backfillFPS',args.backfillFPS,
-            '--keep_frame_number',
-            '--time_duration', str(args.time_duration +
-                                   60) if args.time_duration >= 0 else '-1',
-            '--instructor'] + real_time_flag,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
+                                       'docker', 'run', '-d',
+                                       '--gpus', 'device=%d' % (args.back_num_gpu_start),
+                                       '-e', 'LOCAL_USER_ID=%s' % uid,
+                                       '-e', 'APP_USERNAME=%s' % app_username,
+                                       '-e', 'APP_PASSWORD=%s' % app_password,
+                                       '-v', '%s:/tmp' % args.log_dir,
+                                       '-v', '%s:/app/source' % args.video_dir,
+                                                 'edusense/video:' + args.dev,
+                                       '--video', os.path.join('/app', 'source', args.back_video),
+                                       '--video_sock', '/tmp/unix.back.sock',
+                                       '--backend_url', args.backend_url,
+                                       '--session_id', session_id,
+                                       '--schema', args.video_schema,
+                                       '--use_unix_socket',
+                                       '--backfillFPS', args.backfillFPS,
+                                       '--keep_frame_number',
+                                       '--time_duration', str(args.time_duration +
+                                                              60) if args.time_duration >= 0 else '-1',
+                                       '--instructor'] + real_time_flag,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
-        logging.debug("%s: Output of back video container:" %(args.keyword))
+        logging.debug("%s: Output of back video container:" % (args.keyword))
         logging.debug(stdout)
-        logging.debug("%s: Error of back video container:" %(args.keyword))
+        logging.debug("%s: Error of back video container:" % (args.keyword))
         logging.debug(stderr)
         back_video_container_id = stdout.decode('utf-8').strip()
         containers.append(back_video_container_id)
@@ -279,25 +281,25 @@ if __name__ == '__main__':
         time.sleep(30)
 
         process = subprocess.Popen([
-            'nvidia-docker', 'run', '-d',
-            '-e', 'LOCAL_USER_ID=%s' % uid,
-            '-v', '%s:/tmp' % args.log_dir,
-            '-v', '%s:/app/video' % args.video_dir,
-            'edusense/openpose:'+args.dev,
-            '--video', os.path.join('/app', 'video', args.front_video),
-            '--num_gpu_start', str(args.front_num_gpu_start),
-            '--num_gpu', str(args.front_num_gpu),
-            '--use_unix_socket',
-            '--unix_socket', os.path.join('/tmp', 'unix.front.sock'),
-            '--display', '0',
-            '--render_pose', '0',
-            '--raw_image'] + real_time_flag,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
+                                       'nvidia-docker', 'run', '-d',
+                                       '-e', 'LOCAL_USER_ID=%s' % uid,
+                                       '-v', '%s:/tmp' % args.log_dir,
+                                       '-v', '%s:/app/video' % args.video_dir,
+                                             'edusense/openpose:' + args.dev,
+                                       '--video', os.path.join('/app', 'video', args.front_video),
+                                       '--num_gpu_start', str(args.front_num_gpu_start),
+                                       '--num_gpu', str(args.front_num_gpu),
+                                       '--use_unix_socket',
+                                       '--unix_socket', os.path.join('/tmp', 'unix.front.sock'),
+                                       '--display', '0',
+                                       '--render_pose', '0',
+                                       '--raw_image'] + real_time_flag,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
-        logging.debug("%s: Output of front openpose container:" %(args.keyword))
+        logging.debug("%s: Output of front openpose container:" % (args.keyword))
         logging.debug(stdout)
-        logging.debug("%s: Error of front openpose container:"%(args.keyword))
+        logging.debug("%s: Error of front openpose container:" % (args.keyword))
         logging.debug(stderr)
         front_openpose_container_id = stdout.decode('utf-8').strip()
         containers.append(front_openpose_container_id)
@@ -306,25 +308,25 @@ if __name__ == '__main__':
                       (args.keyword, front_openpose_container_id))
 
         process = subprocess.Popen([
-            'nvidia-docker', 'run', '-d',
-            '-e', 'LOCAL_USER_ID=%s' % uid,
-            '-v', '%s:/tmp' % args.log_dir,
-            '-v', '%s:/app/video' % args.video_dir,
-            'edusense/openpose:'+args.dev,
-            '--video', os.path.join('/app', 'video', args.back_video),
-            '--num_gpu_start', str(args.back_num_gpu_start),
-            '--num_gpu', str(args.back_num_gpu),
-            '--use_unix_socket',
-            '--unix_socket', os.path.join('/tmp', 'unix.back.sock'),
-            '--display', '0',
-            '--render_pose', '0',
-            '--raw_image'] + real_time_flag,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
+                                       'nvidia-docker', 'run', '-d',
+                                       '-e', 'LOCAL_USER_ID=%s' % uid,
+                                       '-v', '%s:/tmp' % args.log_dir,
+                                       '-v', '%s:/app/video' % args.video_dir,
+                                             'edusense/openpose:' + args.dev,
+                                       '--video', os.path.join('/app', 'video', args.back_video),
+                                       '--num_gpu_start', str(args.back_num_gpu_start),
+                                       '--num_gpu', str(args.back_num_gpu),
+                                       '--use_unix_socket',
+                                       '--unix_socket', os.path.join('/tmp', 'unix.back.sock'),
+                                       '--display', '0',
+                                       '--render_pose', '0',
+                                       '--raw_image'] + real_time_flag,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
-        logging.debug("%s: Output of back openpose container:" %(args.keyword))
+        logging.debug("%s: Output of back openpose container:" % (args.keyword))
         logging.debug(stdout)
-        logging.debug("%s: Error of back openpose container:"%(args.keyword))
+        logging.debug("%s: Error of back openpose container:" % (args.keyword))
         logging.debug(stderr)
         back_openpose_container_id = stdout.decode('utf-8').strip()
         containers.append(back_openpose_container_id)
@@ -339,7 +341,7 @@ if __name__ == '__main__':
             '-e', 'APP_PASSWORD=%s' % app_password,
             '-v', '%s:/app/video' % args.video_dir,
             '-v', '%s:/tmp' % args.log_dir,
-            'edusense/audio:'+args.dev,
+                  'edusense/audio:' + args.dev,
             '--front_url', os.path.join('/app', 'video', args.front_video),
             '--back_url', os.path.join('/app', 'video', args.back_video),
             '--backend_url', args.backend_url,
@@ -350,9 +352,9 @@ if __name__ == '__main__':
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
-        logging.debug("%s: Output of audio container:"%(args.keyword))
+        logging.debug("%s: Output of audio container:" % (args.keyword))
         logging.debug(stdout)
-        logging.debug("%s: Error of audio container:"%(args.keyword))
+        logging.debug("%s: Error of audio container:" % (args.keyword))
         logging.debug(stderr)
         audio_container_id = stdout.decode('utf-8').strip()
         containers.append(audio_container_id)
