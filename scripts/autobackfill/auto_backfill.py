@@ -14,7 +14,7 @@ metadata = {
     # '05418A': 10
 }
 
-NUM_GPUS = 4
+NUM_GPUS = 6
 
 
 
@@ -93,6 +93,11 @@ def mount_get_classes():
 if __name__ == '__main__':
     try:
         os.remove('autobackfill.log')
+    except:
+        pass
+    
+    try:
+        os.remove('run_backfill.log')
     except:
         pass
 

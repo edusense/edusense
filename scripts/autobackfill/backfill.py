@@ -68,12 +68,13 @@ if __name__ == '__main__':
                         required=False, help='FPS for backfill',default=0)
     args = parser.parse_args()
 
+    logging.debug(" About to open schedule_file %s"%(args.scheduler_file))
     schedule = []
     with open(args.scheduler_file, 'r') as f:
         reader = csv.reader(f)
         schedule = list(reader)
 
-    logging.debug(" Opened scheduler_file")
+    logging.debug(" Read schedule_file %s"%(args.scheduler_file))
 
     hasMount = False
     if args.sync_mode == 'mount':
@@ -82,6 +83,7 @@ if __name__ == '__main__':
         else:
             hasMount = True
 
+    logging.debug(" Schedule length:%d" %(len(schedule)))
     for s in schedule:
         logging.debug(" looking at ")
         logging.debug(s)

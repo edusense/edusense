@@ -17,9 +17,8 @@ def get_parameters(run_command):
     app_username = os.getenv("APP_USERNAME", "")
     app_password = os.getenv("APP_PASSWORD", "")
 
-    logging.debug(run_command)
-    logging.debug("APP_USERNAME %s" % (app_username))
-    logging.debug("APP_PASSWORD %s" % (app_password))
+    logging.debug("%s: APP_USERNAME %s" % (args.keyword, app_username))
+    logging.debug("%s: APP_PASSWORD %s" % (args.keyword, app_password))
 
     # Loading storage server version name
     if run_command == 'run_backfill.py':
@@ -79,7 +78,7 @@ def wait_container(container):
     ## logging.debug is not thread-safe
     # acquire a lock
     lock.acquire()
-    logging.debug(container_dict[container], "exited with status code", status)
+    logging.debug("%s: %s exited with status code %s" %(args.keyword, container_dict[container], status))
     # remove the container from global list and dict
     # in a thread-safe way
     containers.remove(container)
@@ -94,10 +93,6 @@ containers = []
 container_dict = {}
 
 if __name__ == '__main__':
-    try:
-        os.remove('run_backfill.log')
-    except:
-        pass
     logging.basicConfig(filename='run_backfill.log', level=logging.DEBUG)
     logging.debug("run_backfill.py")
 
@@ -127,7 +122,7 @@ if __name__ == '__main__':
     parser.add_argument('--audio_schema', dest='audio_schema', type=str, nargs='?',
                         required=True, help='audio schema for CI')
     parser.add_argument('--timeout', dest='timeout', type=int, nargs='?',
-                        help='timeout for the script', default=7200)
+                        help='timeout for the script', default=72000)
     parser.add_argument('--log_dir', dest='log_dir', type=str, nargs='?',
                         help='get the logs in a directory')
     parser.add_argument('--video_dir', dest='video_dir', type=str, nargs='?',
@@ -146,6 +141,17 @@ if __name__ == '__main__':
     uid, gid, app_username, app_password, version, developer = get_parameters(
         sys.argv[0])
 
+    # curl_comm = [
+    #     'curl',
+    #     '-X', 'POST',
+    #     '-d', '{\"developer\": \"%s\", \"version\": \"%s\", \"keyword\": \"%s\", \"overwrite\": \"%s\"}' % (
+    #         developer, version, args.keyword, args.overwrite),
+    #     '--header', 'Content-Type: application/json',
+    #     '--basic', '-u', '%s:%s' % (app_username, app_password),
+    #     'https://%s/sessions' % args.backend_url]
+    
+    # logging.debug(curl_comm)
+
     # Calling sessions API endpoint
     process = subprocess.Popen([
         'curl',
@@ -159,9 +165,9 @@ if __name__ == '__main__':
         stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
 
-    logging.debug("stdout from session")
+    logging.debug("%s: stdout from session" %(args.keyword))
     logging.debug(stdout)
-    logging.debug("stderr from session")
+    logging.debug("%s: stderr from session" %(args.keyword))
     logging.debug(stderr)
 
     try:
@@ -174,16 +180,37 @@ if __name__ == '__main__':
         logging.debug("check APP username and password")
         sys.exit(1)
 
-    logging.debug('created session %s' % (session_id))
+    logging.debug('%s: created session %s' % (args.keyword, session_id))
 
     real_time_flag = ['--process_real_time'] if args.process_real_time \
         else []
+
+    vid_comm = [
+            'docker', 'run','-d',
+            '--gpus','all',
+            '-e', 'LOCAL_USER_ID=%s' % uid,
+            '-e', 'APP_USERNAME=%s' % app_username,
+            '-e', 'APP_PASSWORD=%s' % app_password,
+            '-v', '%s:/app/source' % args.video_dir,
+            '-v', '%s:/tmp' % args.log_dir,
+            'edusense/video:'+args.dev,
+            '--video', os.path.join('/app', 'source', args.front_video),
+            '--video_sock', '/tmp/unix.front.sock',
+            '--backend_url', args.backend_url,
+            '--session_id', session_id,
+            '--schema', args.video_schema,
+            '--use_unix_socket',
+            '--keep_frame_number',
+            '--backfillFPS',args.backfillFPS,
+            '--process_gaze',
+            '--time_duration', str(args.time_duration + 60) if args.time_duration >= 0 else '-1'] + real_time_flag
+    logging.debug(vid_comm)
 
     # create temp directory
     with tempfile.TemporaryDirectory() as tmp_dir:
         if args.log_dir == None:
             args.log_dir = tmp_dir
-            logging.debug('create temporary directory %s' % (tmp_dir))
+            logging.debug('%s: create temporary directory %s' % (args.keyword, tmp_dir))
         process = subprocess.Popen([
             'docker', 'run','-d',
             '--gpus','all',
@@ -206,15 +233,15 @@ if __name__ == '__main__':
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
-        logging.debug("Output of front video container:")
+        logging.debug("%s: Output of front video container:" %(args.keyword))
         logging.debug(stdout)
-        logging.debug("Error of front video container:")
+        logging.debug("%s: Error of front video container:" %(args.keyword))
         logging.debug(stderr)
         front_video_container_id = stdout.decode('utf-8').strip()
         containers.append(front_video_container_id)
         container_dict[front_video_container_id] = 'front video container'
-        logging.debug('created front video container %s' %
-                      (front_video_container_id))
+        logging.debug('%s: created front video container %s' %
+                      (args.keyword, front_video_container_id))
 
         process = subprocess.Popen([
             'docker', 'run','-d',
@@ -239,15 +266,15 @@ if __name__ == '__main__':
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
-        logging.debug("Output of back video container:")
+        logging.debug("%s: Output of back video container:" %(args.keyword))
         logging.debug(stdout)
-        logging.debug("Error of back video container:")
+        logging.debug("%s: Error of back video container:" %(args.keyword))
         logging.debug(stderr)
         back_video_container_id = stdout.decode('utf-8').strip()
         containers.append(back_video_container_id)
         container_dict[back_video_container_id] = 'back video container'
-        logging.debug('created back video container %s' %
-                      (back_video_container_id))
+        logging.debug('%s: created back video container %s' %
+                      (args.keyword, back_video_container_id))
 
         time.sleep(30)
 
@@ -268,15 +295,15 @@ if __name__ == '__main__':
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
-        logging.debug("Output of front openpose container:")
+        logging.debug("%s: Output of front openpose container:" %(args.keyword))
         logging.debug(stdout)
-        logging.debug("Error of front openpose container:")
+        logging.debug("%s: Error of front openpose container:"%(args.keyword))
         logging.debug(stderr)
         front_openpose_container_id = stdout.decode('utf-8').strip()
         containers.append(front_openpose_container_id)
         container_dict[front_openpose_container_id] = 'front openpose container'
-        logging.debug('created front openpose container %s' %
-                      (front_openpose_container_id))
+        logging.debug('%s: created front openpose container %s' %
+                      (args.keyword, front_openpose_container_id))
 
         process = subprocess.Popen([
             'nvidia-docker', 'run', '-d',
@@ -295,15 +322,15 @@ if __name__ == '__main__':
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
-        logging.debug("Output of back openpose container:")
+        logging.debug("%s: Output of back openpose container:" %(args.keyword))
         logging.debug(stdout)
-        logging.debug("Error of back openpose container:")
+        logging.debug("%s: Error of back openpose container:"%(args.keyword))
         logging.debug(stderr)
         back_openpose_container_id = stdout.decode('utf-8').strip()
         containers.append(back_openpose_container_id)
         container_dict[back_openpose_container_id] = 'back openpose container'
-        logging.debug('created back openpose container %s' %
-                      (back_openpose_container_id))
+        logging.debug('%s: created back openpose container %s' %
+                      (args.keyword, back_openpose_container_id))
 
         process = subprocess.Popen([
             'docker', 'run', '-d',
@@ -323,14 +350,14 @@ if __name__ == '__main__':
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
-        logging.debug("Output of audio container:")
+        logging.debug("%s: Output of audio container:"%(args.keyword))
         logging.debug(stdout)
-        logging.debug("Error of audio container:")
+        logging.debug("%s: Error of audio container:"%(args.keyword))
         logging.debug(stderr)
         audio_container_id = stdout.decode('utf-8').strip()
         containers.append(audio_container_id)
         container_dict[audio_container_id] = 'audio container'
-        logging.debug('created audio container %s \n\n' % (audio_container_id))
+        logging.debug('%s: created audio container %s \n\n' % (args.keyword, audio_container_id))
 
         # the script can be kept running and dockers will be killed after timeout seconds
         timer = threading.Timer(args.timeout, kill_all_containers)
