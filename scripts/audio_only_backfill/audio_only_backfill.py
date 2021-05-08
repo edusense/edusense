@@ -40,8 +40,8 @@ def get_parameters():
     app_username = os.getenv("APP_USERNAME", "")
     app_password = os.getenv("APP_PASSWORD", "")
 
-    logging.debug("%s: APP_USERNAME %s" % (args.keyword, app_username))
-    logging.debug("%s: APP_PASSWORD %s" % (args.keyword, app_password))
+    # logging.debug("%s: APP_USERNAME %s" % (args.keyword, app_username))
+    # logging.debug("%s: APP_PASSWORD %s" % (args.keyword, app_password))
 
     # Loading storage server version name
 
@@ -126,6 +126,7 @@ if __name__ == '__main__':
             back_file = f"classinsight-{session_keyword}-back.avi"
 
             # create a session id
+            logger.info(f"Getting session parameters for keyword: {session_keyword}")
             uid, gid, app_username, app_password, version, developer = get_parameters()
             # Calling sessions API endpoint
             logger.info(f"Creating session id for keyword: {session_keyword}")
