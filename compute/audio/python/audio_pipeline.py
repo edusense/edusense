@@ -154,10 +154,10 @@ if 'rtsp' in ip1 or 'rtsp' in ip2:
 else:
     ###extract starting time #####
     log.write(f"{ip1} timestamp log")
-    date1, time1 = gt.extract_time(ip1, log)
+    date1, time1 = gt.extract_time(ip1, logger)
     logger.info(f"Initial Date: {date1}  & Time: {time1}")
     log.write(f"{ip2} timestamp log")
-    date2, time2 = gt.extract_time(ip2, log)
+    date2, time2 = gt.extract_time(ip2, logger)
     log.close()
     logger.info(f"{date1}, {str(time1)}")
     logger.info(f"{date2}, {str(time2)}")
