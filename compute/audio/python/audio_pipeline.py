@@ -49,6 +49,8 @@ logger_master.addHandler(console_log)
 
 logger = logging.LoggerAdapter(logger_master, {})
 
+logger.info("Audio Pipeline Starting...")
+start_time = time.time()
 
 
 def sampling_rate(video):
@@ -309,4 +311,4 @@ except Exception as e:
     logger.info(traceback.format_exc())
     raise RuntimeError("error occurred")
 
-logger.info("Audio pipeline Execution completed!")
+logger.info("Audio pipeline Execution completed in %.3f secs!" % (time.time() - start_time))
