@@ -83,8 +83,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='prepare audio only backfill')
     parser.add_argument('--backend_url', dest='backend_url', type=str, nargs='?',
                         required=True, help='edusense backend url')
-    parser.add_argument('--developer', dest='developer', type=str, nargs='?',
-                        required=True, help='username for the docker images')
     parser.add_argument('--mount_base_path', dest='mount_base_path', type=str, nargs='?',
                         required=True, help='path of mount')
     parser.add_argument('--keyword_file', dest='keyword_file', type=str, nargs='?',
@@ -115,7 +113,7 @@ if __name__ == '__main__':
                 if os.path.exists(front_url) & os.path.exists(back_url):
                     logger.info(f"Fetching files from {folder} on mounted NAS")
                     if (not os.path.exists(f"{args.basepath}/{front_url.split('/')[-1]}")) | (
-                    not os.path.exists(f"{args.basepath}/{back_url.split('/')[-1]}")):
+                            not os.path.exists(f"{args.basepath}/{back_url.split('/')[-1]}")):
                         mount_fetch_files(front_url, back_url, args.basepath)
                     logger.info(f"Fetch files successful.")
                     break
@@ -152,25 +150,18 @@ if __name__ == '__main__':
                 logger.debug("check APP username and password")
                 sys.exit(1)
 
-            logger.info(f"Creating audio docker for session id: {session_id}")
-            # run audio docker
-            start_time =time.time()
-            process = subprocess.Popen([
-                'docker', 'run', '-d',
-                '-e', 'LOCAL_USER_ID=%s' % uid,
-                '-e', 'APP_USERNAME=%s' % app_username,
-                '-e', 'APP_PASSWORD=%s' % app_password,
-                '-v', '%s:/app/video' % args.basepath,
-                '-v', '%s:/tmp' % args.log_dir,
-                      'edusense/audio:' + args.developer,
-                '--front_url', os.path.join('/app', 'video', front_file),
-                '--back_url', os.path.join('/app', 'video', back_file),
-                '--backend_url', args.backend_url,
-                '--session_id', session_id,
-                '--time_duration', '-1',
-                '--schema', 'classinsight-graphql-audio'])
+            # Run pipeline directly
 
-            logger.info(f"Audio docker for session id {session_id} finished in %.3f secs", (time.time()-start_time))
+            logger.info(f"Running pipeline for session id: {session_id}")
+
+            pipeline_run_command = f"python3 audio_pipeline.py --front_url {args.basepath + '/' + front_file} --back_url {args.basepath + '/' + back_file} --backend_url {args.backend_url} --session_id {session_id} --schema classinsight-graphql-audio"
+
+            logger.info(f"Running pipeline command: {pipeline_run_command}")
+
+            os.system(pipeline_run_command)
+
+            logger.info(f"Pipeline execution finished")
+
             os.remove(os.path.join(args.basepath, front_file))
             os.remove(os.path.join(args.basepath, back_file))
             logger.info(f"Removed video files for session id: {session_id}")
