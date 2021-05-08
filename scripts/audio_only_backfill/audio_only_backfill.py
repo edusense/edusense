@@ -124,7 +124,7 @@ if __name__ == '__main__':
                 'curl',
                 '-X', 'POST',
                 '-d', '{\"developer\": \"%s\", \"version\": \"%s\", \"keyword\": \"%s\", \"overwrite\": \"%s\"}' % (
-                    developer, version, args.keyword, args.overwrite),
+                    developer, version, session_keyword, False),
                 '--header', 'Content-Type: application/json',
                 '--basic', '-u', '%s:%s' % (app_username, app_password),
                       'https://%s/sessions' % args.backend_url],
