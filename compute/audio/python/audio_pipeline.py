@@ -18,12 +18,37 @@ import json
 import requests
 import base64
 import get_time as gt
+import logging
+from logging.handlers import WatchedFileHandler
+import traceback
 
 frame_number = 0
 
 ## temp fix for librosa import issue during running with docker
 os.environ[ 'NUMBA_CACHE_DIR' ] = '/tmp/'
 import librosa
+
+# Initialize logging handlers
+
+logger_master = logging.getLogger('audio_pipeline')
+logger_master.setLevel(logging.DEBUG)
+
+formatter = logging.Formatter(
+    '%(asctime)s | %(process)s, %(thread)d | %(name)s | %(levelname)s | %(message)s')
+
+## Add core logger handler
+core_logging_handler = WatchedFileHandler('/tmp/audio_pipeline.log')
+core_logging_handler.setFormatter(formatter)
+logger_master.addHandler(core_logging_handler)
+
+## Add stdout logger handler
+console_log = logging.StreamHandler()
+console_log.setLevel(logging.DEBUG)
+console_log.setFormatter(formatter)
+logger_master.addHandler(console_log)
+
+logger = logging.LoggerAdapter(logger_master, {})
+
 
 
 def sampling_rate(video):
@@ -128,16 +153,16 @@ if 'rtsp' in ip1 or 'rtsp' in ip2:
 
 else:
     ###extract starting time #####
-    log.write(f"{ip1} timestamp log\n")
+    log.write(f"{ip1} timestamp log")
     date1, time1 = gt.extract_time(ip1, log)
-    print("Initial Date & Time", date1, time1)
-    log.write(f"{ip2} timestamp log\n")
+    logger.info(f"Initial Date: {date1}  & Time: {time1}")
+    log.write(f"{ip2} timestamp log")
     date2, time2 = gt.extract_time(ip2, log)
     log.close()
-    print(date1, str(time1))
-    print(date2, str(time2))
+    logger.info(f"{date1}, {str(time1)}")
+    logger.info(f"{date2}, {str(time2)}")
 
-print('........................')
+logger.info('........................')
 
 if args.time_duration != -1:
     if not realtime:
@@ -147,15 +172,16 @@ if args.time_duration != -1:
 
 try:
     while (1):
-        print("Ongoing Time", time1)
+        logger.info(f"Ongoing Time: {time1}")
         if not realtime and args.time_duration != -1 and time1 > stop_time:
-            print('timeout')
+            logger.info('timeout')
             sys.exit()
 
         if realtime and args.time_duration != -1 and time.perf_counter() - start_timer > args.time_duration:
-            print('timeout')
+            logger.info('timeout')
             sys.exit()
 
+        logger.info("Reading FFMPEG Stream...")
         if realtime:
             timestamp1 = datetime.utcnow().isoformat() + "Z"
         np_wav1 = ffmpeg_proc1.read(rate1)
@@ -166,8 +192,13 @@ try:
 
         if np_wav1 is None or np_wav2 is None:
             break
-        # print("Wav1:", len(np_wav1), np_wav1.mean(), np_wav1.max(), np_wav1.shape)
+        # logger.info("Wav1:", len(np_wav1), np_wav1.mean(), np_wav1.max(), np_wav1.shape)
+        logger.info(f"Frame Number: {frame_number}")
+        logger.info(f"Front Cam Time: {timestamp1}")
+        logger.info(f"Back Cam Time:{timestamp2}")
+        logger.info('........................................................................')
 
+        logger.info("Extracting Audio Features...")
         ### New code for Mel Frequency Detection
         if len(np_wav1) > 0:
             mel_spect1 = librosa.feature.melspectrogram(y=np_wav1, sr=rate1, n_fft=4000, hop_length=4000)
@@ -204,10 +235,6 @@ try:
         if not realtime:
             timestamp1 = f"{date1}T{str(time1)}Z"
             timestamp2 = f"{date2}T{str(time2)}Z"
-        print(timestamp1)
-        print(timestamp2)
-        print(frame_number)
-        print('........................................................................')
         # set the float point
         frames = [
             {
@@ -255,6 +282,8 @@ try:
             time2 = time2 + timedelta(seconds=1)
 
         if backend_url is not None:
+
+            logger.info("Posting Audio Frames to backend...")
             app_username = os.getenv("APP_USERNAME", "")
             app_password = os.getenv("APP_PASSWORD", "")
             credential = '{}:{}'.format(app_username, app_password)
@@ -273,5 +302,10 @@ try:
             resp = requests.post(frame_url, headers=headers, json=req)
             if (resp.status_code != 200 or 'success' not in resp.json().keys() or not resp.json()['success']):
                 raise RuntimeError(resp.text)
+            logger.info("Audio Frames posted successfully...")
 except Exception as e:
+    logger.info("Error in executing audio pipeline")
+    logger.info(traceback.format_exc())
     raise RuntimeError("error occurred")
+
+logger.info("Audio pipeline Executed completed!")
