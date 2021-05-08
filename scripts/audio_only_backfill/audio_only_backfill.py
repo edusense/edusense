@@ -154,7 +154,8 @@ if __name__ == '__main__':
 
             logger.info(f"Creating audio docker for session id: {session_id}")
             # run audio docker
-            process = subprocess.Popen([
+            start_time =time.time()
+            process = subprocess.check_output([
                 'docker', 'run', '-d',
                 '-e', 'LOCAL_USER_ID=%s' % uid,
                 '-e', 'APP_USERNAME=%s' % app_username,
@@ -167,15 +168,9 @@ if __name__ == '__main__':
                 '--backend_url', args.backend_url,
                 '--session_id', session_id,
                 '--time_duration', '-1',
-                '--schema', 'classinsight-graphql-audio'],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
+                '--schema', 'classinsight-graphql-audio'])
 
-            logger.info(f"Audio docker created for session id: {session_id}")
-            logger.info(f"Waiting on audio docker to finish...")
-            process.wait()
-
-            logger.info(f"Audio docker exited for session id: {session_id}")
+            logger.info(f"Audio docker for session id {session_id} finished in %.3f secs", (time.time()-start_time))
             os.remove(os.path.join(args.basepath, front_file))
             os.remove(os.path.join(args.basepath, back_file))
             logger.info(f"Removed video files for session id: {session_id}")
