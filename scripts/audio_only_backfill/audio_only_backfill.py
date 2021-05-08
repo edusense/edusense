@@ -187,6 +187,9 @@ if __name__ == '__main__':
                 os.remove(completion_file)
                 logger.info(f"pipeline execution completed successfully. Writing session id to output handler.")
                 output_handler.write(f"{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')},{session_keyword},{session_id}\n")
+                logger.info(f"Removing pipeline log file.")
+                if os.path.exists(f"{args.log_dir}/audio_pipeline.log"):
+                    os.remove(f"{args.log_dir}/audio_pipeline.log")
             else:
                 logger.info(f"pipeline execution time limit exceeded, removing video files..")
             logger.info(f"pipeline waking up..")
