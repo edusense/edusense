@@ -171,7 +171,7 @@ if __name__ == '__main__':
                 '--schema', 'classinsight-graphql-audio'])
 
             logger.info(f"Audio docker for session id {session_id} finished in %.3f secs", (time.time()-start_time))
-            logger.info(f"Sleeping for 5 mins to avoid overloading processors", (time.time() - start_time))
+            logger.info(f"Sleeping for 5 mins to avoid overloading processors")
             time.sleep(300)
             logger.info(f"pipeline waking up", (time.time() - start_time))
             os.remove(os.path.join(args.basepath, front_file))
