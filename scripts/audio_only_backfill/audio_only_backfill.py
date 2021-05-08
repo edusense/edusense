@@ -35,6 +35,10 @@ logger = logging.LoggerAdapter(logger_master, {})
 execution_time_limit_in_secs = 900
 autobackfill_start_time = time.time()
 
+# Create output file for autobackfill to return expected session ids
+output_file = "audio_autobackfill.out" % (time.time())
+output_handler = open(output_file, 'a+')
+
 def get_parameters():
     uid = os.getuid()
     gid = os.getgid()
@@ -181,7 +185,8 @@ if __name__ == '__main__':
                     break
             if (os.path.exists(completion_file)):
                 os.remove(completion_file)
-                logger.info(f"pipeline execution completed successfully..")
+                logger.info(f"pipeline execution completed successfully. Writing session id to output handler.")
+                output_handler.write(f"{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')},{session_keyword},{session_id}\n")
             else:
                 logger.info(f"pipeline execution time limit exceeded, removing video files..")
             logger.info(f"pipeline waking up..")
@@ -190,3 +195,4 @@ if __name__ == '__main__':
             logger.info(f"Removed video files for session id: {session_id}")
 
 logger.info(f"Audio backfill complete in %.3f secs. "(time.time() - autobackfill_start_time))
+output_handler.close()
