@@ -32,6 +32,8 @@ logger_master.addHandler(console_log)
 
 logger = logging.LoggerAdapter(logger_master, {})
 
+execution_time_limit_in_secs = 900
+autobackfill_start_time = time.time()
 
 def get_parameters():
     uid = os.getuid()
@@ -115,7 +117,7 @@ if __name__ == '__main__':
                 if os.path.exists(front_url) & os.path.exists(back_url):
                     logger.info(f"Fetching files from {folder} on mounted NAS")
                     if (not os.path.exists(f"{args.basepath}/{front_url.split('/')[-1]}")) | (
-                    not os.path.exists(f"{args.basepath}/{back_url.split('/')[-1]}")):
+                            not os.path.exists(f"{args.basepath}/{back_url.split('/')[-1]}")):
                         mount_fetch_files(front_url, back_url, args.basepath)
                     logger.info(f"Fetch files successful.")
                     break
@@ -154,7 +156,7 @@ if __name__ == '__main__':
 
             logger.info(f"Creating audio docker for session id: {session_id}")
             # run audio docker
-            start_time =time.time()
+            start_time = time.time()
             process = subprocess.Popen([
                 'docker', 'run', '-d',
                 '-e', 'LOCAL_USER_ID=%s' % uid,
@@ -170,10 +172,21 @@ if __name__ == '__main__':
                 '--time_duration', '-1',
                 '--schema', 'classinsight-graphql-audio'])
 
-            logger.info(f"Audio docker for session id {session_id} finished in %.3f secs", (time.time()-start_time))
-            logger.info(f"Sleeping for 5 mins to avoid overloading processors")
-            time.sleep(300)
-            logger.info(f"pipeline waking up at %.3f secs.", (time.time() - start_time))
-            # os.remove(os.path.join(args.basepath, front_file))
-            # os.remove(os.path.join(args.basepath, back_file))
-            # logger.info(f"Removed video files for session id: {session_id}")
+            logger.info(f"Audio docker for session id {session_id} finished in %.3f secs", (time.time() - start_time))
+            logger.info(f"Sleeping till audio processing completes using file handle or time limit exceeds")
+            start_time = time.time()
+            completion_file = f"{args.log_dir}/pipeline_complete.end"
+            while (not os.path.exists(completion_file)):
+                if (time.time() - start_time > execution_time_limit_in_secs):
+                    break
+            if (os.path.exists(completion_file)):
+                os.remove(completion_file)
+                logger.info(f"pipeline execution completed successfully..")
+            else:
+                logger.info(f"pipeline execution time limit exceeded, removing video files..")
+            logger.info(f"pipeline waking up..")
+            os.remove(os.path.join(args.basepath, front_file))
+            os.remove(os.path.join(args.basepath, back_file))
+            logger.info(f"Removed video files for session id: {session_id}")
+
+logger.info(f"Audio backfill complete in %.3f secs. "(time.time() - autobackfill_start_time))

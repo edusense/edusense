@@ -311,4 +311,7 @@ except Exception as e:
     logger.info(traceback.format_exc())
     raise RuntimeError("error occurred")
 
+## Create completion file
+with open('/tmp/pipeline_complete.end','w') as f:
+    f.write("audio process complete..")
 logger.info("Audio pipeline Execution completed in %.3f secs!" % (time.time() - start_time))
