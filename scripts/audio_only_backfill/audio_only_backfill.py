@@ -197,5 +197,5 @@ if __name__ == '__main__':
             os.remove(os.path.join(args.basepath, back_file))
             logger.info(f"Removed video files for session id: {session_id}")
 
-logger.info(f"Audio backfill complete in %.3f secs. "(time.time() - autobackfill_start_time))
+logger.info(f"Audio backfill complete in %.3f secs. " % (time.time() - autobackfill_start_time))
 output_handler.close()
