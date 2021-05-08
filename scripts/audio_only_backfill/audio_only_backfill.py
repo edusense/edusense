@@ -77,7 +77,8 @@ def mount_fetch_files(front_url, back_url, basepath):
 
 
 if __name__ == '__main__':
-
+    logger.info("Starting auto audiobackfill...")
+    logger.info("Parsing command line arguments")
     # process arguments
     parser = argparse.ArgumentParser(description='prepare audio only backfill')
     parser.add_argument('--backend_url', dest='backend_url', type=str, nargs='?',
@@ -96,6 +97,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Loop over csv to run audio pipeline
+    logger.info("Looping over session keyword file")
     with open("session_keyword_file.csv") as f:
         for line in f.readlines():
             session_keyword = line[:-1]
@@ -112,7 +114,9 @@ if __name__ == '__main__':
 
                 if os.path.exists(front_url) & os.path.exists(back_url):
                     logger.info(f"Fetching files from {folder} on mounted NAS")
-                    mount_fetch_files(front_url, back_url, args.basepath)
+                    if (not os.path.exists(f"{args.basepath}/{front_url.split('/')[-1]}")) | (
+                    not os.path.exists(f"{args.basepath}/{back_url.split('/')[-1]}")):
+                        mount_fetch_files(front_url, back_url, args.basepath)
                     logger.info(f"Fetch files successful.")
                     break
                 else:
