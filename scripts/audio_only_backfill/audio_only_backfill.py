@@ -36,7 +36,7 @@ execution_time_limit_in_secs = 900
 autobackfill_start_time = time.time()
 
 # Create output file for autobackfill to return expected session ids
-output_file = "audio_autobackfill.out" % (time.time())
+output_file = "audio_autobackfill.out"
 output_handler = open(output_file, 'a+')
 
 def get_parameters():
