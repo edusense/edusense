@@ -33,7 +33,7 @@ logger_master.addHandler(console_log)
 logger = logging.LoggerAdapter(logger_master, {})
 
 
-def get_parameters(run_command):
+def get_parameters():
     uid = os.getuid()
     gid = os.getgid()
 
@@ -91,6 +91,8 @@ if __name__ == '__main__':
                         default='session_keyword_file.csv')
     parser.add_argument('--basepath', dest='basepath', type=str, nargs='?',
                         required=False, help='keyword for class sessions')
+    parser.add_argument('--log_dir', dest='log_dir', type=str, nargs='?',
+                        help='get the logs in a directory')
     args = parser.parse_args()
 
     # Loop over csv to run audio pipeline
@@ -109,7 +111,9 @@ if __name__ == '__main__':
                            f"-back.avi"
 
                 if os.path.exists(front_url) & os.path.exists(back_url):
+                    logger.info(f"Fetching files from {folder} on mounted NAS")
                     mount_fetch_files(front_url, back_url, args.basepath)
+                    logger.info(f"Fetch files successful.")
                     break
                 else:
                     continue
@@ -120,6 +124,7 @@ if __name__ == '__main__':
             # create a session id
             uid, gid, app_username, app_password, version, developer = get_parameters()
             # Calling sessions API endpoint
+            logger.info(f"Creating session id for keyword: {session_keyword}")
             process = subprocess.Popen([
                 'curl',
                 '-X', 'POST',
@@ -142,6 +147,7 @@ if __name__ == '__main__':
                 logger.debug("check APP username and password")
                 sys.exit(1)
 
+            logger.info(f"Creating audio docker for session id: {session_id}")
             # run audio docker
             process = subprocess.Popen([
                 'docker', 'run', '-d',
@@ -149,7 +155,7 @@ if __name__ == '__main__':
                 '-e', 'APP_USERNAME=%s' % app_username,
                 '-e', 'APP_PASSWORD=%s' % app_password,
                 '-v', '%s:/app/video' % args.basepath,
-                '-v', '%s:/tmp' % args.basepath,
+                '-v', '%s:/tmp' % args.log_dir,
                       'edusense/audio:' + args.developer,
                 '--front_url', os.path.join('/app', 'video', front_file),
                 '--back_url', os.path.join('/app', 'video', back_file),
@@ -160,8 +166,11 @@ if __name__ == '__main__':
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE)
 
-            subprocess.Popen.wait()
+            logger.info(f"Audio docker created for session id: {session_id}")
+            logger.info(f"Waiting on audio docker to finish...")
+            process.wait()
 
             logger.info(f"Audio docker exited for session id: {session_id}")
             os.remove(os.path.join(args.basepath, front_file))
             os.remove(os.path.join(args.basepath, back_file))
+            logger.info(f"Removed video files for session id: {session_id}")
