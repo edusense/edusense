@@ -7,7 +7,7 @@ python3 audio_only_backfill.py \
 --keyword_file session_keyword_file.csv \
 --mount_base_path /mnt/ci-nas-classes/classinsight \
 --backend_url edusense-dev-1.andrew.cmu.edu:3003 \
---developer prasoon_gaze_audio_merge \
+--developer audiobackfill \
 --log_dir $(pwd)/logs
 
 

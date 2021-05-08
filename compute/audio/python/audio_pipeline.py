@@ -234,7 +234,6 @@ try:
 
         logger.info(f"Front Cam Time: {timestamp1}")
         logger.info(f"Back Cam Time:{timestamp2}")
-        logger.info('........................................................................')
 
         # set the float point
         frames = [
@@ -304,9 +303,10 @@ try:
             if (resp.status_code != 200 or 'success' not in resp.json().keys() or not resp.json()['success']):
                 raise RuntimeError(resp.text)
             logger.info("Audio Frames posted successfully...")
+            logger.info('........................................................................')
 except Exception as e:
     logger.info("Error in executing audio pipeline")
     logger.info(traceback.format_exc())
     raise RuntimeError("error occurred")
 
-logger.info("Audio pipeline Executed completed!")
+logger.info("Audio pipeline Execution completed!")

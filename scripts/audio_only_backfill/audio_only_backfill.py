@@ -173,7 +173,7 @@ if __name__ == '__main__':
             logger.info(f"Audio docker for session id {session_id} finished in %.3f secs", (time.time()-start_time))
             logger.info(f"Sleeping for 5 mins to avoid overloading processors")
             time.sleep(300)
-            logger.info(f"pipeline waking up", (time.time() - start_time))
+            logger.info(f"pipeline waking up at %.3f secs.", (time.time() - start_time))
             # os.remove(os.path.join(args.basepath, front_file))
             # os.remove(os.path.join(args.basepath, back_file))
             # logger.info(f"Removed video files for session id: {session_id}")
