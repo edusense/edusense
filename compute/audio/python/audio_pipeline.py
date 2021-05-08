@@ -194,10 +194,6 @@ try:
             break
         # logger.info("Wav1:", len(np_wav1), np_wav1.mean(), np_wav1.max(), np_wav1.shape)
         logger.info(f"Frame Number: {frame_number}")
-        logger.info(f"Front Cam Time: {timestamp1}")
-        logger.info(f"Back Cam Time:{timestamp2}")
-        logger.info('........................................................................')
-
         logger.info("Extracting Audio Features...")
         ### New code for Mel Frequency Detection
         if len(np_wav1) > 0:
@@ -235,6 +231,11 @@ try:
         if not realtime:
             timestamp1 = f"{date1}T{str(time1)}Z"
             timestamp2 = f"{date2}T{str(time2)}Z"
+
+        logger.info(f"Front Cam Time: {timestamp1}")
+        logger.info(f"Back Cam Time:{timestamp2}")
+        logger.info('........................................................................')
+
         # set the float point
         frames = [
             {
