@@ -43,6 +43,10 @@ type InsertClassroomResponse struct {
 	ErrorCode uint32 `json:"errorCode,omitempty"`
 }
 
+type InsertAnalyticsRequest struct {
+	NewAnalytics 	models.Analytics
+}
+
 
 // InsertFrameRequest defines request format for insert free-form frame
 // requests.

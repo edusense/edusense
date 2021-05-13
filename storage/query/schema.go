@@ -226,6 +226,16 @@ const QuerySchema = `
       confidence: Float!
       speaker: Speaker!
     }
+
+    type analytics {
+      id: String!
+      keyword: String!
+      metaInfo: MetaInfo!
+      debugInfo: String
+      secondLevel: SecondLevel
+      blockLevel: BlockLevel
+      sessionLevel: SessionLevel
+    }
   `
 
 // MustParseSchema parses the GraphQL schema. If parse fails, it will crash
