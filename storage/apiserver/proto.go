@@ -44,7 +44,7 @@ type InsertClassroomResponse struct {
 }
 
 type InsertAnalyticsRequest struct {
-	NewAnalytics 	models.Analytics
+	Analytics 	models.Analytics
 }
 
 

@@ -105,7 +105,6 @@ func InsertSessionEndpoint(w http.ResponseWriter, r *http.Request) {
 
 	sess, err := driver.InsertSession(req.Developer, req.Version, req.Keyword, req.Overwrite, req.Metadata)
 	if err != nil {
-		// Reuse the InsertSessionResponse type, since it has the fields we want
 		resp := &InsertSessionResponse{
 			Success:   false,
 			Error:     err.Error(),
@@ -131,9 +130,10 @@ func InsertAnalyticsEndpoint(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sess, err := driver.InsertAnalytics(req.NewAnalytics)
+	err := driver.InsertAnalytics(req.Analytics)
 	if err != nil {
-		resp := &InsertAnalyticsResponse{
+		// Reuse the InsertSessionResponse type, since it has the fields we want
+		resp := &InsertSessionResponse{
 			Success:   false,
 			Error:     err.Error(),
 			ErrorCode: 1,
@@ -142,9 +142,8 @@ func InsertAnalyticsEndpoint(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := &InsertAnalyticsResponse{
+	resp := &InsertSessionResponse{
 		Success:   true,
-		SessionID: sess.ID,
 	}
 	respondWithJSON(w, http.StatusOK, resp)
 }
