@@ -39,7 +39,8 @@ type DatabaseDriver interface {
 
 	// Analytics db handler functions
 	InsertAnalytics(analytics models.Analytics) error
-	GetAnalytics(id string) ([]models.Analytics, error)
+	GetAnalytics() ([]models.Analytics, error)
+	GetAnalyticsID(sessID string) ([]models.Analytics, error)
 
 	// Get frames by filter
 	// GetFrameByFilter returns list of frames by given frame filters.

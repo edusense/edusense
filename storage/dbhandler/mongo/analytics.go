@@ -19,12 +19,24 @@ func (m *Driver) InsertAnalytics(analytics models.Analytics) error {
 	return nil
 }
 
-func (m *Driver) GetAnalytics(id string) ([]models.Analytics, error) {
+func (m *Driver) GetAnalytics() ([]models.Analytics, error) {
+    var mAnalytics []models.Analytics
+
+	err := m.DB.C("analytics").Find(bson.M{}).All(&mAnalytics)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return mAnalytics, nil
+}
+
+func (m *Driver) GetAnalyticsID(sessID string) ([]models.Analytics, error) {
     var mAnalytics []models.Analytics
 
 	err := m.DB.C("analytics").Find(
 		bson.M{"$and": []bson.M{
-			bson.M{"_id": id}}}).All(&mAnalytics)
+			bson.M{"id": sessID}}}).All(&mAnalytics)
 
 	if err != nil {
 		return nil, err

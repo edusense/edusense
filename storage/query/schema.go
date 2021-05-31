@@ -32,6 +32,7 @@ const QuerySchema = `
       sessions (sessionId: ID, keyword: String): [Session!]!
       classrooms: [Classroom!]!
       courses: [Course!]!  
+      analytics (sessionId: ID): [Analytics!]!
     }
 
     type Classroom {
@@ -232,13 +233,13 @@ const QuerySchema = `
       keyword: String!
       metaInfo: MetaInfo!
       debugInfo: String!
-      secondLevel: [SecondLevel]
-      blockLevel: [BlockLevel]
+      secondLevel: [SecondLevel]!
+      blockLevel: [BlockLevel]!
       sessionLevel: SessionLevel
     }
 
     type MetaInfo {
-      pipelineVersion: String
+      pipelineVersion: String!
       analysisStartTime: Int!
       totalRuntime: Float!
       runModules: [String!]!
@@ -305,14 +306,14 @@ const QuerySchema = `
       singleSpeakerFraction: Float
       teacherActivityType: [String]
       teacherActivityFraction: [Float]
-      teacherActivityTimes: [[[Int]]]
+      teacherActivityTimes: [[[Int]!]!]
     }
 
 
     type SessionAudioAnalysis {
       audioBasedActivityType: [String]
       audioBasedActivityFraction: [Float]
-      audioBasedActivityBlocks: [[[Int]]]
+      audioBasedActivityBlocks: [[[Int]!]!]
     }
 
     type PrincipalGaze {
@@ -369,10 +370,10 @@ const QuerySchema = `
       id: [Int]
       numOccurencesInBlock: [Int]
       gazeCategory: [String]
-      totalCategoryFraction: [[Float]]
-      longestCategoryFraction: [[Float]]
-      directionMean: [[[Float]]]
-      directionVariation: [[[Float]]]
+      totalCategoryFraction: [[Float]!]
+      longestCategoryFraction: [[Float]!]
+      directionMean: [[Float]!]
+      directionVariation: [[Float]!]
       towardsInstructorFraction: [Float]
       lookingDownFraction: [Float]
       lookingFrontFraction: [Float]
@@ -392,8 +393,8 @@ const QuerySchema = `
 
     type SessionInstructorGaze {
       gazePreference: String
-	    topLocations: [[Float]]
-	    topLocationsGazeLeftFraction: [[Float]]
+	    topLocations: [[Float]!]
+	    topLocationsGazeLeftFraction: [[Float]!]
 	    objectCategory: [String]
 	    lookingAtObjectFraction: [Float]
     }
@@ -401,7 +402,7 @@ const QuerySchema = `
     type SessionStudentGaze {
       id: [Int]
       gazeCategory: [String]
-      gazeCategoryFraction: [[Float]]
+      gazeCategoryFraction: [[Float]!]
     }
 
     type PrincipalMovement {
@@ -427,9 +428,9 @@ const QuerySchema = `
 
     type SecondStudentLocation {
       id: [Int]
-	    trackingIdMap: [[Int]]
+	    trackingIdMap: [[Int]!]
 	    isMoving: [Boolean]
-	    locationCoordinates: [[Int]]
+	    locationCoordinates: [[Int]!]
 	    locationCategory: [String]
 	    locationEntropy: [Float]
 	    headEntropy: [Float]
@@ -450,8 +451,8 @@ const QuerySchema = `
       locationCategory: String
       categoryFraction: [Float]
       longestCategoryFraction: [Float]
-      stayAtLocation: [[Float]]
-      stayAtLocationTimes: [[Float]]
+      stayAtLocation: [[Int]!]
+      stayAtLocationTimes: [[Float]!]
       longestStayFraction: Float
       principalMovement: PrincipalMovement
     }
@@ -468,8 +469,8 @@ const QuerySchema = `
       varHeadEntropy: [Float]
       stayCoordinates: [Int]
       clusterCount: Int
-      clusterCenters: [[Float]]
-      clusterStudentIds: [[Int]]
+      clusterCenters: [[Float]!]
+      clusterStudentIds: [[Int]!]
       seatingArrangement: String
     }
 
@@ -481,9 +482,9 @@ const QuerySchema = `
     type SessionInstructorLocation{
       locationBasedActivityType: [String]
       locationBasedActivityFraction: [Float]
-      locationBasedActivityBlocks: [[[Int]]]                
+      locationBasedActivityBlocks: [[[Int]!]!]                
       locationClusterCount: Int
-      locationClusterCenter: [[Float]]
+      locationClusterCenter: [[Float]!]
       locationClusterSize: [Int]
       totalBoardFraction: Float
       longestBoardFraction: Float
@@ -500,11 +501,11 @@ const QuerySchema = `
       id: [Int]
       settleDownTime: [Float]
       entryTime: [Float]
-      entryLocation: [[Float]]
+      entryLocation: [[Float]!]
       exitTime: [Float]
-      exitLocation: [[Float]]
+      exitLocation: [[Float]!]
       seatingCategories: [String]
-      seatingCategoryBlocks: [[Int]]
+      seatingCategoryBlocks: [[Int]!]
     }
 
     type SecondPostureAnalysis {
@@ -525,9 +526,9 @@ const QuerySchema = `
     type SecondStudentPosture {
       id: [Int]
       isStanding: [Boolean]
-      bodyPosture: [String]
-      handPosture: [String] 
-      headPosture: [String]
+      bodyPosture: [String!]
+      handPosture: [String!] 
+      headPosture: [String!]
     }
 
     type BlockPostureAnalysis {
@@ -550,11 +551,11 @@ const QuerySchema = `
       numOccurrencesInBlock: [Int]
       isStandingFraction: [Boolean]
       bodyPostureCategory: [String]
-      bodyPostureCategoryFraction: [[Float]]
+      bodyPostureCategoryFraction: [[Float]!]
       headPostureCategory: [String]
-      headPostureCategoryFraction: [[Float]]
+      headPostureCategoryFraction: [[Float]!]
       handPostureCategory: [String]
-      handPostureCategoryFraction: [[Float]]
+      handPostureCategoryFraction: [[Float]!]
     }
 
     type SessionPostureAnalysis {
@@ -565,7 +566,7 @@ const QuerySchema = `
     type SessionInstructorPosture {
       bodyPosturePreference: String
       pointingClusterCount: Int
-      pointingClusterCenter: [[Float]]
+      pointingClusterCenter: [[Float]!]
       pointingClusterSize: [Int]
     }
     
