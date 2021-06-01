@@ -11,12 +11,13 @@ import (
 
 type AnalyticsArgs struct {
 	SessionID *string
+	Keyword *string
 }
 
 
 func (q QueryResolver) Analytics (ctx context.Context, args AnalyticsArgs) ([]*AnalyticsResolver, error) {
-	if args.SessionID != nil {
-		selected_analytics, err := q.Driver.GetAnalyticsID(*args.SessionID)
+	if args.SessionID != nil || args.Keyword != nil {
+		selected_analytics, err := q.Driver.GetAnalyticsFilter(args.SessionID, args.Keyword)
 
 		if err != nil {
 			return []*AnalyticsResolver{}, err

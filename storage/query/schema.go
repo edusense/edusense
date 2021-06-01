@@ -32,7 +32,7 @@ const QuerySchema = `
       sessions (sessionId: ID, keyword: String): [Session!]!
       classrooms: [Classroom!]!
       courses: [Course!]!  
-      analytics (sessionId: ID): [Analytics!]!
+      analytics (sessionId: ID, keyword: String): [Analytics!]!
     }
 
     type Classroom {

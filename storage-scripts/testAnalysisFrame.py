@@ -46,10 +46,10 @@ db_post_start_time = time.time()
 
 
 analytics_schema = {
-    'id': '9',
-    'keyword': 'blockLevelTest',
+    'id': '11',
+    'keyword': 'keywordTest',
     'metaInfo': {
-        'pipelineVersion': "test",
+        'pipelineVersion': "keywordTest",
         'analysisStartTime': None,
         'totalRuntime': 0.1,
         'RunModules': ['1'],
@@ -200,18 +200,11 @@ analytics_schema = {
 
 query = '''
         {
-            analytics(sessionId: "8") {
+            analytics(sessionId: "11", keyword: "keywordTest") {
                 id
-                blockLevel {
-                    gaze {
-                        student {
-                            id
-                            numOccurencesInBlock
-                            gazeCategory
-                            totalCategoryFraction
-                            longestCategoryFraction
-                        }
-                    }
+                keyword
+                metaInfo {
+                    pipelineVersion
                 }
             }
         }

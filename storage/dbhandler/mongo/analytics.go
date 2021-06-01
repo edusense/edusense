@@ -4,6 +4,7 @@
 package mongo
 
 import (
+	"errors"
 	bson "github.com/globalsign/mgo/bson"
 	models "go.edusense.io/storage/models"
 )
@@ -31,13 +32,23 @@ func (m *Driver) GetAnalytics() ([]models.Analytics, error) {
 	return mAnalytics, nil
 }
 
-func (m *Driver) GetAnalyticsID(sessID string) ([]models.Analytics, error) {
+func (m *Driver) GetAnalyticsFilter(sessIDPtr *string, keywordPtr *string) ([]models.Analytics, error) {
     var mAnalytics []models.Analytics
-
-	err := m.DB.C("analytics").Find(
-		bson.M{"$and": []bson.M{
-			bson.M{"id": sessID}}}).All(&mAnalytics)
-
+	
+	// Prioritze sessionID if available. Only use keyword if no sessionID available.
+	err := errors.New("sessionID and keyword are nil")
+	if sessIDPtr != nil {
+		sessID := *sessIDPtr
+		err = m.DB.C("analytics").Find(
+			bson.M{"$and": []bson.M{
+				bson.M{"id": sessID}}}).All(&mAnalytics)
+	} else if keywordPtr != nil {
+		keyword := *keywordPtr
+		err = m.DB.C("analytics").Find(
+			bson.M{"$and": []bson.M{
+				bson.M{"keyword": keyword}}}).All(&mAnalytics)
+	}
+	
 	if err != nil {
 		return nil, err
 	}
