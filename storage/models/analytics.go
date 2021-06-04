@@ -100,7 +100,7 @@ type SecondGazeAnalysis struct {
 type SecondInstructorGaze struct {
 	Angle *float64 `json:"angle,omitempty" bson:"angle"`
 	AngleChange *float64 `json:"angleChange,omitempty" bson:"angleChange"`
-	Direction *bool `json:"direction,omitempty" bson:"direction"`
+	Direction *string `json:"direction,omitempty" bson:"direction"`
 	ViewingSectorThreshold *float64 `json:"viewingSectorThreshold,omitempty" bson:"viewingSectorThreshold"`
 	CountStudentsInGaze *int32 `json:"countStudentsInGaze,omitempty" bson:"countStudentsInGaze"`
 	TowardsStudents *bool `json:"towardsStudents,omitempty" bson:"towardsStudents"`
@@ -117,7 +117,7 @@ type SecondStudentGaze struct {
 	Id []*int32 `json:"id,omitempty" bson:"id"`
 	Angle []*float64 `json:"angle,omitempty" bson:"angle"`
 	AngleChange []*float64 `json:"angleChange,omitempty" bson:"angleChange"`
-	Direction []*bool `json:"direction,omitempty" bson:"direction"`
+	Direction []*string `json:"direction,omitempty" bson:"direction"`
 	TowardsInstructor []*bool `json:"towardsInstructor,omitempty" bson:"towardsInstructor"`
 	LookingDown []*bool `json:"lookingDown,omitempty" bson:"lookingDown"`
 	LookingFront []*bool `json:"lookingFront,omitempty" bson:"lookingFront"`
@@ -222,6 +222,7 @@ type BlockInstructorLocation struct{
 	LongestPodiumFraction *float64 `json:"longestPodiumFraction,omitempty" bson:"longestPodiumFraction"`
 	TotalMovingFraction *float64 `json:"totalMovingFraction,omitempty" bson:"totalMovingFraction"`
 	LongestMovingFraction *float64 `json:"longestMovingFraction,omitempty" bson:"longestMovingFraction"`
+	// TODO: change back to string
 	LocationCategory *string `json:"locationCategory,omitempty" bson:"locationCategory"`
 	CategoryFraction []*float64 `json:"CategoryFraction,omitempty" bson:"CategoryFraction"`
 	LongestCategoryFraction []*float64 `json:"longestCategoryFraction,omitempty" bson:"longestCategoryFraction"`
@@ -234,14 +235,14 @@ type BlockInstructorLocation struct{
 type BlockStudentLocation struct {
 	Id []*int32 `json:"id,omitempty" bson:"id"`
 	NumOccurrencesInBlock []*int32 `json:"numOccurrencesInBlock,omitempty" bson:"numOccurrencesInBlock"`
-	IsSettled []*int32 `json:"isSettled,omitempty" bson:"isSettled"`
+	IsSettled []*bool `json:"isSettled,omitempty" bson:"isSettled"`
 	MeanBodyEntropy []*float64 `json:"meanBodyEntropy,omitempty" bson:"meanBodyEntropy"`
 	MaxBodyEntropy []*float64 `json:"maxBodyEntropy,omitempty" bson:"maxBodyEntropy"`
 	VarBodyEntropy []*float64 `json:"varBodyEntropy,omitempty" bson:"varBodyEntropy"`
 	MeanHeadEntropy []*float64 `json:"meanHeadEntropy,omitempty" bson:"meanHeadEntropy"`
 	MaxHeadEntropy []*float64 `json:"maxHeadEntropy,omitempty" bson:"maxHeadEntropy"`
 	VarHeadEntropy []*float64 `json:"varHeadEntropy,omitempty" bson:"varHeadEntropy"`
-	StayCoordinates []*int32 `json:"stayCoordinates,omitempty" bson:"stayCoordinates"`
+	StayCoordinates [][]*int32 `json:"stayCoordinates,omitempty" bson:"stayCoordinates"`
 	ClusterCount *int32 `json:"clusterCount,omitempty" bson:"clusterCount"`
 	ClusterCenters [][]*float64 `json:"clusterCenters,omitempty" bson:"clusterCenters"`
 	ClusterStudentIds [][]*int32 `json:"clusterStudentIds,omitempty" bson:"clusterStudentIds"`
