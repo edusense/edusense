@@ -37,8 +37,8 @@ RTSP=False
 skipframe = 0
 
 class SocketReaderThread(threading.Thread):
-    def __init__(self, queue, server_address, keep_frame_number,
-                 profile=False, logger_pass):
+    def __init__(self, queue, server_address, keep_frame_number, logger_pass,
+                 profile=False):
         threading.Thread.__init__(self)
         self.queue = queue
         self.server_address = server_address
@@ -135,8 +135,8 @@ class SocketReaderThread(threading.Thread):
 
 class ConsumerThread(threading.Thread):
     def __init__(self, input_queue, process_real_time, process_gaze, gaze_3d, channel,
-                 area_of_interest,fps,start_date,start_time,backend_params=None, file_params=None,
-                 profile=False,skipframe=0,logger_pass):
+                 area_of_interest,fps,start_date,start_time, logger_pass, backend_params=None, file_params=None,
+                 profile=False,skipframe=0):
         threading.Thread.__init__(self)
         self.input_queue = input_queue
         self.process_real_time = process_real_time
@@ -614,8 +614,8 @@ class ConsumerThread(threading.Thread):
 
 def run_pipeline(server_address, time_duration, process_real_time,
                  process_gaze, gaze_3d, keep_frame_number, channel, area_of_interest,
-                 fps,start_date,start_time,backend_params=None, 
-                 file_params=None, profile=False,skipframe=0, root_logger):
+                 fps,start_date,start_time, root_logger, backend_params=None, 
+                 file_params=None, profile=False,skipframe=0):
 
     #initialize loggers
     logger_base = root_logger.getChild('run_pipeline')
@@ -632,13 +632,13 @@ def run_pipeline(server_address, time_duration, process_real_time,
 
     # initialize socket reader thread, this thread multiplexes multiple queues
     # for the sake of simplicity, it is one producer, multiple consumer design
-    reader_thread = SocketReaderThread(q, server_address, keep_frame_number,
-                                       profile, logger_base)
+    reader_thread = SocketReaderThread(q, server_address, keep_frame_number, logger_base,
+                                       profile)
 
     # initialize video consumers
     consumer_thread = ConsumerThread(q, process_real_time, process_gaze, gaze_3d,
-                                     channel, area_of_interest, fps,start_date,start_time,
-                                     backend_params,file_params, profile, skipframe, logger_base)
+                                     channel, area_of_interest, fps,start_date,start_time, logger_base,
+                                     backend_params,file_params, profile, skipframe)
 
     # start downstream (consumers)
     t_consumer_thread_start = datetime.now()
@@ -756,6 +756,8 @@ if __name__ == '__main__':
     logger = logging.LoggerAdapter(logger_master, {})
 
     channel = 'instructor' if args.instructor else 'student'
+    logger.info("Channel: %s", channel)
+    
     if args.area_of_interest is not None:
         if len(args.area_of_interest) % 2 == 1 or len(args.area_of_interest) < 6:
             logger.info('for area of interest, you should put x, y pairs: suppied {}'.format(len(args.area_of_interest)))
@@ -776,13 +778,13 @@ if __name__ == '__main__':
     ###extract starting time #####
     if (RTSP):
         log.write(args.video+" timestamp log\nUsing RTSP\n")
-        logger.info(f'Using RTSP, {args.video} timestamp log')
+        logger.info(args.video+" timestamp log\nUsing RTSP\n")
         fps = None
         start_time=None
         start_date=None
     else:    
        log.write(args.video+" timestamp log\n")
-       logger.info(f'{args.video} timestamp log')
+       logger.info(args.video+" timestamp log\n")
        fps,start_date,start_time= gt.extract_time(args.video,log)
        log.close()  
     ##############################
@@ -829,5 +831,5 @@ if __name__ == '__main__':
     logger.info("starting pipeline i")
     run_pipeline(server_address, args.time_duration, args.process_real_time,
                  args.process_gaze, args.gaze_3d, args.keep_frame_number, channel,
-                 args.area_of_interest, fps,start_date,start_time,backend_params, file_params, profile,skipframe, logger_master)
+                 args.area_of_interest, fps,start_date,start_time, root_logger, backend_params, file_params, profile,skipframe)
     logger.info("ran pipeline i")
