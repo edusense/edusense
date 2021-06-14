@@ -884,8 +884,12 @@ func (s *BlockInstructorLocationResolver) LongestMovingFraction(ctx context.Cont
 	return s.Instructor.LongestMovingFraction, nil
 }
 
-func (s *BlockInstructorLocationResolver) LocationCategory(ctx context.Context) (*string, error) {
-	return s.Instructor.LocationCategory, nil
+func (s *BlockInstructorLocationResolver) LocationCategory(ctx context.Context) (*[]*string, error) {
+	vector := make([]*string, len(s.Instructor.LocationCategory))
+	for i, k := range s.Instructor.LocationCategory {
+		vector[i] = k
+	}
+	return &vector, nil
 }
 
 func (s *BlockInstructorLocationResolver) CategoryFraction(ctx context.Context) (*[]*float64, error) {

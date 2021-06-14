@@ -447,7 +447,7 @@ const QuerySchema = `
       longestPodiumFraction: Float
       totalMovingFraction: Float
       longestMovingFraction: Float
-      locationCategory: String
+      locationCategory: [String]
       categoryFraction: [Float]
       longestCategoryFraction: [Float]
       stayAtLocation: [[Int]!]

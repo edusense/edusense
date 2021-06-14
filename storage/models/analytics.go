@@ -223,7 +223,7 @@ type BlockInstructorLocation struct{
 	TotalMovingFraction *float64 `json:"totalMovingFraction,omitempty" bson:"totalMovingFraction"`
 	LongestMovingFraction *float64 `json:"longestMovingFraction,omitempty" bson:"longestMovingFraction"`
 	// TODO: change back to string
-	LocationCategory *string `json:"locationCategory,omitempty" bson:"locationCategory"`
+	LocationCategory []*string `json:"locationCategory,omitempty" bson:"locationCategory"`
 	CategoryFraction []*float64 `json:"CategoryFraction,omitempty" bson:"CategoryFraction"`
 	LongestCategoryFraction []*float64 `json:"longestCategoryFraction,omitempty" bson:"longestCategoryFraction"`
 	StayAtLocation [][]*int32 `json:"stayAtLocation,omitempty" bson:"stayAtLocation"`
