@@ -5,6 +5,7 @@ import argparse
 import base64
 import datetime
 from datetime import timedelta
+from datetime import datetime
 import json
 import queue
 import os
@@ -46,7 +47,7 @@ class SocketReaderThread(threading.Thread):
         self.frame_number = 0
         self.profile = profile
         self.logger_base = logger_pass.getChild('reader_thread')
-        self.logger = logger.LoggerAdapter(logger_base, {})
+        self.logger = logging.LoggerAdapter(self.logger_base, {})
 
     def start(self):
         logger = self.logger
@@ -183,7 +184,7 @@ class ConsumerThread(threading.Thread):
         self.profile = profile
 
         self.logger_base = logger_pass.getChild('consumer_thread')
-        self.logger = logger.LoggerAdapter(logger_base, {})
+        self.logger = logging.LoggerAdapter(self.logger_base, {})
 
     def start(self):
         self.input_queue = self.input_queue
@@ -831,5 +832,5 @@ if __name__ == '__main__':
     logger.info("starting pipeline i")
     run_pipeline(server_address, args.time_duration, args.process_real_time,
                  args.process_gaze, args.gaze_3d, args.keep_frame_number, channel,
-                 args.area_of_interest, fps,start_date,start_time, root_logger, backend_params, file_params, profile,skipframe)
+                 args.area_of_interest, fps,start_date,start_time, logger_master, backend_params, file_params, profile,skipframe)
     logger.info("ran pipeline i")
