@@ -40,6 +40,23 @@ docker run \
 --process_real_time  \
 --video /app/source/<videoname = name of the video> \
 ```
+<b>Note-: Make sure you log directory has 777 permissions, or else you will see following errors:
+```bash
+Error:
+failed to establish connection to unix socket
+
+Coming from:
+- /openpose/examples/edusense/edusense.cpp:initializationOnThread():261
+- /openpose/include/openpose/thread/worker.hpp:initializationOnThreadNoException():77
+- /openpose/include/openpose/thread/subThread.hpp:initializationOnThread():150
+- /openpose/include/openpose/thread/thread.hpp:initializationOnThread():173
+- /openpose/include/openpose/thread/thread.hpp:threadFunction():203
+- /openpose/include/openpose/thread/thread.hpp:exec():128
+- /openpose/include/openpose/thread/threadManager.hpp:exec():202
+- /openpose/include/openpose/wrapper/wrapper.hpp:exec():424
+terminate called after throwing an instance of 'boost::exception_detail::clone_impl<boost::exception_detail::error_info_injector<boost::system::system_error> >'
+  what():  write: Transport endpoint is not connected
+```
 <b>Note-:</b> For real-time processing, pass the RTSP URL to video argument.
 
 <b>Note-:</b> The above command represents a rather small section of the configurable arguments, 
