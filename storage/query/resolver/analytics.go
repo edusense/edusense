@@ -214,7 +214,7 @@ func (s *SecondInstructorGazeResolver) AngleChange(ctx context.Context) (*float6
 	return s.Instructor.AngleChange, nil
 }
 
-func (s *SecondInstructorGazeResolver) Direction(ctx context.Context) (*bool, error) {
+func (s *SecondInstructorGazeResolver) Direction(ctx context.Context) (*string, error) {
 	return s.Instructor.Direction, nil
 }
 
@@ -262,8 +262,8 @@ func (s *SecondStudentGazeResolver) AngleChange(ctx context.Context) (*[]*float6
 	return &vector, nil
 }
 
-func (s *SecondStudentGazeResolver) Direction(ctx context.Context) (*[]*bool, error) {
-	vector := make([]*bool, len(s.Student.Direction))
+func (s *SecondStudentGazeResolver) Direction(ctx context.Context) (*[]*string, error) {
+	vector := make([]*string, len(s.Student.Direction))
 	for i, k := range s.Student.Direction {
 		vector[i] = k
 	}
@@ -884,8 +884,12 @@ func (s *BlockInstructorLocationResolver) LongestMovingFraction(ctx context.Cont
 	return s.Instructor.LongestMovingFraction, nil
 }
 
-func (s *BlockInstructorLocationResolver) LocationCategory(ctx context.Context) (*string, error) {
-	return s.Instructor.LocationCategory, nil
+func (s *BlockInstructorLocationResolver) LocationCategory(ctx context.Context) (*[]*string, error) {
+	vector := make([]*string, len(s.Instructor.LocationCategory))
+	for i, k := range s.Instructor.LocationCategory {
+		vector[i] = k
+	}
+	return &vector, nil
 }
 
 func (s *BlockInstructorLocationResolver) CategoryFraction(ctx context.Context) (*[]*float64, error) {
@@ -984,8 +988,8 @@ func (s *BlockStudentLocationResolver) NumOccurrencesInBlock(ctx context.Context
 	return &vector, nil
 }
 
-func (s *BlockStudentLocationResolver) IsSettled(ctx context.Context) (*[]*int32, error) {
-	vector := make([]*int32, len(s.Student.IsSettled))
+func (s *BlockStudentLocationResolver) IsSettled(ctx context.Context) (*[]*bool, error) {
+	vector := make([]*bool, len(s.Student.IsSettled))
 	for i, k := range s.Student.IsSettled {
 		vector[i] = k
 	}
@@ -1040,10 +1044,14 @@ func (s *BlockStudentLocationResolver) VarHeadEntropy(ctx context.Context) (*[]*
 	return &vector, nil
 }
 
-func (s *BlockStudentLocationResolver) StayCoordinates(ctx context.Context) (*[]*int32, error) {
-	vector := make([]*int32, len(s.Student.StayCoordinates))
-	for i, k := range s.Student.StayCoordinates {
-		vector[i] = k
+func (s *BlockStudentLocationResolver) StayCoordinates(ctx context.Context) (*[][]*int32, error) {
+	matrix := s.Student.StayCoordinates
+	vector := make([][]*int32, len(matrix))
+	for i := range matrix {
+		vector[i] = make([]*int32, len(matrix[i]))
+		for j := range matrix[i]{
+			vector[i][j] = matrix[i][j]
+		}
 	}
 	return &vector, nil
 }

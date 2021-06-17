@@ -309,7 +309,6 @@ const QuerySchema = `
       teacherActivityTimes: [[[Int]!]!]
     }
 
-
     type SessionAudioAnalysis {
       audioBasedActivityType: [String]
       audioBasedActivityFraction: [Float]
@@ -330,7 +329,7 @@ const QuerySchema = `
     type SecondInstructorGaze {
       angle: Float
       angleChange: Float
-      direction: Boolean
+      direction: String
       viewingSectorThreshold: Float
       countStudentsInGaze: Int
       towardsStudents: Boolean
@@ -341,7 +340,7 @@ const QuerySchema = `
       id: [Int]
       angle: [Float]
       angleChange: [Float]
-      direction: [Boolean]
+      direction: [String]
       towardsInstructor: [Boolean]
       lookingDown: [Boolean]
       lookingFront: [Boolean]
@@ -448,7 +447,7 @@ const QuerySchema = `
       longestPodiumFraction: Float
       totalMovingFraction: Float
       longestMovingFraction: Float
-      locationCategory: String
+      locationCategory: [String]
       categoryFraction: [Float]
       longestCategoryFraction: [Float]
       stayAtLocation: [[Int]!]
@@ -460,14 +459,14 @@ const QuerySchema = `
     type BlockStudentLocation {
       id: [Int]
       numOccurrencesInBlock: [Int]
-      isSettled: [Int]
+      isSettled: [Boolean]
       meanBodyEntropy: [Float]
       maxBodyEntropy: [Float]
       varBodyEntropy: [Float]
       meanHeadEntropy: [Float]
       maxHeadEntropy: [Float]
       varHeadEntropy: [Float]
-      stayCoordinates: [Int]
+      stayCoordinates: [[Int]!]
       clusterCount: Int
       clusterCenters: [[Float]!]
       clusterStudentIds: [[Int]!]
