@@ -168,3 +168,17 @@ def extract_time(video,log):
 
 
 
+def time_diff(t_start, t_end):
+    """
+    Get time diff in secs
+
+    Parameters:
+        t_start(datetime)               : Start time
+        t_end(datetime)                 : End time
+
+    Returns:
+        t_diff(int)                     : time difference in secs
+    """
+
+    return (t_end - t_start).seconds + np.round((t_end - t_start).microseconds / 1000000, 3)
+
