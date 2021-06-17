@@ -37,6 +37,11 @@ type DatabaseDriver interface {
 	InsertCourseCollection (course models.Course) error
 	GetCourse(filter *models.SessionFilter) ([]models.Course, error)
 
+	// Analytics db handler functions
+	InsertAnalytics(analytics models.Analytics) error
+	GetAnalytics() ([]models.Analytics, error)
+	GetAnalyticsFilter(sessIDPtr *string, keywordPtr *string) ([]models.Analytics, error)
+
 	// Get frames by filter
 	// GetFrameByFilter returns list of frames by given frame filters.
 	GetFrameByFilter(sessID, schema, channel string, numberFilters []models.FrameNumberFilter, timestampFilters []models.TimestampFilter) ([]interface{}, error)

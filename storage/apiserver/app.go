@@ -121,6 +121,33 @@ func InsertSessionEndpoint(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusOK, resp)
 }
 
+func InsertAnalyticsEndpoint(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	var req InsertAnalyticsRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+
+	err := driver.InsertAnalytics(req.Analytics)
+	if err != nil {
+		// Reuse the InsertSessionResponse type, since it has the fields we want
+		resp := &InsertSessionResponse{
+			Success:   false,
+			Error:     err.Error(),
+			ErrorCode: 1,
+		}
+		respondWithJSON(w, http.StatusOK, resp)
+		return
+	}
+
+	resp := &InsertSessionResponse{
+		Success:   true,
+	}
+	respondWithJSON(w, http.StatusOK, resp)
+}
+
 // InsertFrameEndpoint reponds to legacy InsertFrame endpoint
 // (POST /sessions/{session_id}/{type}/frames/{schema}/{channel}/).
 func InsertFrameEndpoint(w http.ResponseWriter, r *http.Request) {
@@ -324,6 +351,7 @@ func main() {
 	router.HandleFunc("/classroom", auth.BasicAuth(InsertClassroomEndpoint)).Methods("POST")
 	router.HandleFunc("/course", auth.BasicAuth(InsertCourseEndpoint)).Methods("POST")
 	router.HandleFunc("/sessions", auth.BasicAuth(InsertSessionEndpoint)).Methods("POST")
+	router.HandleFunc("/analytics", auth.BasicAuth(InsertAnalyticsEndpoint)).Methods("POST")
 	router.HandleFunc("/sessions/{session_id}/{type}/frames/{schema}/{channel}/", auth.BasicAuth(InsertFrameEndpoint)).Methods("POST")
 
 	// Query REST Endpoints
