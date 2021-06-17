@@ -432,9 +432,9 @@ class ConsumerThread(threading.Thread):
                         bboxes = np.array(bboxes)
                         bboxes = bboxes.reshape(-1, 4)
                         # print(face)
-                        logger.info('.......')
+                        # logger.info('.......')
                         tvec, rvec, point_2d,face = gaze_3d.get_3d_pose(raw_image, bboxes,face) ##TODO-: change the face variablr
-                        logger.info(point_2d)
+                        # logger.info(point_2d)
                         tvec = tvec.tolist()                                               
                         rvec = rvec.tolist()
                         # print(face)
