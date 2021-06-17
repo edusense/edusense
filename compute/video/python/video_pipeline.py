@@ -5,6 +5,7 @@ import argparse
 import base64
 import datetime
 from datetime import timedelta
+from datetime import datetime
 import json
 import queue
 import os
@@ -21,6 +22,9 @@ import requests
 import deepgaze
 import get_time as gt
 import math
+import logging
+from logging.handlers import WatchedFileHandler
+import traceback
 
 import gaze_3d
 from centroidtracker import *
@@ -34,7 +38,7 @@ RTSP=False
 skipframe = 0
 
 class SocketReaderThread(threading.Thread):
-    def __init__(self, queue, server_address, keep_frame_number,
+    def __init__(self, queue, server_address, keep_frame_number, logger_pass,
                  profile=False):
         threading.Thread.__init__(self)
         self.queue = queue
@@ -42,8 +46,11 @@ class SocketReaderThread(threading.Thread):
         self.keep_frame_number = keep_frame_number
         self.frame_number = 0
         self.profile = profile
+        self.logger_base = logger_pass.getChild('reader_thread')
+        self.logger = logging.LoggerAdapter(self.logger_base, {})
 
     def start(self):
+        logger = self.logger
         sock = None
         if isinstance(self.server_address, tuple):
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -53,6 +60,7 @@ class SocketReaderThread(threading.Thread):
                 os.unlink(self.server_address)
             except:
                 if os.path.exists(self.server_address):
+                    logger.info("Socket already exists")
                     raise
 
             # create a unix domain socket
@@ -60,6 +68,7 @@ class SocketReaderThread(threading.Thread):
 
         # bind the socket to the port
         sock.bind(self.server_address)
+        logger.info("Bound socket to port")
 
         # listen for incoming connections
         sock.listen(1)
@@ -77,6 +86,7 @@ class SocketReaderThread(threading.Thread):
         self.is_running = False
 
     def run(self):
+        logger = self.logger
         try:
             # receive data in small chunks
             while self.is_running:
@@ -97,6 +107,7 @@ class SocketReaderThread(threading.Thread):
                 while bytes_recvd < msg_len:
                     chunk = self.conn.recv(min(msg_len - bytes_recvd, 1048576))
                     if chunk == b'':
+                        logger.info("socket connection broken")
                         raise RuntimeError("socket connection broken")
 
                     chunks.append(chunk)
@@ -109,7 +120,7 @@ class SocketReaderThread(threading.Thread):
                     else (self.frame_number, msg)
 
                 if self.profile:
-                    print('socket_read,%f' %
+                    logger.info('socket_read,%f' %
                           (time.time() - socket_read_start_time))
 
                 if self.queue is not None:
@@ -117,6 +128,7 @@ class SocketReaderThread(threading.Thread):
 
         except Exception as e:
             is_running = False
+            logger.info("Exception thrown")
             traceback.print_exc(file=sys.stdout)
         finally:
             self.conn.close()
@@ -124,7 +136,7 @@ class SocketReaderThread(threading.Thread):
 
 class ConsumerThread(threading.Thread):
     def __init__(self, input_queue, process_real_time, process_gaze, gaze_3d, channel,
-                 area_of_interest,fps,start_date,start_time,backend_params=None, file_params=None,
+                 area_of_interest,fps,start_date,start_time, logger_pass, backend_params=None, file_params=None,
                  profile=False,skipframe=0):
         threading.Thread.__init__(self)
         self.input_queue = input_queue
@@ -171,6 +183,9 @@ class ConsumerThread(threading.Thread):
 
         self.profile = profile
 
+        self.logger_base = logger_pass.getChild('consumer_thread')
+        self.logger = logging.LoggerAdapter(self.logger_base, {})
+
     def start(self):
         self.input_queue = self.input_queue
         self.is_running = True
@@ -178,6 +193,7 @@ class ConsumerThread(threading.Thread):
         super(ConsumerThread, self).start()
 
     def run(self):
+        logger = self.logger
         while self.is_running:
             if self.process_real_time:
                 numbered_datum = None
@@ -193,15 +209,16 @@ class ConsumerThread(threading.Thread):
                         continue
 
                 # process data
+                logger.info("Starting to process frame")
                 raw_image, frame_data = self.process_frame(numbered_datum)
                 
                 if not RTSP:
                    time=int(frame_data['frameNumber']/self.fps)
                    frame_data['timestamp']=self.start_date+'T'+str(self.start_time +  timedelta(seconds=time))+'Z'
-                print('...........................')
-                print(frame_data['timestamp'])
-                print(frame_data['frameNumber'])
-                print('...........................')
+                logger.info('...........................')
+                logger.info(frame_data['timestamp'])
+                logger.info(frame_data['frameNumber'])
+                logger.info('...........................')
                 
                 # post data
                 self.post_frame(raw_image, frame_data)
@@ -220,10 +237,10 @@ class ConsumerThread(threading.Thread):
                 time = float(frame_data['frameNumber'] / self.fps)
                 frame_data['timestamp'] = self.start_date + 'T' + str(
                     self.start_time + timedelta(seconds=time)) + 'Z'
-                print('...........................')
-                print(frame_data['timestamp'])
-                print(frame_data['frameNumber'])
-                print('...........................')
+                logger.info('...........................')
+                logger.info(frame_data['timestamp'])
+                logger.info(frame_data['frameNumber'])
+                logger.info('...........................')
 
                 # post data
                 self.post_frame(raw_image, frame_data)
@@ -237,6 +254,8 @@ class ConsumerThread(threading.Thread):
             self.video_out.release()
 
     def process_frame(self, numbered_datum):
+        logger = self.logger
+
         start_time = time.time()
         frame_data = None
         raw_image = None
@@ -272,6 +291,7 @@ class ConsumerThread(threading.Thread):
                 del frame_data["rawImage"]
 
                 if not has_thumbnail:
+                    logger.info("Start Thumbnail")
                     thumb_start_time = time.time()
                     resized_image = cv2.resize(raw_image, (240, 135))
                     r, buf = cv2.imencode('.jpg', resized_image, [
@@ -283,12 +303,14 @@ class ConsumerThread(threading.Thread):
                     }
 
                     thumbnail_time = time.time() - thumb_start_time
+                    logger.info("Finish Thumbnail %f", thumbnail_time)
 
             elif has_thumbnail:
                 image_rows = frame_data["thumbnail"]["originalRows"]
                 image_cols = frame_data["thumbnail"]["originalColumns"]
 
             # Featurization
+            logger.info("Start Featurization")
             featurization_start_time = time.time()
 
             # extract key points
@@ -320,6 +342,7 @@ class ConsumerThread(threading.Thread):
                 person_poses.append(pose)
 
             # Interframe
+            logger.info("Start Interframe")
             interframe_start_time = time.time()
             tracking_id = None
 
@@ -340,6 +363,7 @@ class ConsumerThread(threading.Thread):
                         break
 
             interframe_time = time.time() - interframe_start_time
+            logger.info("Finish Interframe %f", interframe_time)
 
             if self.channel == 'instructor':
                 y_min = None
@@ -408,9 +432,9 @@ class ConsumerThread(threading.Thread):
                         bboxes = np.array(bboxes)
                         bboxes = bboxes.reshape(-1, 4)
                         # print(face)
-                        print('.......')
+                        logger.info('.......')
                         tvec, rvec, point_2d,face = gaze_3d.get_3d_pose(raw_image, bboxes,face) ##TODO-: change the face variablr
-                        print(point_2d)
+                        logger.info(point_2d)
                         tvec = tvec.tolist()                                               
                         rvec = rvec.tolist()
                         # print(face)
@@ -465,6 +489,7 @@ class ConsumerThread(threading.Thread):
                     body['inference']['head']['translationVector'] = tvec
 
             featurization_time = time.time() - featurization_start_time
+            logger.info("Finish Featurization %f", featurization_time)
 
             # Acceleration
             prev_objects = self.state['prev_objects']
@@ -516,10 +541,10 @@ class ConsumerThread(threading.Thread):
             frame_data['people'] = bodies
 
             if self.profile:
-                print('json,%f' % json_time)
-                print('featurization,%f' % featurization_time)
-                print('thumbnail,%f' % thumbnail_time)
-                print('interframe,%f' % interframe_time)
+                logger.info('json,%f' % json_time)
+                logger.info('featurization,%f' % featurization_time)
+                logger.info('thumbnail,%f' % thumbnail_time)
+                logger.info('interframe,%f' % interframe_time)
 
         except Exception as e:
             traceback.print_exc(file=sys.stdout)
@@ -534,6 +559,7 @@ class ConsumerThread(threading.Thread):
             self.post_frame_to_backend(frame_data)
 
     def post_frame_to_file(self, raw_image, frame_data):
+        logger = self.logger
         if frame_data is not None:
             try:
                 file_post_start_time = time.time()
@@ -557,12 +583,14 @@ class ConsumerThread(threading.Thread):
                 file_post_time = time.time() - file_post_start_time
 
                 if self.profile:
-                    print('file_posting,%f' % file_post_time)
+                    logger.info('file_posting,%f' % file_post_time)
 
             except Exception as e:
+                logger.info("Exception thrown")
                 traceback.print_exc(file=sys.stdout)
 
     def post_frame_to_backend(self, frame_data):
+        logger = self.logger
         if frame_data is not None:
             # if frame_data['channel'] == 'student':
             #    print frame_data
@@ -579,7 +607,7 @@ class ConsumerThread(threading.Thread):
                 db_post_time = time.time() - db_post_start_time
 
                 if self.profile:
-                    print('db_posting,%f' % db_post_time)
+                    logger('db_posting,%f' % db_post_time)
 
             except Exception as e:
                 traceback.print_exc(file=sys.stdout)
@@ -587,8 +615,13 @@ class ConsumerThread(threading.Thread):
 
 def run_pipeline(server_address, time_duration, process_real_time,
                  process_gaze, gaze_3d, keep_frame_number, channel, area_of_interest,
-                 fps,start_date,start_time,backend_params=None, 
+                 fps,start_date,start_time, root_logger, backend_params=None, 
                  file_params=None, profile=False,skipframe=0):
+
+    #initialize loggers
+    logger_base = root_logger.getChild('run_pipeline')
+    logger = logging.LoggerAdapter(logger_base, {})
+
 
     # initialize queues
     q = None
@@ -600,18 +633,22 @@ def run_pipeline(server_address, time_duration, process_real_time,
 
     # initialize socket reader thread, this thread multiplexes multiple queues
     # for the sake of simplicity, it is one producer, multiple consumer design
-    reader_thread = SocketReaderThread(q, server_address, keep_frame_number,
+    reader_thread = SocketReaderThread(q, server_address, keep_frame_number, logger_base,
                                        profile)
 
     # initialize video consumers
     consumer_thread = ConsumerThread(q, process_real_time, process_gaze, gaze_3d,
-                                     channel, area_of_interest, fps,start_date,start_time,
-                                     backend_params,file_params, profile,skipframe)
+                                     channel, area_of_interest, fps,start_date,start_time, logger_base,
+                                     backend_params,file_params, profile, skipframe)
 
     # start downstream (consumers)
+    t_consumer_thread_start = datetime.now()
+    logger.info("Starting Consumer Thread")
     consumer_thread.start()
 
     # then, start upstream (producer)
+    t_reader_thread_start = datetime.now()
+    logger.info("Starting Reader Thread")
     reader_thread.start()
 
     # run forever if duration is negative
@@ -621,10 +658,14 @@ def run_pipeline(server_address, time_duration, process_real_time,
 
         # wait for reader to finish
         reader_thread.join()
+        t_reader_thread_end = datetime.now()
+        logger.info("Finished Reader Thread in %.3fs", time_diff(t_reader_thread_start, t_reader_thread_end))
 
         # wait for consumer thread to finish
         consumer_thread.stop()
         consumer_thread.join()
+        t_consumer_thread_end = datetime.now()
+        logger.info("Finished Consumer Thread in %.3fs", time_diff(t_consumer_thread_start, t_consumer_thread_end))
 
     else:  # shutdown after time_duration seconds
         time.sleep(time_duration)
@@ -634,12 +675,16 @@ def run_pipeline(server_address, time_duration, process_real_time,
 
         # join the upstream
         reader_thread.join()
+        t_reader_thread_end = datetime.now()
+        logger.info("Finished Reader Thread in %.3fs", time_diff(t_reader_thread_start, t_reader_thread_end))
 
         # terminate downstream
         consumer_thread.stop()
 
         # join the downstream
         consumer_thread.join()
+        t_consumer_thread_end = datetime.now()
+        logger.info("Finished Consumer Thread in %.3fs", time_diff(t_consumer_thread_start, t_consumer_thread_end))
 
 
 if __name__ == '__main__':
@@ -692,10 +737,31 @@ if __name__ == '__main__':
                         action='store_true', help='if set, use unix socket')
     args = parser.parse_args()
 
+    logger_master = logging.getLogger('video_pipeline')
+    logger_master.setLevel(logging.DEBUG)
+
+    formatter = logging.Formatter(
+        '%(asctime)s | %(process)s, %(thread)d | %(name)s | %(levelname)s | %(message)s')
+
+    ## Add core logger handler
+    core_logging_handler = WatchedFileHandler('/tmp/video_pipeline.log')
+    core_logging_handler.setFormatter(formatter)
+    logger_master.addHandler(core_logging_handler)
+
+    ## Add stdout logger handler
+    console_log = logging.StreamHandler()
+    console_log.setLevel(logging.DEBUG)
+    console_log.setFormatter(formatter)
+    logger_master.addHandler(console_log)
+
+    logger = logging.LoggerAdapter(logger_master, {})
+
     channel = 'instructor' if args.instructor else 'student'
+    logger.info("Channel: %s", channel)
+    
     if args.area_of_interest is not None:
         if len(args.area_of_interest) % 2 == 1 or len(args.area_of_interest) < 6:
-            print('for area of interest, you should put x, y pairs: suppied {}'.format(len(args.area_of_interest)))
+            logger.info('for area of interest, you should put x, y pairs: suppied {}'.format(len(args.area_of_interest)))
 
     ## if log volume is mounted
     if channel == 'instructor':
@@ -713,16 +779,18 @@ if __name__ == '__main__':
     ###extract starting time #####
     if (RTSP):
         log.write(args.video+" timestamp log\nUsing RTSP\n")
+        logger.info(args.video+" timestamp log\nUsing RTSP\n")
         fps = None
         start_time=None
         start_date=None
     else:    
        log.write(args.video+" timestamp log\n")
+       logger.info(args.video+" timestamp log\n")
        fps,start_date,start_time= gt.extract_time(args.video,log)
        log.close()  
     ##############################
        if fps == None or fps == 0:
-          print("either video address not valid or not able to extract the fps")
+          logger.info("either video address not valid or not able to extract the fps")
           sys.exit(1)
     
     if args.backfillFPS != 0:
@@ -761,8 +829,8 @@ if __name__ == '__main__':
     server_address = (args.video_sock
                       if args.use_unix_socket
                       else (args.tcp_host, args.tcp_port))
-    print("starting pipeline i ");
+    logger.info("starting pipeline i")
     run_pipeline(server_address, args.time_duration, args.process_real_time,
                  args.process_gaze, args.gaze_3d, args.keep_frame_number, channel,
-                 args.area_of_interest, fps,start_date,start_time,backend_params, file_params, profile,skipframe)
-    print("ran pipeline i  ");
+                 args.area_of_interest, fps,start_date,start_time, logger_master, backend_params, file_params, profile,skipframe)
+    logger.info("ran pipeline i")
