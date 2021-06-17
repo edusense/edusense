@@ -107,7 +107,7 @@ def extract_date(video):
    return (date,time_delta)
 
 
-def extract_time(video,log):
+def extract_time(video,logger):
      
    print(pytesseract.get_tesseract_version())
    threshold_error=timedelta(hours=1,minutes=0)
@@ -123,8 +123,8 @@ def extract_time(video,log):
      ## check date format
      date_match=datetime.strptime(file_name_date, "%Y-%m-%d")
    except Exception as e:
-       log.write("ERROR in extracting the date-time from the file_name\n")
-       log.write(str(e)+"\n")
+       logger.info("ERROR in extracting the date-time from the file_name")
+       logger.info(str(e))
        file_time_failed=True;
 
    try:
@@ -135,31 +135,31 @@ def extract_time(video,log):
       ocr_time_stamp=get_timestamp(frame)
       ocr_date,ocr_time=clean_OCR_Time(ocr_time_stamp)
    except Exception as e:
-       log.write(video+"ERROR in extracting the date-time from the OCR\n")
-       log.write(str(e)+"\n")
+       logger.info(video+"ERROR in extracting the date-time from the OCR")
+       logger.info(str(e))
        ocr_time_failed=True;
 
    if(file_time_failed and ocr_time_failed):
-       log.write("Using a default time_stamp "+default_date+'T'+str(default_time)+"\n")
+       logger.info("Using a default time_stamp "+default_date+'T'+str(default_time))
        return (default_date,default_time)
 
    elif ocr_time_failed:
-       log.write("Using file extracted time_stamp "+file_name_date+"T"+str(file_name_time)+"\n")
+       logger.info("Using file extracted time_stamp "+file_name_date+"T"+str(file_name_time))
        file_name_date,file_name_time=convert_to_UTC(file_name_date,file_name_time)
        return(file_name_date,file_name_time)
        
    elif file_time_failed:
-       log.write("Using OCR extracted time_stamp and OCR date "+ocr_date+"T"+str(ocr_time)+"\n")
+       logger.info("Using OCR extracted time_stamp and OCR date "+ocr_date+"T"+str(ocr_time))
        ocr_date,ocr_time=convert_to_UTC(ocr_date,ocr_time)
        return(ocr_date,ocr_time)
 
    else:
        if abs(ocr_time-file_name_time) < threshold_error :
-           log.write("Using OCR timestamp "+file_name_date+"T"+str(ocr_time)+"\n")
+           logger.info("Using OCR timestamp "+file_name_date+"T"+str(ocr_time))
            file_name_date,ocr_time=convert_to_UTC(file_name_date,ocr_time)
            return(file_name_date,ocr_time)
        else:
-           log.write("Using file_name timestamp "+file_name_date+"T"+str(file_name_time)+"\n")
+           logger.info("Using file_name timestamp "+file_name_date+"T"+str(file_name_time))
            file_name_date,file_name_time=convert_to_UTC(file_name_date,file_name_time)
            return(file_name_date,file_name_time)
 
