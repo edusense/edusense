@@ -67,7 +67,7 @@ def kill_all_containers(logger):
 
 def wait_video_container(containers_group, logger):
     process = subprocess.Popen([
-        'docker', 'wait',
+        'docker', 'wait', 'CONTAINER',
         containers_group['video']],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
@@ -107,7 +107,7 @@ def wait_video_container(containers_group, logger):
 
 def wait_audio_container(containers_group, logger):
     process = subprocess.Popen([
-        'docker', 'wait',
+        'docker', 'wait', 'CONTAINER',
         containers_group['audio']],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
