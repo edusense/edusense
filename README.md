@@ -28,6 +28,7 @@ Our [getting started](doc/getting_started.md) is a good starting point if you ar
     - **Speech Detection**:        
         - Student vs Instructor Speech
         - Speech Act Delimation   
+- **[Classroom Digital Twins](https://github.com/edusense/ClassroomDigitialTwins)**
 
 ### Visualization Dashboard
 ![viz dashboard](media/dashboard.jpg)
@@ -40,6 +41,7 @@ Our [getting started](doc/getting_started.md) is a good starting point if you ar
 - [EduSense Website](https://www.edusense.io/)
 - [EduSense Paper](https://karan-ahuja.com/assets/docs/paper/edusense.pdf)
 - [EduSense Docker Hub](https://hub.docker.com/u/edusensecmu)
+- [Classroom Digital Twins](https://www.edusense.io/digital-twins)
 
 ## Citation
 
@@ -65,6 +67,26 @@ Karan Ahuja, Dohyun Kim, Franceska Xhakaj, Virag Varga, Anne Xie, Stanley Zhang,
  publisher = {ACM},
  address = {New York, NY, USA},
  keywords = {Audio, Classroom, Computer Vision, Instructor, Machine Learning, Pedagogy, Sensing, Speech Detection, Teacher},
+}
+```
+
+Karan Ahuja, Deval Shah, Sujeath Pareddy, Franceska Xhakaj, Amy Ogan, Yuvraj Agarwal, and Chris Harrison. 2021. Classroom Digital Twins with Instrumentation-Free Gaze Tracking. In Proceedings of the 2021 CHI Conference on Human Factors in Computing Systems (CHI '21). Association for Computing Machinery, New York, NY, USA, Article 484, 1–9. DOI:https://doi.org/10.1145/3411764.3445711
+
+```
+@inproceedings{10.1145/3411764.3445711,
+author = {Ahuja, Karan and Shah, Deval and Pareddy, Sujeath and Xhakaj, Franceska and Ogan, Amy and Agarwal, Yuvraj and Harrison, Chris},
+title = {Classroom Digital Twins with Instrumentation-Free Gaze Tracking},
+year = {2021},
+isbn = {9781450380966},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3411764.3445711},
+doi = {10.1145/3411764.3445711},
+articleno = {484},
+numpages = {9},
+keywords = {digital twins., Classroom sensing, gaze tracking},
+location = {Yokohama, Japan},
+series = {CHI '21}
 }
 ```
 
