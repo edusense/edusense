@@ -180,7 +180,7 @@ if __name__ == '__main__':
     parser.add_argument('--overwrite', dest='overwrite', type=str, nargs='?', default='False',
                         help='To enable overwriting previous backfilled session, enter: True')
     parser.add_argument('--backfillFPS', dest='backfillFPS', type=str, nargs='?',
-                        required=False, help='FPS for backfill', default=0)
+                        required=False, help='FPS for backfill', default='0')
     args = parser.parse_args()
 
     logger_master = logging.getLogger('run_backfill')
@@ -480,8 +480,11 @@ if __name__ == '__main__':
     # make seperate threads for containers
     threads = []
     t_front = threading.Thread(target=wait_video_container, args=(front_containers,))
+    t_front.start()
     t_back = threading.Thread(target=wait_video_container, args=(back_containers,))
+    t_back.start()
     t_audio = threading.Thread(target=wait_audio_container, args=(audio_containers,))
+    t_audio.start()
 
     t_audio.join()
     t_back.join()
