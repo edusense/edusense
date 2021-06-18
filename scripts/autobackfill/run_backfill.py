@@ -261,27 +261,22 @@ if __name__ == '__main__':
     real_time_flag = ['--process_real_time'] if args.process_real_time \
         else []
 
-    # vid_comm = [
-    #                'docker', 'run', '-d',
-    #                '--gpus', 'device=%d' % (args.front_num_gpu_start),
-    #                '-e', 'LOCAL_USER_ID=%s' % uid,
-    #                '-e', 'APP_USERNAME=%s' % app_username,
-    #                '-e', 'APP_PASSWORD=%s' % app_password,
-    #                '-v', '%s:/app/source' % args.video_dir,
-    #                '-v', '%s:/tmp' % args.log_dir,
-    #                          'edusense/video:' + args.dev,
-    #                '--video', os.path.join('/app', 'source', args.front_video),
-    #                '--video_sock', '/tmp/unix.front.sock',
-    #                '--backend_url', args.backend_url,
-    #                '--session_id', session_id,
-    #                '--schema', args.video_schema,
-    #                '--use_unix_socket',
-    #                '--keep_frame_number',
-    #                '--backfillFPS', args.backfillFPS,
-    #                '--process_gaze',
-    #                '--time_duration',
-    #                str(args.time_duration + 60) if args.time_duration >= 0 else '-1'] + real_time_flag
-    # logger.debug(vid_comm)
+    vid_comm = [
+                   'docker', 'run', '-d',
+                   '--gpus', 'device=%d' % (args.front_num_gpu_start),
+                   '-e', 'LOCAL_USER_ID=%s' % uid,
+                   '-e', 'APP_USERNAME=%s' % app_username,
+                   '-e', 'APP_PASSWORD=%s' % app_password,
+                   '-v', '%s:/app/source' % args.video_dir,
+                   '-v', '%s:/tmp' % args.log_dir,
+                   'edusense/video:' + args.dev,
+                   '--video', os.path.join('/app', 'source', args.front_video),
+                   '--backend_url', args.backend_url,
+                   '--session_id', session_id,
+                   '--backfillFPS', args.backfillFPS,
+                   '--time_duration',
+                   str(args.time_duration + 60) if args.time_duration >= 0 else '-1'] + real_time_flag
+    logger.debug(" | ".join(vid_comm))
 
     # create temp directory(made log_dir mandate for run backfill
     # with tempfile.TemporaryDirectory() as tmp_dir:
