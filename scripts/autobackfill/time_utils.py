@@ -6,7 +6,7 @@ Custom Datetime utils for analytics engine
 """
 
 from datetime import datetime
-import numpy as np
+# import numpy as np
 
 
 def time_diff(t_start, t_end):
@@ -21,7 +21,7 @@ def time_diff(t_start, t_end):
         t_diff(int)                     : time difference in secs
     """
 
-    return (t_end - t_start).seconds + np.round((t_end - t_start).microseconds / 1000000, 3)
+    return (t_end - t_start).seconds + round((t_end - t_start).microseconds / 1000000, 3)
 
 
 def extract_timestamp(session_keyword, logger):
