@@ -73,6 +73,8 @@ def wait_video_container(containers_group, logger):
         stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
 
+
+
     process = subprocess.Popen([
         'docker', 'inspect', containers_group['video'], "--format='{{.State.ExitCode}}'"],
         stdout=subprocess.PIPE,
@@ -80,6 +82,8 @@ def wait_video_container(containers_group, logger):
 
     status = stdout.decode('utf-8')
 
+    lock.acquire()
+    logger.info(f"Killing openpose container:{containers_group['openpose']}")
     # Given video container exited, kill openpose container
     process = subprocess.Popen(['docker', 'container', 'kill', containers_group['openpose']],
                                stdout=subprocess.PIPE,
@@ -88,7 +92,7 @@ def wait_video_container(containers_group, logger):
 
     ## logging.debug is not thread-safe
     # acquire a lock
-    lock.acquire()
+
     logger.info("%s: %s exited with status code %s" % (args.keyword, container_dict[containers_group['video']], status))
     # remove the container from global list and dict
     # in a thread-safe way
