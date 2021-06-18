@@ -5,6 +5,7 @@ import os
 import sys
 import subprocess
 import tempfile
+# import uuid
 import time
 import threading
 import logging
@@ -66,14 +67,20 @@ def kill_all_containers(logger):
 
 
 def wait_video_container(containers_group, logger):
+    # get docker name from id
     process = subprocess.Popen([
-        'docker', 'wait', 'CONTAINER',
-        containers_group['video']],
+        'docker', 'inspect', '--format', '{{.Name}}', containers_group['video']],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
 
-
+    docker_name = stdout.decode('utf-8')
+    logger.info("Got Docker Name for Wait process: %s", docker_name)
+    process = subprocess.Popen([
+        'docker', 'wait', docker_name],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE)
+    stdout, stderr = process.communicate()
 
     process = subprocess.Popen([
         'docker', 'inspect', containers_group['video'], "--format='{{.State.ExitCode}}'"],
@@ -186,6 +193,8 @@ if __name__ == '__main__':
                         help='To enable overwriting previous backfilled session, enter: True')
     parser.add_argument('--backfillFPS', dest='backfillFPS', type=str, nargs='?',
                         required=False, help='FPS for backfill', default='0')
+    # parser.add_argument('--docker_name_prefix', dest='docker_name_prefix', type=str, nargs='?',
+    #                     required=False, help='FPS for backfill', default='')
     args = parser.parse_args()
 
     logger_master = logging.getLogger('run_backfill')
@@ -289,6 +298,10 @@ if __name__ == '__main__':
     #         args.log_dir = tmp_dir
     #         logging.debug('%s: create temporary directory %s' % (args.keyword, tmp_dir))
 
+    # Set docker name prefix if nor already set
+    # if args.docker_name_prefix == '':
+    #     docker_name_prefix = str(uuid.uuid4())
+    #     logger.info("Generating random docker name prefix: %s", docker_name_prefix)
     logger.info("Initializing Docker for front video pipeline")
     t_init_front_video_start = datetime.now()
 
