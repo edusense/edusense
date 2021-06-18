@@ -123,6 +123,8 @@ if __name__ == '__main__':
                         required=False, help='path of mount')
     parser.add_argument('--backfillFPS', dest='backfillFPS', type=str, nargs='?',
                         required=False, help='FPS for backfill',default=0)
+    parser.add_argument('--log_dir', dest='log_dir', type=str, nargs='?',
+                        required=False, help='Log directory to collect autobackfill logs', default=0)
     args = parser.parse_args()
 
     if args.sync_mode != 'rsync' and args.sync_mode != 'mount':
@@ -198,7 +200,8 @@ if __name__ == '__main__':
             '--developer', args.developer,
             '--sync_mode', args.sync_mode,
             '--backfillFPS',args.backfillFPS,
-            '--mount_base_path', args.mount_base_path],
+            '--mount_base_path', args.mount_base_path,
+            '--log_dir',args.log_dir],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             env=os.environ.copy())

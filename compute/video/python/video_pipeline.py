@@ -859,10 +859,11 @@ if __name__ == '__main__':
     logger_master.addHandler(core_logging_handler)
 
     ## Add stdout logger handler
-    console_log = logging.StreamHandler()
-    console_log.setLevel(logging.DEBUG)
-    console_log.setFormatter(formatter)
-    logger_master.addHandler(console_log)
+    if args.backend_url is None:
+        console_log = logging.StreamHandler()
+        console_log.setLevel(logging.DEBUG)
+        console_log.setFormatter(formatter)
+        logger_master.addHandler(console_log)
 
     logger = logging.LoggerAdapter(logger_master, logging_dict)
 

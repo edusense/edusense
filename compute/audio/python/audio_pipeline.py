@@ -28,28 +28,7 @@ frame_number = 0
 os.environ[ 'NUMBA_CACHE_DIR' ] = '/tmp/'
 import librosa
 
-# Initialize logging handlers
 
-logger_master = logging.getLogger('audio_pipeline')
-logger_master.setLevel(logging.DEBUG)
-
-formatter = logging.Formatter(
-    '%(asctime)s | %(process)s, %(thread)d | %(name)s | %(levelname)s | %(message)s')
-
-## Add core logger handler
-core_logging_handler = WatchedFileHandler('/tmp/audio_pipeline.log')
-core_logging_handler.setFormatter(formatter)
-logger_master.addHandler(core_logging_handler)
-
-## Add stdout logger handler
-console_log = logging.StreamHandler()
-console_log.setLevel(logging.DEBUG)
-console_log.setFormatter(formatter)
-logger_master.addHandler(console_log)
-
-logger = logging.LoggerAdapter(logger_master, {})
-
-logger.info("Audio Pipeline Starting...")
 start_time = time.time()
 
 
@@ -86,6 +65,35 @@ parser.add_argument('--schema', dest='schema', type=str, nargs='?',
                     help='EduSense schema')
 
 args = parser.parse_args()
+
+# Initialize logging handlers
+
+logger_master = logging.getLogger('audio_pipeline')
+logger_master.setLevel(logging.DEBUG)
+
+formatter = logging.Formatter(
+    '%(asctime)s | %(process)s, %(thread)d | %(name)s | %(levelname)s | %(message)s')
+
+## Add core logger handler
+video_name = args.front_url.split("/")[-1].split("-fro")[0]
+log_dir = f"/tmp/{video_name}"
+if not os.path.exists(log_dir):
+    os.makedirs(log_dir)
+
+core_logging_handler = WatchedFileHandler(f'{log_dir}/audio_pipeline.log')
+core_logging_handler.setFormatter(formatter)
+logger_master.addHandler(core_logging_handler)
+
+## Add stdout logger handler
+if args.backend_url is None:
+    console_log = logging.StreamHandler()
+    console_log.setLevel(logging.DEBUG)
+    console_log.setFormatter(formatter)
+    logger_master.addHandler(console_log)
+
+logger = logging.LoggerAdapter(logger_master, {})
+
+logger.info("Audio Pipeline Starting...")
 
 ip1 = args.front_url
 ip2 = args.back_url
