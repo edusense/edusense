@@ -101,7 +101,7 @@ def wait_video_container(containers_group, logger):
     lock.release()
 
 
-def wait_audio_container(containers_group):
+def wait_audio_container(containers_group, logger):
     process = subprocess.Popen([
         'docker', 'container', 'wait',
         containers_group['audio']],
@@ -119,7 +119,7 @@ def wait_audio_container(containers_group):
     ## logging.debug is not thread-safe
     # acquire a lock
     lock.acquire()
-    logging.debug(
+    logger.debug(
         "%s: %s exited with status code %s" % (args.keyword, container_dict[containers_group['audio']], status))
     # remove the container from global list and dict
     # in a thread-safe way
