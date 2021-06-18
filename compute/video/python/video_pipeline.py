@@ -141,7 +141,7 @@ class SocketReaderThread(threading.Thread):
 
         except Exception as e:
             is_running = False
-            logger.info("Exception thrown")
+            logger.info("Exception thrown", traceback.format_exc())
             traceback.print_exc(file=sys.stdout)
         finally:
             self.conn.close()
