@@ -65,23 +65,23 @@ def kill_all_containers(logger):
     lock.release()
 
 
-def wait_video_container(containers, logger):
+def wait_video_container(containers_group, logger):
     process = subprocess.Popen([
         'docker', 'container', 'wait',
-        containers['video']],
+        containers_group['video']],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
 
     process = subprocess.Popen([
-        'docker', 'inspect', containers['video'], "--format='{{.State.ExitCode}}'"],
+        'docker', 'inspect', containers_group['video'], "--format='{{.State.ExitCode}}'"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
 
     status = stdout.decode('utf-8')
 
     # Given video container exited, kill openpose container
-    process = subprocess.Popen(['docker', 'container', 'kill', containers['openpose']],
+    process = subprocess.Popen(['docker', 'container', 'kill', containers_group['openpose']],
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
@@ -89,28 +89,28 @@ def wait_video_container(containers, logger):
     ## logging.debug is not thread-safe
     # acquire a lock
     lock.acquire()
-    logger.info("%s: %s exited with status code %s" % (args.keyword, container_dict[containers['video']], status))
+    logger.info("%s: %s exited with status code %s" % (args.keyword, container_dict[containers_group['video']], status))
     # remove the container from global list and dict
     # in a thread-safe way
-    containers.remove(containers['video'])
-    del container_dict[containers['video']]
-    containers.remove(containers['openpose'])
-    del container_dict[containers['openpose']]
+    containers.remove(containers_group['video'])
+    del container_dict[containers_group['video']]
+    containers.remove(containers_group['openpose'])
+    del container_dict[containers_group['openpose']]
 
     # release lock
     lock.release()
 
 
-def wait_audio_container(containers):
+def wait_audio_container(containers_group):
     process = subprocess.Popen([
         'docker', 'container', 'wait',
-        containers['audio']],
+        containers_group['audio']],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
 
     process = subprocess.Popen([
-        'docker', 'inspect', containers['audio'], "--format='{{.State.ExitCode}}'"],
+        'docker', 'inspect', containers_group['audio'], "--format='{{.State.ExitCode}}'"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
 
@@ -119,11 +119,12 @@ def wait_audio_container(containers):
     ## logging.debug is not thread-safe
     # acquire a lock
     lock.acquire()
-    logging.debug("%s: %s exited with status code %s" % (args.keyword, container_dict[containers['audio']], status))
+    logging.debug(
+        "%s: %s exited with status code %s" % (args.keyword, container_dict[containers_group['audio']], status))
     # remove the container from global list and dict
     # in a thread-safe way
-    containers.remove(containers['audio'])
-    del container_dict[containers['audio']]
+    containers.remove(containers_group['audio'])
+    del container_dict[containers_group['audio']]
     # release lock
     lock.release()
 
@@ -269,7 +270,7 @@ if __name__ == '__main__':
                    '-e', 'APP_PASSWORD=%s' % app_password,
                    '-v', '%s:/app/source' % args.video_dir,
                    '-v', '%s:/tmp' % args.log_dir,
-                   'edusense/video:' + args.dev,
+                             'edusense/video:' + args.dev,
                    '--video', os.path.join('/app', 'source', args.front_video),
                    '--backend_url', args.backend_url,
                    '--session_id', session_id,
@@ -474,16 +475,16 @@ if __name__ == '__main__':
 
     # the script can be kept running and dockers will be killed after timeout seconds
 
-    timer = threading.Timer(args.timeout, kill_all_containers)
+    timer = threading.Timer(args.timeout, kill_all_containers, args=(logger))
     timer.start()
 
     # make seperate threads for containers
     threads = []
-    t_front = threading.Thread(target=wait_video_container, args=(front_containers,))
+    t_front = threading.Thread(target=wait_video_container, args=(front_containers, logger))
     t_front.start()
-    t_back = threading.Thread(target=wait_video_container, args=(back_containers,))
+    t_back = threading.Thread(target=wait_video_container, args=(back_containers, logger))
     t_back.start()
-    t_audio = threading.Thread(target=wait_audio_container, args=(audio_containers,))
+    t_audio = threading.Thread(target=wait_audio_container, args=(audio_containers, logger))
     t_audio.start()
 
     t_audio.join()
