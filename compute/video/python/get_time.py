@@ -1,6 +1,7 @@
 import cv2
 import re
 import pytz
+import numpy as np
 # import pytesseract
 from datetime import datetime,timedelta
 
