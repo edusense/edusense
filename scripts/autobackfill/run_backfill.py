@@ -77,7 +77,7 @@ def wait_video_container(containers_group, logger):
     docker_name = stdout.decode('utf-8')[1:-1]
     logger.info("Got Docker Name for Wait process: %s", f"|_{docker_name}_|")
     process = subprocess.Popen([
-        'docker', 'wait', docker_name[1:-1]],
+        'docker', 'wait', docker_name],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
@@ -114,12 +114,19 @@ def wait_video_container(containers_group, logger):
 
 def wait_audio_container(containers_group, logger):
     process = subprocess.Popen([
-        'docker', 'wait', 'CONTAINER',
-        containers_group['audio']],
+        'docker', 'inspect', '--format', '{{.Name}}', containers_group['audio']],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
 
+    docker_name = stdout.decode('utf-8')[1:-1]
+    logger.info("Got Docker Name for Wait process: %s", f"|_{docker_name}_|")
+    process = subprocess.Popen([
+        'docker', 'wait', docker_name],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE)
+    stdout, stderr = process.communicate()
+    logger.info(f"Docker wait output: {str(stdout)}, {str(stderr)}")
     process = subprocess.Popen([
         'docker', 'inspect', containers_group['audio'], "--format='{{.State.ExitCode}}'"],
         stdout=subprocess.PIPE,
@@ -489,8 +496,8 @@ if __name__ == '__main__':
     logger.debug('Created audio container for session id %s in %.3f secs', session_id,
                  time_diff(t_init_audio_start, t_init_audio_end))
     
-    logger.info("Sleeping for 2 mins")
-    time.sleep(120)
+    # logger.info("Sleeping for 2 mins")
+    # time.sleep(120)
     # the script can be kept running and dockers will be killed after timeout seconds
 
     timer = threading.Timer(args.timeout, kill_all_containers, args=(logger))

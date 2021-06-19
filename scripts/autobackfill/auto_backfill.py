@@ -1,10 +1,12 @@
 # Originally from edusense/production: https://github.com/edusense/production
 
 import argparse
-import datetime
+from datetime import datetime
+from logging.handlers import WatchedFileHandler
 import os
 import subprocess
 import sys
+
 import tempfile
 import csv
 import logging
@@ -23,8 +25,8 @@ def writelog(message, f):
         f.write(message + '\n')
 
 
-def rsync_get_classes():
-    logging.debug("* in rsync_get_files")
+def rsync_get_classes(logger):
+    logger.info("* in rsync_get_files")
     rsync_path = 'classinsight@%s:%s/video_backup' % (
         args.rsync_host, args.rsync_base_path)
     process = subprocess.Popen([
@@ -59,14 +61,14 @@ def rsync_get_classes():
     return classes
 
 
-def mount_get_classes():
+def mount_get_classes(logger):
+    logger.info("Fetching classes info from mount based on keyword")
     mount_path = '%s/video_backup' % (args.mount_base_path)
     allfiles = os.walk(mount_path)
     classes = {}
 
     for subdir, dirs, files in allfiles:
         for filename in files:
-
             filepath = subdir + os.sep + filename
 
             if 'avi' in filepath and args.keyword in filepath:
@@ -75,34 +77,38 @@ def mount_get_classes():
                 if keyword in classes.keys():
                     if 'front' in filename:
                         classes[keyword]['front'] = filepath
+                        logger.info("adding file %s into keyword %s", filename, keyword)
                     else:
                         classes[keyword]['back'] = filepath
+                        logger.info("adding file %s into keyword %s", filename, keyword)
                 else:
                     if 'front' in filename:
                         classes[keyword] = {
                             'front': filepath
                         }
+                        logger.info("adding file %s into created keyword %s", filename, keyword)
                     else:
                         classes[keyword] = {
                             'back': filepath
                         }
-
+                        logger.info("adding file %s into created keyword %s", filename, keyword)
+    logger.info("Finished fetching classes information from mount.")
     return classes
 
 
 if __name__ == '__main__':
-    try:
-        os.remove('autobackfill.log')
-    except:
-        pass
-    
-    try:
-        os.remove('run_backfill.log')
-    except:
-        pass
+    # try:
+    #     os.remove('autobackfill.log')
+    # except:
+    #     pass
+    #
+    # try:
+    #     os.remove('run_backfill.log')
+    # except:
+    #     pass
 
-    logging.basicConfig(filename='autobackfill.log', level=logging.DEBUG)
-    logging.debug("Autobackfill.py")
+    # logging.basicConfig(filename='autobackfill.log', level=logging.DEBUG)
+    # logging.info("Autobackfill.py")
 
     parser = argparse.ArgumentParser(description='prepare backfill')
     parser.add_argument('--rsync_host', dest='rsync_host', type=str, nargs='?',
@@ -127,28 +133,56 @@ if __name__ == '__main__':
                         required=False, help='Log directory to collect autobackfill logs', default=0)
     args = parser.parse_args()
 
+    logger_master = logging.getLogger('auto_backfill')
+    logger_master.setLevel(logging.DEBUG)
+
+    formatter = logging.Formatter(
+        '%(asctime)s | %(process)s, %(thread)d | %(keyword)s | %(name)s | %(levelname)s | %(message)s')
+    logging_dict = {
+        'keyword': args.keyword
+    }
+
+    ## Add core logger handler
+    if not os.path.exists(args.log_dir):
+        os.makedirs(args.log_dir, 0o777, exist_ok=True)
+    time_str = datetime.now().strftime("%Y%m%d")
+    core_logging_handler = WatchedFileHandler(f"{args.log_dir}/autobackfill_{logging_dict['keyword']}.log")
+    core_logging_handler.setFormatter(formatter)
+    logger_master.addHandler(core_logging_handler)
+
+    ## Add stdout logger handler
+    console_log = logging.StreamHandler()
+    console_log.setLevel(logging.DEBUG)
+    console_log.setFormatter(formatter)
+    logger_master.addHandler(console_log)
+
+    logger = logging.LoggerAdapter(logger_master, logging_dict)
+
+
     if args.sync_mode != 'rsync' and args.sync_mode != 'mount':
         raise Exception('sync_mode must be either \'rsync\' or \'mount\'')
 
     if args.sync_mode == 'mount':
-        logging.debug(" Mount")
+        logger.info("Collecting information from mount")
         if args.mount_base_path is None:
-            logging.debug(" No mount given, default to rsync")
-            classes = rsync_get_classes()
+            logger.info(" No mount given, default to rsync")
+            classes = rsync_get_classes(logger)
         else:
-            classes = mount_get_classes()
+            classes = mount_get_classes(logger)
     elif args.sync_mode == 'rsync':
-        logging.debug(" Rsync")
-        classes = rsync_get_classes()
+        logger.info(" Rsync")
+        classes = rsync_get_classes(logger)
 
-    logging.debug(" Parsed classes")
-    logging.debug(classes)
+    logger.info(" Parsed %d classes", len(classes))
+    # logger.info(classes)
 
     schedules = []
     num_schedules = NUM_GPUS // 2
 
+    logger.info(f"Creating {str(num_schedules)} schedules for {str(NUM_GPUS)} GPUs")
+
     if num_schedules < 1:
-        logging.error("Number of GPUs less than 2. exiting..")
+        logger.error("Number of GPUs less than 2. exiting..")
         exit(0)
 
     for k, v in classes.items():
@@ -158,37 +192,40 @@ if __name__ == '__main__':
                 time = metadata[COURSE]
             else:
                 time = -1
-            
-            schedules.append([k,time,v['front'].strip(), v['back'].strip()])
+            schedule_entry = [k,time,v['front'].strip(), v['back'].strip()]
+            schedules.append(schedule_entry)
+            logger.info(f"Parsed schedule: {','.join(schedule_entry)}")
 
-    logging.debug(" Parsed schedules")
-    logging.debug(schedules)
+    logger.info("Parsed total %d schedule entries", len(schedules))
+    # logger.info(schedules)
     ## make the directory
-    process_time = datetime.datetime.now().strftime('%Y%m%d%H%M')
+    process_time = datetime.now().strftime('%Y%m%d%H%M')
     directory = os.path.join(args.backfill_base_path,
                              '%s:%s' % (args.keyword, process_time))
-
     access_rights = 0o770
     os.makedirs(directory, access_rights, exist_ok=True)
 
+    logger.info("Created directory %s for this autobackfill session", directory)
     ##[[], [], [], []]
     ## round-robin to divide the task
+    logger.info("Round robin to divide task across multiple threads")
     subschedules = [list() for i in range(num_schedules)]
     for i in range(len(schedules)):
         subschedules[i % num_schedules].append(schedules[i])
 
+    logger.info("Writing subschedules in files")
     for i in range(len(subschedules)):
         with open(os.path.join(directory, 'schedule-%d.csv' % i), 'w') as f:
             writer = csv.writer(f)
             for s in subschedules[i]:
                 writer.writerow(s)
 
-    logging.debug(" About to call backfill.py")
+    logger.info("Calling one backfill.py for each subschedule independently")
 
     processes = []
 
     for i in range(len(subschedules)):
-        logging.debug("* in %d subschedule" % (i))
+        logger.info("Calling backfill for subschedule %d",i)
         process = subprocess.Popen([
             '/usr/bin/python3', os.path.join(
                 args.backfill_base_path, 'backfill.py'),
@@ -207,11 +244,13 @@ if __name__ == '__main__':
             env=os.environ.copy())
         processes.append(process)
 
+    logger.info("Waiting on joining threads from all subschedules")
     for i in range(len(subschedules)):
         stdout, stderr = processes[i].communicate()
-
+        logger.info("subschedule %d finished processing", i)
+        logger.info("subschedule %d std output: %s", i, stdout.decode('utf-8'))
         with open(os.path.join(directory, 'schedule-%d.stdout' % i), 'a') as f:
             f.write(stdout.decode('utf-8'))
-
+        logger.info("subschedule %d std error: %s", i, stderr.decode('utf-8'))
         with open(os.path.join(directory, 'schedule-%s.stderr' % i), 'a') as f:
             f.write(stderr.decode('utf-8'))
