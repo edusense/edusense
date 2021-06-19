@@ -196,7 +196,7 @@ if __name__ == '__main__':
                 time = -1
             schedule_entry = [k,time,v['front'].strip(), v['back'].strip()]
             schedules.append(schedule_entry)
-            logger.info(f"Parsed schedule: {','.join(schedule_entry)}")
+            logger.info(f"Parsed schedule: {str(schedule_entry)}")
 
     logger.info("Parsed total %d schedule entries", len(schedules))
     # logger.info(schedules)
