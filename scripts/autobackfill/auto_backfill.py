@@ -128,7 +128,7 @@ if __name__ == '__main__':
     parser.add_argument('--mount_base_path', dest='mount_base_path', type=str, nargs='?',
                         required=False, help='path of mount')
     parser.add_argument('--backfillFPS', dest='backfillFPS', type=str, nargs='?',
-                        required=False, help='FPS for backfill',default=0)
+                        required=False, help='FPS for backfill',default='0')
     parser.add_argument('--log_dir', dest='log_dir', type=str, nargs='?',
                         required=False, help='Log directory to collect autobackfill logs', default=0)
     args = parser.parse_args()
@@ -158,6 +158,8 @@ if __name__ == '__main__':
 
     logger = logging.LoggerAdapter(logger_master, logging_dict)
 
+    time_str = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+    logger.info("--------------------------Starting new autobackfill session at %s--------------------------",time_str)
 
     if args.sync_mode != 'rsync' and args.sync_mode != 'mount':
         raise Exception('sync_mode must be either \'rsync\' or \'mount\'')
