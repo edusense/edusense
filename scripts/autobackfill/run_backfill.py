@@ -69,7 +69,7 @@ def kill_all_containers(logger):
 def wait_video_container(containers_group, logger):
     # get docker name from id
     process = subprocess.Popen([
-        'docker', 'inspect', '--format', '{{.Name}}', containers_group['video']],
+        'docker', 'inspect', '--format', '{{.Name}}', containers_group['openpose']],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
@@ -83,16 +83,16 @@ def wait_video_container(containers_group, logger):
     stdout, stderr = process.communicate()
     logger.info(f"Docker wait output: {str(stdout)}, {str(stderr)}")
     process = subprocess.Popen([
-        'docker', 'inspect', containers_group['video'], "--format='{{.State.ExitCode}}'"],
+        'docker', 'inspect', containers_group['openpose'], "--format='{{.State.ExitCode}}'"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
 
     status = stdout.decode('utf-8')
 
     lock.acquire()
-    logger.info(f"Killing openpose container:{containers_group['openpose']}")
+    logger.info(f"Killing video container after openpose:{containers_group['video']}")
     # # Given video container exited, kill openpose container
-    process = subprocess.Popen(['docker', 'container', 'kill', containers_group['openpose']],
+    process = subprocess.Popen(['docker', 'container', 'kill', containers_group['video']],
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
@@ -100,7 +100,7 @@ def wait_video_container(containers_group, logger):
     ## logging.debug is not thread-safe
     # acquire a lock
 
-    logger.info("%s: %s exited with status code %s" % (args.keyword, container_dict[containers_group['video']], status))
+    logger.info("%s: %s exited with status code %s" % (args.keyword, container_dict[containers_group['openpose']], status))
     # remove the container from global list and dict
     # in a thread-safe way
     containers.remove(containers_group['video'])
