@@ -77,7 +77,7 @@ def wait_video_container(containers_group, logger):
     docker_name = stdout.decode('utf-8')
     logger.info("Got Docker Name for Wait process: %s", f"|_{docker_name}_|")
     process = subprocess.Popen([
-        'docker', 'wait', docker_name],
+        'docker', 'wait', docker_name[1:-1]],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
