@@ -854,7 +854,7 @@ if __name__ == '__main__':
     log_dir = f"/tmp/{video_name}"
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
-    os.chmod(log_dir, 0777)
+    os.chmod(log_dir, 0o777)
     core_logging_handler = WatchedFileHandler(f'{log_dir}/video_pipeline.log')
     core_logging_handler.setFormatter(formatter)
     logger_master.addHandler(core_logging_handler)
