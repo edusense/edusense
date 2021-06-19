@@ -851,11 +851,8 @@ if __name__ == '__main__':
 
     ## Add core logger handler
     video_name = args.video.split("/")[-1].split(".")[0]
-    log_dir = f"/tmp/{video_name}"
-    if not os.path.exists(log_dir):
-        os.makedirs(log_dir)
-    os.chmod(log_dir, 0o777)
-    core_logging_handler = WatchedFileHandler(f'{log_dir}/video_pipeline.log')
+    log_file = f"/tmp/{video_name}.log"
+    core_logging_handler = WatchedFileHandler(log_file)
     core_logging_handler.setFormatter(formatter)
     logger_master.addHandler(core_logging_handler)
 

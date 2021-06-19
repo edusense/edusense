@@ -76,11 +76,8 @@ formatter = logging.Formatter(
 
 ## Add core logger handler
 video_name = args.front_url.split("/")[-1].split("-fro")[0]
-log_dir = f"/tmp/{video_name}"
-if not os.path.exists(log_dir):
-    os.makedirs(log_dir)
-
-core_logging_handler = WatchedFileHandler(f'{log_dir}/audio_pipeline.log')
+log_file = f"/tmp/{video_name}-audio.log"
+core_logging_handler = WatchedFileHandler(log_file)
 core_logging_handler.setFormatter(formatter)
 logger_master.addHandler(core_logging_handler)
 
