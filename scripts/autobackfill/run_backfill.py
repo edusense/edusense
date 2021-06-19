@@ -208,7 +208,7 @@ if __name__ == '__main__':
     ## Add core logger handler
     if not os.path.exists(args.log_dir):
         os.makedirs(args.log_dir)
-    time_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+    time_str = datetime.now().strftime("%Y%m%d")
     core_logging_handler = WatchedFileHandler(f'{args.log_dir}/run_backfill_{time_str}.log')
     core_logging_handler.setFormatter(formatter)
     logger_master.addHandler(core_logging_handler)
