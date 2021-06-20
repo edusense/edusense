@@ -574,6 +574,28 @@ const QuerySchema = `
 	    handPosturePreference: [String]
 	    headPosturePreference: [String]
     }
+
+    type BackfillMetaData {
+      courseNumber: String!
+      sessions: [BackfillSession!]!
+    }
+
+    type BackfillSession {
+      id: String
+      keyword: String
+      name: String
+      debugInfo: String
+      commitId: String
+      analyticsCommitId: String
+      startTime: Time
+      runtime: Float
+      status: String
+      pipelineVersion: String
+      analysisStartTime: Time
+      analysisRuntime: Float
+      analysisComplete: Bool
+    }
+
   `
 
 // MustParseSchema parses the GraphQL schema. If parse fails, it will crash
