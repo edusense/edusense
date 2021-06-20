@@ -33,6 +33,7 @@ const QuerySchema = `
       classrooms: [Classroom!]!
       courses: [Course!]!  
       analytics (sessionId: ID, keyword: String): [Analytics!]!
+      backfillMetaData (courseNumber: String): [BackfillMetaData!]!
     }
 
     type Classroom {
@@ -577,7 +578,7 @@ const QuerySchema = `
 
     type BackfillMetaData {
       courseNumber: String!
-      sessions: [BackfillSession!]!
+      sessions: [BackfillSession]!
     }
 
     type BackfillSession {
@@ -593,7 +594,7 @@ const QuerySchema = `
       pipelineVersion: String
       analysisStartTime: Time
       analysisRuntime: Float
-      analysisComplete: Bool
+      analysisComplete: Boolean
     }
 
   `

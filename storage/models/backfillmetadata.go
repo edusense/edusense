@@ -9,7 +9,7 @@ import (
 
 type BackfillMetaData struct {
 	CourseNumber string `json:"courseNumber" bson:"courseNumber"`
-	Sessions []BackfillSession `json:"backfillSession" bson:"backfillSession"`
+	Sessions []BackfillSession `json:"sessions" bson:"sessions"`
 }
 
 type BackfillSession struct {

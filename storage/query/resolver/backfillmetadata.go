@@ -51,10 +51,10 @@ func (b *BackfillMetaDataResolver) CourseNumber(ctx context.Context) (string, er
 	return b.BackfillMetaData.CourseNumber, nil
 }
 
-func (b *BackfillMetaDataResolver) Sessions(ctx context.Context) ([]BackfillSessionResolver, error) {
-	vector := make([]BackfillSessionResolver, len(b.BackfillMetaData.Sessions))
+func (b *BackfillMetaDataResolver) Sessions(ctx context.Context) ([]*BackfillSessionResolver, error) {
+	vector := make([]*BackfillSessionResolver, len(b.BackfillMetaData.Sessions))
 	for i, k := range b.BackfillMetaData.Sessions {
-		vector[i] = BackfillSessionResolver{BackfillSession: k}
+		vector[i] = &BackfillSessionResolver{BackfillSession: k}
 	}
 	return vector, nil
 }
