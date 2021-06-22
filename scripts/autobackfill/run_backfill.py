@@ -9,6 +9,7 @@ import tempfile
 import time
 import threading
 import logging
+import traceback
 from logging.handlers import WatchedFileHandler
 from datetime import datetime, timedelta
 from time_utils import time_diff
@@ -90,24 +91,26 @@ def wait_video_container(containers_group, logger):
     status = stdout.decode('utf-8')
 
     lock.acquire()
-    logger.info(f"Killing openpose container after video:{containers_group['openpose']}")
-    # # Given video container exited, kill openpose container
-    process = subprocess.Popen(['docker', 'container', 'kill', containers_group['openpose']],
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
-    stdout, stderr = process.communicate()
+    try:
+        logger.info(f"Killing openpose container after video:{containers_group['openpose']}")
+        # # Given video container exited, kill openpose container
+        process = subprocess.Popen(['docker', 'container', 'kill', containers_group['openpose']],
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
+        stdout, stderr = process.communicate()
 
-    ## logging.debug is not thread-safe
-    # acquire a lock
+        ## logging.debug is not thread-safe
+        # acquire a lock
 
-    logger.info("%s: %s exited with status code %s" % (args.keyword, container_dict[containers_group['video']], status))
-    # remove the container from global list and dict
-    # in a thread-safe way
-    containers.remove(containers_group['video'])
-    del container_dict[containers_group['video']]
-    containers.remove(containers_group['openpose'])
-    del container_dict[containers_group['openpose']]
-
+        logger.info("%s: %s exited with status code %s" % (args.keyword, container_dict[containers_group['video']], status))
+        # remove the container from global list and dict
+        # in a thread-safe way
+        containers.remove(containers_group['video'])
+        del container_dict[containers_group['video']]
+        containers.remove(containers_group['openpose'])
+        del container_dict[containers_group['openpose']]
+    except:
+        logger.info("Error in wait video container locked region ", traceback.format_exc())
     # release lock
     lock.release()
 
@@ -135,23 +138,26 @@ def wait_openpose_container(containers_group, logger):
     status = stdout.decode('utf-8')
 
     lock.acquire()
-    logger.info(f"Killing video container after openpose:{containers_group['video']}")
-    # # Given video container exited, kill openpose container
-    process = subprocess.Popen(['docker', 'container', 'kill', containers_group['video']],
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
-    stdout, stderr = process.communicate()
+    try:
+        logger.info(f"Killing video container after openpose:{containers_group['video']}")
+        # # Given video container exited, kill openpose container
+        process = subprocess.Popen(['docker', 'container', 'kill', containers_group['video']],
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
+        stdout, stderr = process.communicate()
 
-    ## logging.debug is not thread-safe
-    # acquire a lock
+        ## logging.debug is not thread-safe
+        # acquire a lock
 
-    logger.info("%s: %s exited with status code %s" % (args.keyword, container_dict[containers_group['openpose']], status))
-    # remove the container from global list and dict
-    # in a thread-safe way
-    containers.remove(containers_group['video'])
-    del container_dict[containers_group['video']]
-    containers.remove(containers_group['openpose'])
-    del container_dict[containers_group['openpose']]
+        logger.info("%s: %s exited with status code %s" % (args.keyword, container_dict[containers_group['openpose']], status))
+        # remove the container from global list and dict
+        # in a thread-safe way
+        containers.remove(containers_group['video'])
+        del container_dict[containers_group['video']]
+        containers.remove(containers_group['openpose'])
+        del container_dict[containers_group['openpose']]
+    except:
+        logger.info("Error in wait openpose container locked region ", traceback.format_exc())
 
     # release lock
     lock.release()

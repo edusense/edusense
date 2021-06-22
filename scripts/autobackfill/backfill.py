@@ -8,6 +8,8 @@ import time
 from datetime import datetime
 from logging.handlers import WatchedFileHandler
 import logging
+import base64
+import requests
 
 
 def rsync_fetch_files(front_url, front_filename, back_url, back_filename, logger):
@@ -171,3 +173,55 @@ if __name__ == '__main__':
         os.remove(os.path.join(args.backfill_base_path, front_filename))
         os.remove(os.path.join(args.backfill_base_path, back_filename))
         logger.info(" Files removed")
+
+        # Write backfilling status in db
+        # time_str = datetime.now().strftime("%Y%m%d")
+        # backfill_logfile = f'{args.log_dir}/{keyword}/run_backfill_{time_str}.log'
+        # backfill_logs = None
+        # try:
+        #     with open(backfill_logfile,'r') as f:
+        #         backfill_logs = f.read()
+        #     logger.info("Got backfilling logs for writing to db")
+        # except:
+        #     backfill_logs = ''
+        #     logger.info("Unable to get backfilling logs for writing to db")
+        #
+        # # post to metadata backend
+        # backfillmetadata_user = os.getenv("APP_USERNAME", "")
+        # backfillmetadata_password = os.getenv("APP_PASSWORD", "")
+        # backfillmetadata_url = f"{args.backend_url}/backfillmetadata"
+        # cred = '{}:{}'.format(backfillmetadata_user, backfillmetadata_password).encode('ascii')
+        # encoded_cred = base64.standard_b64encode(cred).decode('ascii')
+        #
+        # metadata_payload = {
+        #     {
+        #         'courseNumber': '15122',
+        #         'sessions': [{
+        #             'id': 'id4',
+        #             'keyword': 'keyword4',
+        #             'name': 'name4',
+        #             'debugInfo': 'debugInfo4',
+        #             'commitId': 'commitId4',
+        #             'analyticsCommitId': 'analyticsCommitId4'
+        #         }, {
+        #             'id': 'id5',
+        #             'keyword': 'keyword5',
+        #             'name': 'name5',
+        #             'debugInfo': 'debugInfo5',
+        #             'commitId': 'commitId5',
+        #             'analyticsCommitId': 'analyticsCommitId5'
+        #         }]
+        #     }
+        # }
+        #
+        # # Query template and posting results
+        #
+        # backend_params = {
+        #     'headers': {
+        #         'Authorization': 'Basic {}'.format(encoded_cred),
+        #         'Content-Type': 'application/json'}
+        # }
+        #
+        # try:
+        #     posting_response = requests.post(backfillmetadata_url, headers=backend_params['headers'],
+        #                                      json={'analytics': output_payload})
