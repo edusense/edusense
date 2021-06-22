@@ -69,6 +69,51 @@ def kill_all_containers(logger):
 def wait_video_container(containers_group, logger):
     # get docker name from id
     process = subprocess.Popen([
+        'docker', 'inspect', '--format', '{{.Name}}', containers_group['video']],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE)
+    stdout, stderr = process.communicate()
+
+    docker_name = stdout.decode('utf-8')[1:-1]
+    logger.info("Got docker Name for wait video container process: %s", f"|_{docker_name}_|")
+    process = subprocess.Popen([
+        'docker', 'wait', docker_name],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE)
+    stdout, stderr = process.communicate()
+    logger.info(f"Docker wait output: {str(stdout)}, {str(stderr)}")
+    process = subprocess.Popen([
+        'docker', 'inspect', containers_group['video'], "--format='{{.State.ExitCode}}'"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE)
+
+    status = stdout.decode('utf-8')
+
+    lock.acquire()
+    logger.info(f"Killing openpose container after video:{containers_group['openpose']}")
+    # # Given video container exited, kill openpose container
+    process = subprocess.Popen(['docker', 'container', 'kill', containers_group['openpose']],
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE)
+    stdout, stderr = process.communicate()
+
+    ## logging.debug is not thread-safe
+    # acquire a lock
+
+    logger.info("%s: %s exited with status code %s" % (args.keyword, container_dict[containers_group['video']], status))
+    # remove the container from global list and dict
+    # in a thread-safe way
+    containers.remove(containers_group['video'])
+    del container_dict[containers_group['video']]
+    containers.remove(containers_group['openpose'])
+    del container_dict[containers_group['openpose']]
+
+    # release lock
+    lock.release()
+
+def wait_openpose_container(containers_group, logger):
+    # get docker name from id
+    process = subprocess.Popen([
         'docker', 'inspect', '--format', '{{.Name}}', containers_group['openpose']],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
@@ -505,16 +550,22 @@ if __name__ == '__main__':
 
     # make seperate threads for containers
     threads = []
-    t_front = threading.Thread(target=wait_video_container, args=(front_containers, logger))
-    t_front.start()
-    t_back = threading.Thread(target=wait_video_container, args=(back_containers, logger))
-    t_back.start()
+    t_front_video = threading.Thread(target=wait_video_container, args=(front_containers, logger))
+    t_front_video.start()
+    t_back_video = threading.Thread(target=wait_video_container, args=(back_containers, logger))
+    t_back_video.start()
+    t_front_openpose = threading.Thread(target=wait_openpose_container, args=(front_containers, logger))
+    t_front_openpose.start()
+    t_back_openpose = threading.Thread(target=wait_openpose_container, args=(back_containers, logger))
+    t_back_openpose.start()
     t_audio = threading.Thread(target=wait_audio_container, args=(audio_containers, logger))
     t_audio.start()
 
     t_audio.join()
-    t_back.join()
-    t_front.join()
+    t_back_openpose.join()
+    t_front_openpose.join()
+    t_back_video.join()
+    t_front_video.join()
 
     # for container in containers:
     #     t = threading.Thread(target=wait_container, args=[container])

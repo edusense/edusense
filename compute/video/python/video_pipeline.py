@@ -108,7 +108,9 @@ class SocketReaderThread(threading.Thread):
                 logger.info(f"Next Packet Size:{str(msg_len)}")
                 # termination signal
                 if msg_len == 0:
-                    logger.info(f"Zero length packet received, exiting reader loop")
+                    logger.info(f"Zero length packet received, openpose processing finished")
+                    self.queue.put((None, None), True, None)
+                    logger.info(f"Put a null packet in queue for consumer thread, exiting reader loop")
                     break
 
                 chunks = []
@@ -260,6 +262,13 @@ class ConsumerThread(threading.Thread):
                 self.currentframe = 1
                 logger.info("Starting to process frame")
                 raw_image, frame_data = self.process_frame(self.input_queue.get())
+
+                # see if we find null packet returned from process frame
+                if raw_image is None and frame_data is None:
+                    logger.info("End of queue NULL packet processed, exiting consumer thread")
+                    self.input_queue.task_done()
+                    logger.info("Exiting consumer thread run function")
+                    return None
                 time = float(frame_data['frameNumber'] / self.fps)
                 frame_data['timestamp'] = self.start_date + 'T' + str(
                     self.start_time + timedelta(seconds=time)) + 'Z'
@@ -298,6 +307,11 @@ class ConsumerThread(threading.Thread):
             t_json_start = datetime.now()
             frame_number, datum = numbered_datum
 
+            # Check if it is end of queue packet
+            if datum is None:
+                self.is_running = False
+                logger.info("End of queue NULL packet received, stop processing this frame")
+                return None, None
             frame_data = json.loads(datum.decode('utf-8'))
             if frame_number is not None:
                 frame_data['frameNumber'] = frame_number
