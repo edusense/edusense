@@ -225,7 +225,7 @@ if __name__ == '__main__':
 
     processes = []
 
-    for i in range(1, len(subschedules)):
+    for i in range(len(subschedules)):
         logger.info("Calling backfill for subschedule %d", i)
         process = subprocess.Popen([
             '/usr/bin/python3', os.path.join(
