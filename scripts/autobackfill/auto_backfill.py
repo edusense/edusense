@@ -18,6 +18,7 @@ metadata = {
 
 NUM_GPUS = 7
 
+
 def writelog(message, f):
     if f is not None:
         f.write(message + '\n')
@@ -126,7 +127,7 @@ if __name__ == '__main__':
     parser.add_argument('--mount_base_path', dest='mount_base_path', type=str, nargs='?',
                         required=False, help='path of mount')
     parser.add_argument('--backfillFPS', dest='backfillFPS', type=str, nargs='?',
-                        required=False, help='FPS for backfill',default='0')
+                        required=False, help='FPS for backfill', default='0')
     parser.add_argument('--log_dir', dest='log_dir', type=str, nargs='?',
                         required=False, help='Log directory to collect autobackfill logs', default=0)
     args = parser.parse_args()
@@ -157,7 +158,7 @@ if __name__ == '__main__':
     logger = logging.LoggerAdapter(logger_master, logging_dict)
 
     time_str = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
-    logger.info("--------------------------Starting new autobackfill session at %s--------------------------",time_str)
+    logger.info("--------------------------Starting new autobackfill session at %s--------------------------", time_str)
 
     if args.sync_mode != 'rsync' and args.sync_mode != 'mount':
         raise Exception('sync_mode must be either \'rsync\' or \'mount\'')
@@ -177,7 +178,7 @@ if __name__ == '__main__':
     # logger.info(classes)
 
     schedules = []
-    num_schedules = NUM_GPUS
+    num_schedules = NUM_GPUS - 1  # leaving 1 GPU for openpose binary processing
 
     logger.info(f"Creating {str(num_schedules)} schedules for {str(NUM_GPUS)} GPUs")
 
@@ -192,7 +193,7 @@ if __name__ == '__main__':
                 time = metadata[COURSE]
             else:
                 time = -1
-            schedule_entry = [k,time,v['front'].strip(), v['back'].strip()]
+            schedule_entry = [k, time, v['front'].strip(), v['back'].strip()]
             schedules.append(schedule_entry)
             logger.info(f"Parsed schedule: {str(schedule_entry)}")
 
@@ -224,21 +225,21 @@ if __name__ == '__main__':
 
     processes = []
 
-    for i in range(len(subschedules)):
-        logger.info("Calling backfill for subschedule %d",i)
+    for i in range(1, len(subschedules)):
+        logger.info("Calling backfill for subschedule %d", i)
         process = subprocess.Popen([
             '/usr/bin/python3', os.path.join(
                 args.backfill_base_path, 'backfill.py'),
             '--schedule_file', os.path.join(directory, 'schedule-%d.csv' % i),
-            '--gpu_number', '%d' % (i),
+            '--gpu_number', '%d' % (i+1),
             '--backfill_base_path', args.backfill_base_path,
             '--backend_url', args.backend_url,
             '--rsync_host', args.rsync_host,
             '--developer', args.developer,
             '--sync_mode', args.sync_mode,
-            '--backfillFPS',args.backfillFPS,
+            '--backfillFPS', args.backfillFPS,
             '--mount_base_path', args.mount_base_path,
-            '--log_dir',args.log_dir],
+            '--log_dir', args.log_dir],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             env=os.environ.copy())

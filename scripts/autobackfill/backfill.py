@@ -136,7 +136,6 @@ if __name__ == '__main__':
         logger.info("Session Info: keyword: {0}, Time Limit:{1},  Front Video:{2}, Back Video:{3}".format(
             keyword, time_duration, front_filename, back_filename))
 
-
         if hasMount:
             logger.info("Fetching files form mount")
             classes = mount_fetch_files(front_url, back_url, logger)

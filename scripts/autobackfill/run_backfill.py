@@ -568,10 +568,15 @@ if __name__ == '__main__':
     t_audio.start()
 
     t_audio.join()
+    logger.debug('audio wait container joined for session id %s', session_id)
     t_back_openpose.join()
+    logger.debug('Back openpose wait container joined for session id %s', session_id)
     t_front_openpose.join()
+    logger.debug('front openpose wait container joined for session id %s', session_id)
     t_back_video.join()
+    logger.debug('back video wait container joined for session id %s', session_id)
     t_front_video.join()
+    logger.debug('front video wait container joined for session id %s', session_id)
 
     # for container in containers:
     #     t = threading.Thread(target=wait_container, args=[container])
