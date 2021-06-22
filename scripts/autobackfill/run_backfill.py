@@ -81,7 +81,7 @@ def wait_video_container(containers_group, logger):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
-    logger.info(f"Docker wait output: {str(stdout)}, {str(stderr)}")
+    logger.info(f"Docker video {docker_name} wait output: {str(stdout)}, {str(stderr)}")
     process = subprocess.Popen([
         'docker', 'inspect', containers_group['video'], "--format='{{.State.ExitCode}}'"],
         stdout=subprocess.PIPE,
@@ -120,13 +120,13 @@ def wait_openpose_container(containers_group, logger):
     stdout, stderr = process.communicate()
 
     docker_name = stdout.decode('utf-8')[1:-1]
-    logger.info("Got Docker Name for Wait process: %s", f"|_{docker_name}_|")
+    logger.info("Got Docker Name for wait openpose process: %s", f"|_{docker_name}_|")
     process = subprocess.Popen([
         'docker', 'wait', docker_name],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
-    logger.info(f"Docker wait output: {str(stdout)}, {str(stderr)}")
+    logger.info(f"Docker openpose {docker_name} wait output: {str(stdout)}, {str(stderr)}")
     process = subprocess.Popen([
         'docker', 'inspect', containers_group['openpose'], "--format='{{.State.ExitCode}}'"],
         stdout=subprocess.PIPE,
@@ -165,13 +165,13 @@ def wait_audio_container(containers_group, logger):
     stdout, stderr = process.communicate()
 
     docker_name = stdout.decode('utf-8')[1:-1]
-    logger.info("Got Docker Name for Wait process: %s", f"|_{docker_name}_|")
+    logger.info("Got Docker Name for wait audio process: %s", f"|_{docker_name}_|")
     process = subprocess.Popen([
         'docker', 'wait', docker_name],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
-    logger.info(f"Docker wait output: {str(stdout)}, {str(stderr)}")
+    logger.info(f"Docker audio {docker_name} wait output: {str(stdout)}, {str(stderr)}")
     process = subprocess.Popen([
         'docker', 'inspect', containers_group['audio'], "--format='{{.State.ExitCode}}'"],
         stdout=subprocess.PIPE,
