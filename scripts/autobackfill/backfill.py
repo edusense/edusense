@@ -87,7 +87,7 @@ if __name__ == '__main__':
     formatter = logging.Formatter(
         '%(asctime)s | %(process)s, %(thread)d | %(schedule)s | %(name)s | %(levelname)s | %(message)s')
     logging_dict = {
-        'schedule': args.scheduler_file.split(".")[0].replace("/","__")
+        'schedule': args.scheduler_file.split(".")[0].split("autobackfill")[-1].replace("/","__")
     }
 
     ## Add core logger handler
