@@ -153,7 +153,7 @@ if __name__ == '__main__':
             '/usr/bin/python3', backfill_script, '--front_video', front_filename, '--back_video', back_filename,
             '--keyword', keyword, '--backend_url', args.backend_url,
             '--front_num_gpu_start', str(args.gpu_number), '--front_num_gpu', '1', '--back_num_gpu_start',
-            str(args.gpu_number + 1), '--back_num_gpu', '1',
+            str(args.gpu_number), '--back_num_gpu', '1',
             '--time_duration', str(time_duration), '--video_schema', 'classinsight-graphql-video', '--audio_schema',
             'classinsight-graphql-audio',
             '--video_dir', args.backfill_base_path, '--developer', args.developer,

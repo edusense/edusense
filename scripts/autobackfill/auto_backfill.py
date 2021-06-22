@@ -16,9 +16,7 @@ metadata = {
     # '05418A': 10
 }
 
-NUM_GPUS = 6
-
-
+NUM_GPUS = 7
 
 def writelog(message, f):
     if f is not None:
@@ -179,12 +177,12 @@ if __name__ == '__main__':
     # logger.info(classes)
 
     schedules = []
-    num_schedules = NUM_GPUS // 2
+    num_schedules = NUM_GPUS
 
     logger.info(f"Creating {str(num_schedules)} schedules for {str(NUM_GPUS)} GPUs")
 
     if num_schedules < 1:
-        logger.error("Number of GPUs less than 2. exiting..")
+        logger.error("Number of GPUs less than 1. exiting..")
         exit(0)
 
     for k, v in classes.items():
@@ -232,7 +230,7 @@ if __name__ == '__main__':
             '/usr/bin/python3', os.path.join(
                 args.backfill_base_path, 'backfill.py'),
             '--schedule_file', os.path.join(directory, 'schedule-%d.csv' % i),
-            '--gpu_number', '%d' % (i*2),
+            '--gpu_number', '%d' % (i),
             '--backfill_base_path', args.backfill_base_path,
             '--backend_url', args.backend_url,
             '--rsync_host', args.rsync_host,
