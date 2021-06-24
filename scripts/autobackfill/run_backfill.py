@@ -90,7 +90,7 @@ def wait_video_container(containers_group, logger):
 
     status = stdout.decode('utf-8')
 
-    lock.acquire()
+    # lock.acquire()
     try:
         logger.info(f"Killing openpose container after video:{containers_group['openpose']}")
         # # Given video container exited, kill openpose container
@@ -98,21 +98,22 @@ def wait_video_container(containers_group, logger):
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
-
+        logger.info(f"Docker kill openpose after video docker {docker_name} output: {str(stdout)}, {str(stderr)}")
         ## logging.debug is not thread-safe
         # acquire a lock
-
+        # lock.acquire()
         logger.info("%s: %s exited with status code %s" % (args.keyword, container_dict[containers_group['video']], status))
         # remove the container from global list and dict
         # in a thread-safe way
-        containers.remove(containers_group['video'])
-        del container_dict[containers_group['video']]
-        containers.remove(containers_group['openpose'])
-        del container_dict[containers_group['openpose']]
+        # containers.remove(containers_group['video'])
+        # del container_dict[containers_group['video']]
+        # containers.remove(containers_group['openpose'])
+        # del container_dict[containers_group['openpose']]
+        logger.info(f"Exiting wait video for {docker_name} gracefully")
     except:
         logger.info("Error in wait video container locked region ", traceback.format_exc())
     # release lock
-    lock.release()
+    # lock.release()
 
 def wait_openpose_container(containers_group, logger):
     # get docker name from id
@@ -137,7 +138,7 @@ def wait_openpose_container(containers_group, logger):
 
     status = stdout.decode('utf-8')
 
-    lock.acquire()
+    # lock.acquire()
     try:
         logger.info(f"Killing video container after openpose:{containers_group['video']}")
         # # Given video container exited, kill openpose container
@@ -145,22 +146,23 @@ def wait_openpose_container(containers_group, logger):
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
-
+        logger.info(f"Docker kill video after openpose docker {docker_name} output: {str(stdout)}, {str(stderr)}")
         ## logging.debug is not thread-safe
         # acquire a lock
 
         logger.info("%s: %s exited with status code %s" % (args.keyword, container_dict[containers_group['openpose']], status))
         # remove the container from global list and dict
         # in a thread-safe way
-        containers.remove(containers_group['video'])
-        del container_dict[containers_group['video']]
-        containers.remove(containers_group['openpose'])
-        del container_dict[containers_group['openpose']]
+        # containers.remove(containers_group['video'])
+        # del container_dict[containers_group['video']]
+        # containers.remove(containers_group['openpose'])
+        # del container_dict[containers_group['openpose']]
+        logger.info(f"Exiting wait openpose for {docker_name} gracefully")
     except:
         logger.info("Error in wait openpose container locked region ", traceback.format_exc())
 
     # release lock
-    lock.release()
+    # lock.release()
 
 
 def wait_audio_container(containers_group, logger):
@@ -571,10 +573,10 @@ if __name__ == '__main__':
     logger.debug('audio wait container joined for session id %s', session_id)
     t_back_openpose.join()
     logger.debug('Back openpose wait container joined for session id %s', session_id)
-    t_front_openpose.join()
-    logger.debug('front openpose wait container joined for session id %s', session_id)
     t_back_video.join()
     logger.debug('back video wait container joined for session id %s', session_id)
+    t_front_openpose.join()
+    logger.debug('front openpose wait container joined for session id %s', session_id)
     t_front_video.join()
     logger.debug('front video wait container joined for session id %s', session_id)
 

@@ -726,6 +726,7 @@ class ConsumerThread(threading.Thread):
                     logger('db_posting,%f' % db_post_time)
 
             except Exception as e:
+                logger.error("Exception thrown in posting frame to backend: ", traceback.format_exc())
                 traceback.print_exc(file=sys.stdout)
         t_post_backend_end = datetime.now()
         logger.info("Completed backend posting in %.3f secs", time_diff(t_post_backend_start, t_post_backend_end))
