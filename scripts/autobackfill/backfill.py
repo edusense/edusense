@@ -76,7 +76,7 @@ if __name__ == '__main__':
     parser.add_argument('--mount_base_path', dest='mount_base_path', type=str, nargs='?',
                         required=False, help='path of mount')
     parser.add_argument('--backfillFPS', dest='backfillFPS', type=str, nargs='?',
-                        required=False, help='FPS for backfill', default=0)
+                        required=False, help='FPS for backfill', default='0')
     parser.add_argument('--log_dir', dest='log_dir', type=str, nargs='?',
                         required=False, help='Log directory to collect backfill logs', default=0)
     args = parser.parse_args()
