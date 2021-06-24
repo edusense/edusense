@@ -5,6 +5,7 @@ package resolver
 
 import (
 	"context"
+	"errors"
 
 	models "go.edusense.io/storage/models"
 )
@@ -14,33 +15,24 @@ type BackfillMetaDataArgs struct {
 }
 
 func (q QueryResolver) BackfillMetaData (ctx context.Context, args BackfillMetaDataArgs) ([]*BackfillMetaDataResolver, error) {
-	if args.CourseNumber != nil{
-		selected_metadata, err := q.Driver.GetBackfillMetaDataFilter(*args.CourseNumber)
-
-		if err != nil {
-			return []*BackfillMetaDataResolver{}, err
-		}
-
-		resolvers := make([]*BackfillMetaDataResolver, len(selected_metadata))
-
-		for i, f := range selected_metadata {
-			resolvers[i] = &BackfillMetaDataResolver{BackfillMetaData : f}
-		}
-		return resolvers, nil
+	if args.CourseNumber == nil{
+		return []*BackfillMetaDataResolver{}, errors.New("Must include courseNumber in GraphQL query arguments")
 	}
 	
-	
-	all_metadata, err := q.Driver.GetBackfillMetaData()
+	selected_metadata, err := q.Driver.GetBackfillMetaDataFilter(*args.CourseNumber)
+
 	if err != nil {
 		return []*BackfillMetaDataResolver{}, err
 	}
-	resolvers := make([]*BackfillMetaDataResolver, len(all_metadata))
 
-	for i, f := range all_metadata {
+	resolvers := make([]*BackfillMetaDataResolver, len(selected_metadata))
+
+	for i, f := range selected_metadata {
 		resolvers[i] = &BackfillMetaDataResolver{BackfillMetaData : f}
 	}
-
 	return resolvers, nil
+
+
 }
 
 type BackfillMetaDataResolver struct {

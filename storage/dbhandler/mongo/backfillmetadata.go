@@ -4,13 +4,19 @@
 package mongo
 
 import (
+	"fmt"
+	"errors"
 	bson "github.com/globalsign/mgo/bson"
 	models "go.edusense.io/storage/models"
 )
 
 func (m *Driver) InsertBackfillMetaData(metaData models.BackfillMetaData) error {
+	if metaData.CourseNumber == "" {
+		return errors.New("Must include courseNumber in schema, look at BackfillMetaData Model")
+	}
 	// insert
-	err := m.DB.C("backfillMetaData").Insert(&metaData)
+	collectionName := fmt.Sprintf("backfill-course-%s", metaData.CourseNumber)
+	err := m.DB.C(collectionName).Insert(&metaData)
 	if err != nil {
 		return err
 	}
@@ -18,22 +24,11 @@ func (m *Driver) InsertBackfillMetaData(metaData models.BackfillMetaData) error 
 	return nil
 }
 
-func (m *Driver) GetBackfillMetaData() ([]models.BackfillMetaData, error) {
-    var metaData []models.BackfillMetaData
-
-	err := m.DB.C("backfillMetaData").Find(bson.M{}).All(&metaData)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return metaData, nil
-}
-
 func (m *Driver) GetBackfillMetaDataFilter(courseNumber string) ([]models.BackfillMetaData, error) {
     var metaData []models.BackfillMetaData
 
-	err := m.DB.C("backfillMetaData").Find(
+	collectionName := fmt.Sprintf("backfill-course-%s", courseNumber)
+	err := m.DB.C(collectionName).Find(
 		bson.M{"$and": []bson.M{
 			bson.M{"courseNumber": courseNumber}}}).All(&metaData)
 	

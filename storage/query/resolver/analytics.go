@@ -5,6 +5,7 @@ package resolver
 
 import (
 	"context"
+	"errors"
 
 	models "go.edusense.io/storage/models"
 )
@@ -16,32 +17,21 @@ type AnalyticsArgs struct {
 
 
 func (q QueryResolver) Analytics (ctx context.Context, args AnalyticsArgs) ([]*AnalyticsResolver, error) {
-	if args.SessionID != nil || args.Keyword != nil {
-		selected_analytics, err := q.Driver.GetAnalyticsFilter(args.SessionID, args.Keyword)
-
-		if err != nil {
-			return []*AnalyticsResolver{}, err
-		}
-
-		resolvers := make([]*AnalyticsResolver, len(selected_analytics))
-
-		for i, f := range selected_analytics {
-			resolvers[i] = &AnalyticsResolver{Analytics : f}
-		}
-		return resolvers, nil
+	if args.SessionID == nil {
+		return []*AnalyticsResolver{}, errors.New("Must include sessionId in GraphQL query arguments")
 	}
-	
-	
-	all_analytics, err := q.Driver.GetAnalytics()
+
+	selected_analytics, err := q.Driver.GetAnalyticsFilter(args.SessionID, args.Keyword)
+
 	if err != nil {
 		return []*AnalyticsResolver{}, err
 	}
-	resolvers := make([]*AnalyticsResolver, len(all_analytics))
 
-	for i, f := range all_analytics {
+	resolvers := make([]*AnalyticsResolver, len(selected_analytics))
+
+	for i, f := range selected_analytics {
 		resolvers[i] = &AnalyticsResolver{Analytics : f}
 	}
-
 	return resolvers, nil
 }
 
