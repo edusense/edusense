@@ -190,10 +190,10 @@ if __name__ == '__main__':
         if 'front' in v.keys() and 'back' in v.keys():
             COURSE = k.split('_')[1]
             if COURSE in metadata.keys():
-                time = metadata[COURSE]
+                course_time_limit = metadata[COURSE]
             else:
-                time = -1
-            schedule_entry = [k, time, v['front'].strip(), v['back'].strip()]
+                course_time_limit = -1
+            schedule_entry = [k, course_time_limit, v['front'].strip(), v['back'].strip()]
             schedules.append(schedule_entry)
             logger.info(f"Parsed schedule: {str(schedule_entry)}")
 
