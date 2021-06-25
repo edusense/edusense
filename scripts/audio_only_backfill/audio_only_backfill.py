@@ -108,7 +108,7 @@ if __name__ == '__main__':
     with open("audio_autobackfill.out") as f:
         for line in f.readlines():
             filledkeyword = line[:-1].split(",")[1]
-            logger.info("Previously filled keyword:",filledkeyword)
+            logger.info("Previously filled keyword: %s",filledkeyword)
             filled_keywords.append(filledkeyword)
 
     with open("session_keyword_file.csv") as f:
