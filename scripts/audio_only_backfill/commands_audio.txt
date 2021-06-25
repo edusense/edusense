@@ -4,16 +4,16 @@ export APP_USERNAME=os.env("APP_USERNAME")
 export APP_PASSWORD=os.env("APP_PASSWORD")
 python3 audio_only_backfill.py \
 --basepath $(pwd)/tmp \
---keyword_file session_keyword_file.csv \
+--keyword_file jun_w4_session_keyword_file.csv \
 --mount_base_path /mnt/ci-nas-classes/classinsight \
---backend_url edusense-dev-1.andrew.cmu.edu:9090 \
---developer audiobackfill \
+--backend_url edusense-dev-1.andrew.cmu.edu:9060 \
+--developer prasoon_compute_logs \
 --log_dir $(pwd)/logs
 
 
 python3 audio_script_backfill.py \
---basepath /home/prasoon/gaze_audio_merge/edusense/scripts/audio_only_backfill/tmp \
---keyword_file /home/prasoon/gaze_audio_merge/edusense/scripts/audio_only_backfill/session_keyword_file.csv \
+--basepath home/prasoon/audio_backfill_jun21/scripts/audio_only_backfill/tmp \
+--keyword_file home/prasoon/audio_backfill_jun21/scripts/audio_only_backfill/jun_w4_session_keyword_file.csv \
 --mount_base_path /mnt/ci-nas-classes/classinsight \
---backend_url edusense-dev-1.andrew.cmu.edu:3003 \
+--backend_url edusense-dev-1.andrew.cmu.edu:9060 \
 --log_dir /home/prasoon/gaze_audio_merge/edusense/scripts/audio_only_backfill/logs
