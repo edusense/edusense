@@ -285,6 +285,10 @@ if __name__ == '__main__':
     uid, gid, app_username, app_password, version, developer = get_parameters(
         sys.argv[0], logger)
 
+    # Add output handler for successfull sessions
+    output_file = f"run_backfill_success/autobackfill_{args.keyword}.out"
+    output_handler = open(output_file, 'a+')
+
     # curl_comm = [
     #     'curl',
     #     '-X', 'POST',
@@ -580,6 +584,7 @@ if __name__ == '__main__':
     t_front_video.join()
     logger.debug('front video wait container joined for session id %s', session_id)
 
+    output_handler.write(f"{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')},{args.keyword},{session_id}\n")
     # for container in containers:
     #     t = threading.Thread(target=wait_container, args=[container])
     #     t.start()
