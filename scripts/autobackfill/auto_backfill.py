@@ -16,7 +16,7 @@ metadata = {
     # '05418A': 10
 }
 
-NUM_GPUS = 7
+NUM_GPUS = 3
 
 
 def writelog(message, f):
