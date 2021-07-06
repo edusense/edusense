@@ -38,6 +38,52 @@ nvidia-docker run \
 ```
 <b>Note-:</b> For real-time processing, pass the RTSP URL to ip_camera argument
 
+<b>Note-: Openpose Fail on Nvidia 2080Ti(and later) GPUs:</b> Openpose runtime 
+will not work with Nvidia 2080 Ti GPUs, because linked cafee codebase does not 
+support newer GPU architecture.
+
+For correcting this, you 
+need to manually change cmake file for caffe. Follow the instructions below 
+(copied from [https://github.com/CMU-Perceptual-Computing-Lab/openpose/issues/1290#issuecomment-546578933]())
+```bash
+# Add GPU architectures directly to Cuda.cmake file for caffe
+cd {Edusense_ROOT}/compute/openpose/third_party/openpose/3rdparty/
+git clone https://github.com/CMU-Perceptual-Computing-Lab/caffe
+then,
+open Cuda.cmake file in cmake folder.
+then directly added information like this,
+
+Known NVIDIA GPU achitectures Caffe can be compiled for.
+This list will be used for CUDA_ARCH_NAME = All option
+# adding 70 and 75 in this line
+set(Caffe_known_gpu_archs "30 35 50 52 60 61 70 75")
+...
+
+if(${CUDA_ARCH_NAME} STREQUAL "Fermi")
+set(__cuda_arch_bin "20 21(20)")
+elseif(${CUDA_ARCH_NAME} STREQUAL "Kepler")
+set(__cuda_arch_bin "30 35")
+elseif(${CUDA_ARCH_NAME} STREQUAL "Maxwell")
+set(__cuda_arch_bin "50")
+elseif(${CUDA_ARCH_NAME} STREQUAL "Pascal")
+set(__cuda_arch_bin "60 61")
+#add following config for 70 and 71
+#<<<
+elseif(${CUDA_ARCH_NAME} STREQUAL "Volta")
+set(__cuda_arch_bin "70")
+elseif(${CUDA_ARCH_NAME} STREQUAL "Turing")
+set(__cuda_arch_bin "75")
+#>>>
+elseif(${CUDA_ARCH_NAME} STREQUAL "All")
+set(__cuda_arch_bin ${Caffe_known_gpu_archs})
+elseif(${CUDA_ARCH_NAME} STREQUAL "Auto")
+caffe_detect_installed_gpus(__cuda_arch_bin)
+else() # (${CUDA_ARCH_NAME} STREQUAL "Manual")
+set(__cuda_arch_bin ${CUDA_ARCH_BIN})
+endif()
+
+# Remove and Rebuild docker image
+```
 ## Developer Guide
 
 ### Keeping up with OpenPose Releases
