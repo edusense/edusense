@@ -259,7 +259,7 @@ class ConsumerThread(threading.Thread):
                 t_skipframe_end = datetime.now()
                 logger.info("Skipping %d Frames to match expected FPS in %.3f secs", self.skipframe,
                             time_diff(t_skipframe_start, t_skipframe_end))
-                self.currentframe = 1
+                self.currentframe = 0
                 logger.info("Starting to process frame")
                 raw_image, frame_data = self.process_frame(self.input_queue.get())
 
