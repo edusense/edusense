@@ -171,7 +171,7 @@ if __name__ == '__main__':
     # logger.info(classes)
 
     schedules = []
-    num_schedules = NUM_GPUS - 1  # leaving 1 GPU for openpose binary processing
+    num_schedules = NUM_GPUS # leaving 1 GPU for openpose binary processing
 
     logger.info(f"Creating {str(num_schedules)} schedules for {str(NUM_GPUS)} GPUs")
 
