@@ -317,6 +317,49 @@ if __name__ == '__main__':
 
     # logging.debug(curl_comm)
 
+
+    if args.overwrite == 'False':
+        # Check if course number has already been backfilled
+        cred = '{}:{}'.format(app_username, app_password).encode('ascii')
+        encoded_cred = base64.standard_b64encode(cred).decode('ascii')
+
+        backend_params = {
+            'headers': {
+                'Authorization': 'Basic {}'.format(encoded_cred),
+                'Content-Type': 'application/json'}
+        }
+
+        query = '''
+                    {
+                        backfillMetaData(courseNumber: "%s") {
+                            sessions { 
+                                id
+                            }
+                        }
+                    }
+                    ''' % (args.front_video.split('_')[1])
+        req = {'query': query}
+        resp = requests.post('https://%s/query' % args.backend_url, headers=backend_params['headers'], json=req)
+
+        if (resp.status_code != 200 or
+                'success' not in resp.json().keys() or
+                    not resp.json()['success']):
+                logger.debug('Could not query backfillmetadata, err: %s', resp.text)
+                raise Exception('Could not query backfillmetadata, please try again, err: %s', resp.text)
+            else:
+                logger.debug('Query to backfillmetadata successful, response: %s', str(dict(resp.json())))
+        
+        response = dict(resp.json())
+        responseList = json.loads(response['response'])['data']['backfillMetaData']
+        logger.debug('List of sessions recieved from query: %s', str(responseList))
+        
+        if len(responseList) > 0:
+            logger.debug('Length of sessions is greater than 0, course is already backfilled, terminating run_backfill.py')
+            return
+        
+        logger.debug('Length of sessions is 0, course is not already backfilled, continuing backfill process')
+
+
     # Calling sessions API endpoint
     logger.info(f"Create session id for backfilling session: {args.keyword}")
     t_create_session_id_start = datetime.now()
@@ -617,15 +660,6 @@ if __name__ == '__main__':
     if video_success:
         logger.debug('Video Backfill was successful for session id %s', session_id)
 
-        cred = '{}:{}'.format(app_username, app_password).encode('ascii')
-        encoded_cred = base64.standard_b64encode(cred).decode('ascii')
-
-        backend_params = {
-            'headers': {
-                'Authorization': 'Basic {}'.format(encoded_cred),
-                'Content-Type': 'application/json'}
-        }
-
         metadata_schema = {
             'courseNumber': args.front_video.split('_')[1],
             'sessions': [{
@@ -636,7 +670,7 @@ if __name__ == '__main__':
             }]
         }
 
-        resp = requests.post("https://edusense-dev-1.andrew.cmu.edu:9000/backfillmetadata",
+        resp = requests.post('https://%s/backfillmetadata' % args.backend_url,
                             headers=backend_params['headers'],
                             json={'backfillmetadata': metadata_schema})
         
@@ -645,6 +679,6 @@ if __name__ == '__main__':
                 not resp.json()['success']):
             logger.debug('Could not write to backfillmetadata, err: %s', resp.text)
         else:
-            logger.debug('Write to backfillmetadata successful, err: %s', str(dict(resp.json())))
+            logger.debug('Write to backfillmetadata successful, response: %s', str(dict(resp.json())))
         
         
