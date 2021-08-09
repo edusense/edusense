@@ -127,6 +127,12 @@ if __name__ == '__main__':
         # logger.info(s)
 
         keyword = s[0]
+
+        # skip if keyword is available in logs dir
+        if os.path.exists(f"{args.log_dir}{keyword}/"):
+            logger.info(F"KEYWORD {keyword} ALREADY PRESENT IN LOGS DIRECTORY, SKIPPING BACKFILL...")
+            continue
+
         time_duration = s[1]
         front_url = s[2]
         front_filename = s[2].split('/')[-1]
@@ -172,6 +178,11 @@ if __name__ == '__main__':
         os.remove(os.path.join(args.backfill_base_path, front_filename))
         os.remove(os.path.join(args.backfill_base_path, back_filename))
         logger.info(" Files removed")
+
+        # remove dockers
+        logger.info("Removing stopped dockers containers from previous backfill to balance space")
+        os.system("docker container prune -f")
+        logger.info("Stopped dockers containers removed")
 
         # Write backfilling status in db
         # time_str = datetime.now().strftime("%Y%m%d")
