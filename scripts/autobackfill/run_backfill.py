@@ -7,9 +7,11 @@ import subprocess
 import tempfile
 # import uuid
 import time
+import requests
 import threading
 import logging
 import traceback
+import base64
 from logging.handlers import WatchedFileHandler
 from datetime import datetime, timedelta
 from time_utils import time_diff
@@ -329,6 +331,8 @@ if __name__ == '__main__':
                 'Content-Type': 'application/json'}
         }
 
+        logger.debug('Sending query for course number %s', args.front_video.split('_')[1])
+
         query = '''
                     {
                         backfillMetaData(courseNumber: "%s") {
@@ -341,13 +345,15 @@ if __name__ == '__main__':
         req = {'query': query}
         resp = requests.post('https://%s/query' % args.backend_url, headers=backend_params['headers'], json=req)
 
+        logger.debug('Posted query request')
+
         if (resp.status_code != 200 or
                 'success' not in resp.json().keys() or
                     not resp.json()['success']):
-                logger.debug('Could not query backfillmetadata, err: %s', resp.text)
-                raise Exception('Could not query backfillmetadata, please try again, err: %s', resp.text)
-            else:
-                logger.debug('Query to backfillmetadata successful, response: %s', str(dict(resp.json())))
+            logger.debug('Could not query backfillmetadata, err: %s', resp.text)
+            raise Exception('Could not query backfillmetadata, please try again, err: %s', resp.text)
+        else:
+            logger.debug('Query to backfillmetadata successful, response: %s', str(dict(resp.json())))
         
         response = dict(resp.json())
         responseList = json.loads(response['response'])['data']['backfillMetaData']
@@ -355,7 +361,7 @@ if __name__ == '__main__':
         
         if len(responseList) > 0:
             logger.debug('Length of sessions is greater than 0, course is already backfilled, terminating run_backfill.py')
-            return
+            sys.exit()
         
         logger.debug('Length of sessions is 0, course is not already backfilled, continuing backfill process')
 
