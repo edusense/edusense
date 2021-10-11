@@ -7,13 +7,16 @@ import subprocess
 import tempfile
 # import uuid
 import time
+import requests
 import threading
 import logging
 import traceback
+import base64
 from logging.handlers import WatchedFileHandler
 from datetime import datetime, timedelta
 from time_utils import time_diff
 
+video_success = False
 
 def get_parameters(run_command, logger):
     uid = os.getuid()
@@ -102,6 +105,22 @@ def wait_video_container(containers_group, logger):
         ## logging.debug is not thread-safe
         # acquire a lock
         # lock.acquire()
+        process = subprocess.Popen(['tail', '-1000', args.log_dir+'/'+args.front_video.split('.')[0]+'.log', '|', 'grep', '"Zero length packet received, openpose processing finished"'],
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
+        stdout_front, stderr_front = process.communicate()
+        logger.info(f"Front Video tail grep output: {str(stdout_front)}, err:{str(stderr_front)}")
+
+        process = subprocess.Popen(['tail', '-1000', args.log_dir+'/'+args.back_video.split('.')[0]+'.log', '|', 'grep', '"Zero length packet received, openpose processing finished"'],
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
+        stdout_back, stderr_back = process.communicate()
+        logger.info(f"Back Video tail grep output: {str(stdout_back)}, err:{str(stderr_back)}")
+
+        if len(stdout_front) > 0 and len(stdout_back):
+            video_success = True
+            logger.info("Both Front and Back video completed successfully")
+
         logger.info("%s: %s exited with status code %s" % (args.keyword, container_dict[containers_group['video']], status))
         # remove the container from global list and dict
         # in a thread-safe way
@@ -299,6 +318,53 @@ if __name__ == '__main__':
     #     'https://%s/sessions' % args.backend_url]
 
     # logging.debug(curl_comm)
+
+
+    if args.overwrite == 'False':
+        # Check if course number has already been backfilled
+        cred = '{}:{}'.format(app_username, app_password).encode('ascii')
+        encoded_cred = base64.standard_b64encode(cred).decode('ascii')
+
+        backend_params = {
+            'headers': {
+                'Authorization': 'Basic {}'.format(encoded_cred),
+                'Content-Type': 'application/json'}
+        }
+
+        logger.debug('Sending query for course number %s', args.front_video.split('_')[1])
+
+        query = '''
+                    {
+                        backfillMetaData(courseNumber: "%s") {
+                            sessions { 
+                                id
+                            }
+                        }
+                    }
+                    ''' % (args.front_video.split('_')[1])
+        req = {'query': query}
+        resp = requests.post('https://%s/query' % args.backend_url, headers=backend_params['headers'], json=req)
+
+        logger.debug('Posted query request')
+
+        if (resp.status_code != 200 or
+                'success' not in resp.json().keys() or
+                    not resp.json()['success']):
+            logger.debug('Could not query backfillmetadata, err: %s', resp.text)
+            raise Exception('Could not query backfillmetadata, please try again, err: %s', resp.text)
+        else:
+            logger.debug('Query to backfillmetadata successful, response: %s', str(dict(resp.json())))
+        
+        response = dict(resp.json())
+        responseList = json.loads(response['response'])['data']['backfillMetaData']
+        logger.debug('List of sessions recieved from query: %s', str(responseList))
+        
+        if len(responseList) > 0:
+            logger.debug('Length of sessions is greater than 0, course is already backfilled, terminating run_backfill.py')
+            sys.exit()
+        
+        logger.debug('Length of sessions is 0, course is not already backfilled, continuing backfill process')
+
 
     # Calling sessions API endpoint
     logger.info(f"Create session id for backfilling session: {args.keyword}")
@@ -598,3 +664,29 @@ if __name__ == '__main__':
 
     # cancel the killing thread execution
     timer.cancel()
+
+    if video_success:
+        logger.debug('Video Backfill was successful for session id %s', session_id)
+
+        metadata_schema = {
+            'courseNumber': args.front_video.split('_')[1],
+            'sessions': [{
+                'id': session_id,
+                'keyword': args.keyword,
+                'name': 'summer2021_fulFPS_backfill',
+                'debugInfo': 'Video backfill successful',
+            }]
+        }
+
+        resp = requests.post('https://%s/backfillmetadata' % args.backend_url,
+                            headers=backend_params['headers'],
+                            json={'backfillmetadata': metadata_schema})
+        
+        if (resp.status_code != 200 or
+            'success' not in resp.json().keys() or
+                not resp.json()['success']):
+            logger.debug('Could not write to backfillmetadata, err: %s', resp.text)
+        else:
+            logger.debug('Write to backfillmetadata successful, response: %s', str(dict(resp.json())))
+        
+        
