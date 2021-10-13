@@ -44,3 +44,14 @@ python3 backfill.py \
 --sync_mode mount \
 --mount_base_path /mnt/ci-nas-classes/classinsight/2019S \
 --log_dir /home/prasoon/logs_jun21_backfill/ \
+
+
+python3 run_backfill.py --front_video classinsight-cmu_88888D_407sc_104_201808301210-front.avi \
+--back_video classinsight-cmu_88888D_407sc_104_201808301210-back.avi \
+--video_dir /home/edusense/test_videos/edusense-dev-videos \
+--keyword cmu_88888D_407sc_104_201808301210 \
+--log_dir /home/edusense/logs-dev \
+--keyword auto_backfill_test \
+--front_num_gpu_start 0 --front_num_gpu 1 --back_num_gpu_start 0 --back_num_gpu 1 \
+--video_schema classinsight-graphql-video --audio_schema classinsight-graphql-audio \
+--backend_url sensei-delta.wv.cc.cmu.edu:3000 --developer prasoon_Oct2021 --time_duration -1 --backfillFPS 15

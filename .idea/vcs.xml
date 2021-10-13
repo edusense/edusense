@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/compute/openpose/third_party/base64" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/compute/openpose/third_party/openpose" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/compute/openpose/third_party/openpose/3rdparty/caffe" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/compute/openpose/third_party/openpose/3rdparty/pybind11" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/compute/openpose/third_party/openpose/3rdparty/pybind11/tools/clang" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/compute/openpose/third_party/rapidjson" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/compute/openpose/third_party/rapidjson/thirdparty/gtest" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/compute/video/third_party/deepgaze" vcs="Git" />
+  </component>
+</project>

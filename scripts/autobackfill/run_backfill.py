@@ -650,7 +650,7 @@ if __name__ == '__main__':
     t_front_video.join()
     logger.debug('front video wait container joined for session id %s', session_id)
 
-    output_handler.write(f"{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')},{args.keyword},{session_id}\n")
+    output_handler.write(f"{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')},{args.keyword},{session_id}\n")
     output_handler.close()
 
     # for container in containers:

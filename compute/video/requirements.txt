@@ -34,4 +34,4 @@ torchvision==0.7.0
 matplotlib==3.3.2
 Werkzeug==0.16.0
 wrapt==1.11.2
-pytesseract
+pytesseract==0.3.4
