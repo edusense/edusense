@@ -201,12 +201,7 @@ edusense@pop-os:~$ sudo systemctl enable containerd.service
 Instructions for nvidia docker can be found here
 [https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html]()
 
-Now, life's not easy, there will be some lemons waiting for you. like here, Pop-OS uses an outdated version of nvidia-runtime-toolkit, and
-nvidia-docker needs the more updated version.
-
-I found this workaround([https://github.com/pop-os/pop/issues/1708](), which should be okay for our case, hope pop OS peeps get time to figure this out without needing a work around
-
-
+For general installation, this can be used first.
 
 Instructions I ran from their doc for reference.
 
@@ -253,6 +248,12 @@ Mon Oct xx x:xx:xx xxxx
 +-----------------------------------------------------------------------------+
 
 ```
+
+
+Now, life's not easy, there will be some lemons waiting for you. like here, Pop-OS uses an outdated version of nvidia-runtime-toolkit, and
+nvidia-docker needs the more updated version.
+
+I found this workaround([https://github.com/pop-os/pop/issues/1708](), which should be okay for our case, hope pop OS peeps get time to figure this out without needing a work around.
 
 ## Step 2: Get Edusense and setup storage server, and compute dockers images
 
