@@ -21,3 +21,26 @@ python3 run_backfill.py --front_video classinsight-cmu_88888D_407sc_104_20180830
 --front_num_gpu_start 0 --front_num_gpu 1 --back_num_gpu_start 1 --back_num_gpu 1 \
 --video_schema classinsight-graphql-video --audio_schema classinsight-graphql-audio --process_real_time \
 --backend_url edusense-dev-1.andrew.cmu.edu:3003 --developer prasoon --time_duration -1
+
+python3 backfill.py \
+--schedule_file $(pwd)/cmu_05410B_ghc_4211_2019:202106240229/schedule-4.csv \
+--gpu_number 5 \
+--backfill_base_path $(pwd) \
+--backend_url edusense-dev-1.andrew.cmu.edu:9080 \
+--rsync_host storage.classinsight.io \
+--developer prasoon_jun21backfill \
+--sync_mode mount \
+--mount_base_path /mnt/ci-nas-classes/classinsight/2019S \
+--log_dir /home/prasoon/logs_jun21_backfill/ \
+
+
+python3 backfill.py \
+--schedule_file $(pwd)/cmu_05410B_ghc_4211_2019:202106240229/schedule-5.csv \
+--gpu_number 6 \
+--backfill_base_path $(pwd) \
+--backend_url edusense-dev-1.andrew.cmu.edu:9080 \
+--rsync_host storage.classinsight.io \
+--developer prasoon_jun21backfill \
+--sync_mode mount \
+--mount_base_path /mnt/ci-nas-classes/classinsight/2019S \
+--log_dir /home/prasoon/logs_jun21_backfill/ \

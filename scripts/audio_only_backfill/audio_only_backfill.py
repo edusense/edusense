@@ -32,7 +32,7 @@ logger_master.addHandler(console_log)
 
 logger = logging.LoggerAdapter(logger_master, {})
 
-execution_time_limit_in_secs = 900
+execution_time_limit_in_secs = 1800
 autobackfill_start_time = time.time()
 
 # Create output file for autobackfill to return expected session ids
@@ -104,9 +104,20 @@ if __name__ == '__main__':
 
     # Loop over csv to run audio pipeline
     logger.info("Looping over session keyword file")
+    filled_keywords = []
+    with open("audio_autobackfill.out") as f:
+        for line in f.readlines():
+            filledkeyword = line[:-1].split(",")[1]
+            logger.info("Previously filled keyword: %s",filledkeyword)
+            filled_keywords.append(filledkeyword)
+
     with open("session_keyword_file.csv") as f:
         for line in f.readlines():
             session_keyword = line[:-1]
+            if session_keyword in filled_keywords:
+                logger.info(f"keyword {session_keyword} already filled, skipping running pipeline..")
+                continue
+            # check if session keyword is already filled from .out file
             logger.info(f"Running backfill for session keyword {session_keyword}")
             folders = ['2019S', '2019M', '2019F']
 

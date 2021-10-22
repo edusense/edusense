@@ -39,8 +39,11 @@ type DatabaseDriver interface {
 
 	// Analytics db handler functions
 	InsertAnalytics(analytics models.Analytics) error
-	GetAnalytics() ([]models.Analytics, error)
 	GetAnalyticsFilter(sessIDPtr *string, keywordPtr *string) ([]models.Analytics, error)
+
+	// Backfill Metadata db handler functions
+	InsertBackfillMetaData(metaData models.BackfillMetaData) error
+	GetBackfillMetaDataFilter(courseNumber string) ([]models.BackfillMetaData, error)
 
 	// Get frames by filter
 	// GetFrameByFilter returns list of frames by given frame filters.

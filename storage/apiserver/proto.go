@@ -47,6 +47,9 @@ type InsertAnalyticsRequest struct {
 	Analytics 	models.Analytics
 }
 
+type InsertBackfillMetaDataRequest struct {
+	BackfillMetaData 	models.BackfillMetaData
+}
 
 // InsertFrameRequest defines request format for insert free-form frame
 // requests.

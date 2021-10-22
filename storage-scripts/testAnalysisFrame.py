@@ -46,7 +46,7 @@ db_post_start_time = time.time()
 
 
 analytics_schema = {
-    'id': '11',
+    'id': '12',
     'keyword': 'keywordTest',
     'metaInfo': {
         'pipelineVersion': "keywordTest",
@@ -197,10 +197,28 @@ analytics_schema = {
     }]
 }
 
+metadata_schema = {
+    'courseNumber': '15213',
+    'sessions': [{
+        'id': 'new-id1',
+        'keyword': 'keyword1',
+        'name': 'name1',
+        'debugInfo': 'debugInfo1',
+        'commitId': 'commitId1',
+        'analyticsCommitId': 'analyticsCommitId1'
+    }, {
+        'id': 'new-id2',
+        'keyword': 'keyword2',
+        'name': 'name2',
+        'debugInfo': 'debugInfo2',
+        'commitId': 'commitId2',
+        'analyticsCommitId': 'analyticsCommitId2'
+    }]
+}
 
 query = '''
         {
-            analytics(sessionId: "11", keyword: "keywordTest") {
+            analytics(sessionId: "14") {
                 id
                 keyword
                 metaInfo {
@@ -209,6 +227,16 @@ query = '''
             }
         }
         '''
+
+# query = '''
+#         {
+#             backfillMetaData(courseNumber: "15213") {
+#                 sessions { 
+#                     id
+#                 }
+#             }
+#         }
+#         '''
 
 try:
     # Enter frame data
@@ -224,6 +252,13 @@ try:
     # Query
     req = {'query': query}
     resp = requests.post("https://edusense-dev-1.andrew.cmu.edu:9000/query", headers=backend_params['headers'], json=req)
+
+    # resp = requests.post("https://edusense-dev-1.andrew.cmu.edu:9000/backfillmetadata",
+    #                         headers=backend_params['headers'],
+    #                         json={'backfillmetadata': metadata_schema})
+
+    # req = {'query': query}
+    # resp = requests.post("https://edusense-dev-1.andrew.cmu.edu:9000/query", headers=backend_params['headers'], json=req)
     
     print("****resp returned")
     if (resp.status_code != 200 or
