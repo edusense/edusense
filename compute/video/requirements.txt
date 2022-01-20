@@ -29,9 +29,10 @@ tensorflow==1.14.0
 termcolor==1.1.0
 urllib3==1.25.7
 pytz
+Pillow==8.2.0
 torch==1.6.0
 torchvision==0.7.0
 matplotlib==3.3.2
 Werkzeug==0.16.0
 wrapt==1.11.2
-pytesseract
+pytesseract==0.3.4

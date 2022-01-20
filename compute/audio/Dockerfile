@@ -37,7 +37,7 @@ COPY ./entrypoint.sh /app
 RUN pip3 install --upgrade pip
 RUN pip3 install --upgrade setuptools
 RUN pip3 install  --no-cache-dir -r requirements.txt
-ADD https://www.dropbox.com/s/cq1d7uqg0l28211/example_model.hdf5?dl=1 /app/models/example_model.hdf5
+#ADD https://www.dropbox.com/s/cq1d7uqg0l28211/example_model.hdf5?dl=1 /app/models/example_model.hdf5
 
 RUN chmod +x entrypoint.sh
 
