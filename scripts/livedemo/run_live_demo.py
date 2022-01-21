@@ -293,6 +293,7 @@ if __name__ == '__main__':
                                    '-e', 'LOCAL_USER_ID=%s' % uid,
                                    '-e', 'APP_USERNAME=%s' % app_username,
                                    '-e', 'APP_PASSWORD=%s' % app_password,
+                                   '--network', 'host',
                                    '-v', '%s:/tmp' % args.log_dir,
                                              'edusense/video:' + args.dev,
                                    '--video', args.camera_url,
@@ -320,8 +321,8 @@ if __name__ == '__main__':
     logger.debug('Created front video container for session id %s in %.3f secs', session_id,
                  time_diff(t_init_front_video_start, t_init_front_video_end))
 
-    logger.info("Sleeping for 10 secs...")
-    time.sleep(10)
+    logger.info("Sleeping for 5 secs...")
+    time.sleep(5)
     logger.info("Waking up...")
 
     logger.info("Initializing nvidia docker for front openpose pipeline")
@@ -358,8 +359,8 @@ if __name__ == '__main__':
                  time_diff(t_init_front_openpose_start, t_init_front_openpose_end))
 
 
-    timer = threading.Timer(args.timeout, kill_all_containers, args=(logger))
-    timer.start()
+    # timer = threading.Timer(args.timeout, kill_all_containers, args=(logger))
+    # timer.start()
 
     # make seperate threads for containers
     threads = []
@@ -373,4 +374,4 @@ if __name__ == '__main__':
     logger.debug('front video wait container joined for session id %s', session_id)
 
     # cancel the killing thread execution
-    timer.cancel()
+    # timer.cancel()
