@@ -344,13 +344,15 @@ class ConsumerThread(threading.Thread):
                 if not has_thumbnail:
                     # logger.info("Start creating thumbnail")
                     t_thumbnail_start = datetime.now()
-                    resized_image = cv2.resize(raw_image, (240, 135))
+                    scale_parameter = 4
+                    resized_image = cv2.resize(raw_image, (int(image_rows/scale_parameter), int(image_cols/scale_parameter)))
                     r, buf = cv2.imencode('.jpg', resized_image, [
                         int(cv2.IMWRITE_JPEG_QUALITY), 50])
                     frame_data['thumbnail'] = {
                         'binary': base64.standard_b64encode(buf).decode('ascii'),
                         'originalCols': image_cols,
-                        'originalRows': image_rows
+                        'originalRows': image_rows,
+                        'scale_parameter': scale_parameter
                     }
 
                     t_thumbnail_end = datetime.now()
