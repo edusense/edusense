@@ -36,3 +36,4 @@ matplotlib==3.3.2
 Werkzeug==0.16.0
 wrapt==1.11.2
 pytesseract==0.3.4
+pika==1.2.0

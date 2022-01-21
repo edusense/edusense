@@ -32,6 +32,7 @@ from centroidtracker import *
 from headpose import *
 from render import *
 from process import *
+import pika
 
 default_schema = "edusense-video"
 default_keyword = "edusense-keyword"
@@ -667,6 +668,17 @@ class ConsumerThread(threading.Thread):
 
         if self.backend_params is not None:
             self.post_frame_to_backend(frame_data)
+        self.post_frame_to_queue(frame_data)
+
+
+    def post_frame_to_queue(self, frame_data):
+        connection = pika.BlockingConnection(
+            pika.ConnectionParameters(host='localhost'))
+        channel = connection.channel()
+        channel.exchange_declare(exchange='livedemo_exchange', exchange_type='direct')
+        channel.basic_publish(
+            exchange='livedemo_exchange', routing_key='livedemo_test', body=json.dumps(frame_data))
+        connection.close()
 
     def post_frame_to_file(self, raw_image, frame_data):
         logger = self.logger
