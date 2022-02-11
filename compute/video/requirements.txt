@@ -17,7 +17,7 @@ Markdown==3.1.1
 mock==3.0.5
 numpy==1.19.4
 opencv-python==4.0.0.21
-protobuf==3.10.0
+protobuf==3.15.0
 requests==2.21.0
 scipy==1.2.0
 six==1.12.0
