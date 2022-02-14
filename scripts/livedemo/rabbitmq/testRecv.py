@@ -86,8 +86,8 @@ def main():
         im = Image.open(buffer)
         im = cv2.resize(np.copy(im), (ncols, nrows))
 
-        found_gaze=False
-        is_mask = True
+        # found_gaze=False
+        # is_mask = True
         for i in range(len(frame['people'])):
             body_kps = frame['people'][i]['body']
             im = annotate_image(im, ncols, nrows, body_kps)
@@ -99,15 +99,15 @@ def main():
                 gazeVectorLongY = gazeVector[0][1] + (gazeVector[1][1] - gazeVector[0][1]) * gaze_length_multiplier
                 im = cv2.arrowedLine(im,gazeVector[0],[gazeVectorLongX,gazeVectorLongY],color=(0,255,0),thickness=20)
         im = cv2.resize(im, (int(ncols/4), int(nrows/4)))
-        frame_time = frame['timestamp']
-        if found_gaze & is_mask:
-            cv2.imwrite(f'gaze_testing/mask/gaze_frames/{frame_time}.png',im)
-        elif found_gaze & (not is_mask):
-            cv2.imwrite(f'gaze_testing/no_mask/gaze_frames/{frame_time}.png', im)
-        elif (not found_gaze) & is_mask:
-            cv2.imwrite(f'gaze_testing/mask/non_gaze_frames/{frame_time}.png', im)
-        else:
-            cv2.imwrite(f'gaze_testing/no_mask/non_gaze_frames/{frame_time}.png', im)
+        # frame_time = frame['timestamp']
+        # if found_gaze & is_mask:
+        #     cv2.imwrite(f'gaze_testing/mask/gaze_frames/{frame_time}.png',im)
+        # elif found_gaze & (not is_mask):
+        #     cv2.imwrite(f'gaze_testing/no_mask/gaze_frames/{frame_time}.png', im)
+        # elif (not found_gaze) & is_mask:
+        #     cv2.imwrite(f'gaze_testing/mask/non_gaze_frames/{frame_time}.png', im)
+        # else:
+        #     cv2.imwrite(f'gaze_testing/no_mask/non_gaze_frames/{frame_time}.png', im)
 
         cv2.imshow("image", im)
         cv2.waitKey(1)
