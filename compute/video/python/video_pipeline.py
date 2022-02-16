@@ -507,7 +507,7 @@ class ConsumerThread(threading.Thread):
                 gaze_vector = None
                 face = get_face(pose)
                 body_time_profile[body_idx]['get_smile'] = round(time.time() - start_time, 3)
-
+                logger.debug(f"Completed openpose inference for body {body_idx}")
                 start_time = time.time()
                 if (self.gaze_3d):
                     if face is not None:
@@ -518,8 +518,10 @@ class ConsumerThread(threading.Thread):
                         bboxes = bboxes.reshape(-1, 4)
                         # print(face)
                         # logger.info('.......')
+                        logger.debug(f"Starting gaze3d points extraction for body {body_idx}")
                         tvec, rvec, point_2d, face = gaze_3d.get_3d_pose(raw_image, bboxes,
                                                                          face)  ##TODO-: change the face variablr
+                        logger.debug(f"Extracted gaze3d points for body {body_idx}")
                         # logger.info(point_2d)
                         tvec = tvec.tolist()
                         rvec = rvec.tolist()
@@ -551,6 +553,7 @@ class ConsumerThread(threading.Thread):
                                      gaze_stop, (255, 255, 255), 2)
                     body_time_profile[body_idx]['get_gaze_old'] = round(time.time() - start_time, 3)
 
+                logger.debug(f"Completed gaze inference for body {body_idx}")
                 start_time = time.time()
                 if armpose is not None:
                     body['inference']['posture']['armPose'] = armpose
@@ -631,6 +634,7 @@ class ConsumerThread(threading.Thread):
                                         body['inference']['posture']['centroidDelta'] = centroid_delta
                                         body['inference']['posture']['armDelta'] = arm_delta
                 body_time_profile[body_idx]['get_centroid_arm_delta'] = round(time.time() - start_time, 3)
+                logger.debug(f"Completed interframe inference for body {body_idx}")
 
             t_featurization_end = datetime.now()
 
