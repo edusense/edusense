@@ -153,7 +153,7 @@ class SocketReaderThread(threading.Thread):
 class ConsumerThread(threading.Thread):
     def __init__(self, input_queue, process_real_time, process_gaze, gaze_3d, channel,
                  area_of_interest, fps, start_date, start_time, logger_pass, logging_dict, backend_params=None,
-                 file_params=None,
+                 file_params=None, queue_params=None,
                  profile=False, skipframe=0):
         threading.Thread.__init__(self)
         self.input_queue = input_queue
@@ -182,6 +182,9 @@ class ConsumerThread(threading.Thread):
 
         # Initialize backend posting
         self.backend_params = backend_params
+
+        # Initialize queue posting
+        self.queue_params = queue_params
 
         # Initialize centroid tracker
         self.centroid_tracker = CentroidTracker()
@@ -678,13 +681,14 @@ class ConsumerThread(threading.Thread):
 
 
     def post_frame_to_queue(self, frame_data):
-        connection = pika.BlockingConnection(
-            pika.ConnectionParameters(host='localhost'))
-        channel = connection.channel()
-        channel.exchange_declare(exchange='livedemo_exchange', exchange_type='direct')
-        channel.basic_publish(
-            exchange='livedemo_exchange', routing_key='livedemo_test', body=json.dumps(frame_data))
-        connection.close()
+        # connection = pika.BlockingConnection(
+        #     pika.ConnectionParameters(host='localhost'))
+        # channel = connection.channel()
+        # channel.exchange_declare(exchange=self.queue_params['rabbitmq_exchange'], exchange_type='direct')
+        global rmq_channel
+        rmq_channel.basic_publish(
+            exchange=self.queue_params['rabbitmq_exchange'], routing_key=self.queue_params['rabbitmq_routing_key'], body=json.dumps(frame_data))
+        # connection.close()
 
     def post_frame_to_file(self, raw_image, frame_data):
         logger = self.logger
@@ -754,7 +758,7 @@ class ConsumerThread(threading.Thread):
 def run_pipeline(server_address, time_duration, process_real_time,
                  process_gaze, gaze_3d, keep_frame_number, channel, area_of_interest,
                  fps, start_date, start_time, root_logger, logging_dict, backend_params=None,
-                 file_params=None, profile=False, skipframe=0):
+                 file_params=None, queue_params=None, profile=False, skipframe=0):
     # initialize loggers
     logger_base = root_logger.getChild('run_pipeline')
     logger = logging.LoggerAdapter(logger_base, logging_dict)
@@ -775,7 +779,7 @@ def run_pipeline(server_address, time_duration, process_real_time,
     # initialize video consumers
     consumer_thread = ConsumerThread(q, process_real_time, process_gaze, gaze_3d,
                                      channel, area_of_interest, fps, start_date, start_time, logger_base, logging_dict,
-                                     backend_params, file_params, profile, skipframe)
+                                     backend_params, file_params, queue_params, profile, skipframe)
 
     # start downstream (consumers)
     t_consumer_thread_start = datetime.now()
@@ -843,6 +847,10 @@ if __name__ == '__main__':
                         help='EduSense session id')
     parser.add_argument('--schema', dest='schema', type=str, nargs='?',
                         default=default_schema, help='EduSense schema')
+    parser.add_argument('--rabbitmq_exchange', dest='rmq_exchange', type=str, nargs='?',
+                        default='livedemo_exchange', help='RabbitMQ Exchange')
+    parser.add_argument('--rabbitmq_routing_key', dest='rmq_routing_key', type=str, nargs='?',
+                        default='livedemo_routing_key', help='RabbitMQ Routing Key')
     parser.add_argument('--time_duration', dest='time_duration', type=int,
                         nargs='?', default=60, help='Session duration')
     parser.add_argument('--process_real_time', dest='process_real_time',
@@ -974,6 +982,19 @@ if __name__ == '__main__':
             'video': args.video_out
         }
 
+    # setup queue params
+    queue_params = {
+        'rabbitmq_exchange':args.rmq_exchange,
+        'rabbitmq_routing_key':args.rmq_routing_key
+    }
+
+    # setup queue connection
+    global rmq_connection, rmq_channel
+    rmq_connection = pika.BlockingConnection(
+        pika.ConnectionParameters(host='localhost'))
+    rmq_channel = rmq_connection.channel()
+    rmq_channel.exchange_declare(exchange=queue_params['rabbitmq_exchange'], exchange_type='direct')
+
     profile = args.profile
     server_address = (args.video_sock
                       if args.use_unix_socket
@@ -983,6 +1004,6 @@ if __name__ == '__main__':
     run_pipeline(server_address, args.time_duration, args.process_real_time,
                  args.process_gaze, args.gaze_3d, args.keep_frame_number, channel,
                  args.area_of_interest, fps, start_date, start_time, logger_master, logging_dict, backend_params,
-                 file_params, profile, skipframe)
+                 file_params, queue_params, profile, skipframe)
     t_pipeline_end = datetime.now()
     logger.info("Finished running pipeline in %.3f secs", time_diff(t_pipeline_start, t_pipeline_end))
