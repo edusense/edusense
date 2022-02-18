@@ -73,7 +73,7 @@ def main():
     queue_name = result.method.queue
 
     channel.queue_bind(
-        exchange='livedemo_exchange_1', queue=queue_name, routing_key='livedemo_routing_key_1')
+        exchange='livedemo_exchange_0', queue=queue_name, routing_key='livedemo_routing_key_0')
 
     def callback(ch, method, properties, frame_json):
         frame = json.loads(frame_json)

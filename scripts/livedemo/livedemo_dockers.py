@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 
 
 def kill_containers(containers, logger):
-    logger.critical('killing all containers')
+    logger.critical(f'killing {len(containers)} containers')
 
     process = subprocess.Popen(['docker', 'container', 'kill'] + containers,
                                stdout=subprocess.PIPE,
