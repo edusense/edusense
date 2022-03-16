@@ -203,6 +203,8 @@ class ConsumerThread(threading.Thread):
 
         self.profile = profile
 
+        self.handRaiseCount = {}
+
         self.logger_base = logger_pass.getChild('consumer_thread')
         self.logger = logging.LoggerAdapter(self.logger_base, logging_dict)
         self.logger.info("Constructed Consumer Thread.")
@@ -560,6 +562,11 @@ class ConsumerThread(threading.Thread):
                 start_time = time.time()
                 if armpose is not None:
                     body['inference']['posture']['armPose'] = armpose
+                    if body['inference']['trackingId'] not in self.handRaiseCount:
+                            self.handRaiseCount[body['inference']['trackingId']] = 0
+                    if armpose == 'hands_raised':
+                        self.handRaiseCount[body['inference']['trackingId']] += 1
+                    body['inference']['posture']['handRaiseCount'] = self.handRaiseCount[body['inference']['trackingId']]
                 if sit_stand is not None:
                     body['inference']['posture']['sitStand'] = sit_stand
                 if face is not None:
