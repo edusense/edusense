@@ -38,7 +38,7 @@ default_schema = "edusense-video"
 default_keyword = "edusense-keyword"
 RTSP = False
 skipframe = 0
-
+handRaiseCount = {}
 
 class SocketReaderThread(threading.Thread):
     def __init__(self, queue, server_address, keep_frame_number, logger_pass, logging_dict,
@@ -203,7 +203,11 @@ class ConsumerThread(threading.Thread):
 
         self.profile = profile
 
-        self.handRaiseCount = {}
+        self.heatmap = None
+        self.heatmap_meta = {
+            'heatmap_div': 4,
+            'handraise_max': 0
+        }
 
         self.logger_base = logger_pass.getChild('consumer_thread')
         self.logger = logging.LoggerAdapter(self.logger_base, logging_dict)
@@ -367,7 +371,30 @@ class ConsumerThread(threading.Thread):
             elif has_thumbnail:
                 image_rows = frame_data["thumbnail"]["originalRows"]
                 image_cols = frame_data["thumbnail"]["originalColumns"]
+            
+            heatmap_div = self.heatmap_meta['heatmap_div']
 
+            width_div = image_cols // heatmap_div
+            height_div = image_rows // heatmap_div
+
+            # frame_data['image_cols'] = image_cols
+            # frame_data['image_rows'] = image_rows
+            # frame_data['width_div'] = width_div
+            # frame_data['height_div'] = height_div
+            # frame_data['heatmap_div'] = self.heatmap_div
+            # frame_data['debug_list'] = []
+
+            frame_data['hands'] = []
+
+            if self.heatmap is None:
+                self.heatmap = [[{"x_coord":0, "y_coord": 0, "handraise_count": 0} for i in range(heatmap_div)] for j in range(heatmap_div)]
+                for i in range(0, heatmap_div):
+                    for j in range(0, heatmap_div):
+                        elem = self.heatmap[i][j]
+                        elem["x_coord"] = (width_div*(j+1)) - (width_div/2)
+                        elem["y_coord"] = (height_div*(i+1)) - (height_div/2)
+                        # frame_data['debug_list'].append([elem["x_coord"], elem["y_coord"], width_div*(j+1), height_div*(i+1)])
+            
             # Featurization
             logger.info("--Start frame featurization--")
             t_featurization_start = datetime.now()
@@ -498,6 +525,15 @@ class ConsumerThread(threading.Thread):
                         [pose], raw_image, color_pose, color_stand)
                 body_time_profile[body_idx]['get_armpose'] = round(time.time() - start_time, 3)
 
+                if self.heatmap is not None and armpose is not None and (armpose == 'hands_raised' or armpose == 'handsRaised'):
+                    neck_point = pose[1]
+                    neck_x = neck_point[0]
+                    neck_y = neck_point[1]
+                    frame_data['hands'].append([neck_x, neck_y, neck_y // height_div, neck_x // width_div])
+                    self.heatmap[neck_y // height_div][neck_x // width_div]["handraise_count"] += 1
+                    if self.heatmap[neck_y // height_div][neck_x // width_div]["handraise_count"] > self.heatmap_meta['handraise_max']:
+                        self.heatmap_meta['handraise_max'] = self.heatmap[neck_y // height_div][neck_x // width_div]["handraise_count"]
+
                 # Mouth
                 start_time = time.time()
                 mouth = None
@@ -562,11 +598,6 @@ class ConsumerThread(threading.Thread):
                 start_time = time.time()
                 if armpose is not None:
                     body['inference']['posture']['armPose'] = armpose
-                    if body['inference']['trackingId'] not in self.handRaiseCount:
-                            self.handRaiseCount[body['inference']['trackingId']] = 0
-                    if armpose == 'hands_raised':
-                        self.handRaiseCount[body['inference']['trackingId']] += 1
-                    body['inference']['posture']['handRaiseCount'] = self.handRaiseCount[body['inference']['trackingId']]
                 if sit_stand is not None:
                     body['inference']['posture']['sitStand'] = sit_stand
                 if face is not None:
@@ -665,6 +696,8 @@ class ConsumerThread(threading.Thread):
 
             frame_data['channel'] = self.channel
             frame_data['people'] = bodies
+            frame_data['heatmap'] = self.heatmap
+            frame_data['heatmap_meta'] = self.heatmap_meta
 
             if self.profile:
                 logger.info('json,%f' % json_time)
