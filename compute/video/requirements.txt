@@ -15,7 +15,7 @@ Keras-Applications==1.0.8
 Keras-Preprocessing==1.1.0
 Markdown==3.1.1
 mock==3.0.5
-numpy==1.19.4
+numpy==1.22.0
 opencv-python==4.0.0.21
 protobuf==3.10.0
 requests==2.21.0
