@@ -1,7 +1,7 @@
 absl-py==0.8.1
 astor==0.8.0
 backports.weakref==1.0.post1
-certifi==2018.11.29
+certifi==2022.12.7
 chardet==3.0.4
 enum34==1.1.6
 funcsigs==1.0.2
