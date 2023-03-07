@@ -44,3 +44,21 @@ python3 backfill.py \
 --sync_mode mount \
 --mount_base_path /mnt/ci-nas-classes/classinsight/2019S \
 --log_dir /home/prasoon/logs_jun21_backfill/ \
+
+
+python3 run_backfill.py --front_video real_world_ghc_4101_student.avi \
+--back_video real_world_ghc_4101_instructor.avi \
+--video_dir /home/prasoon/neeharika_test_video --keyword real_world_ghc_4101 \
+--front_num_gpu_start 4 --front_num_gpu 1 --back_num_gpu_start 4 --back_num_gpu 1 \
+--video_schema classinsight-graphql-video --audio_schema classinsight-graphql-audio --process_real_time \
+--backend_url ci-storage-1.andrew.cmu.edu:3000 --developer prasoon_jun21backfill --time_duration -1 --backfillFPS 15 \
+--log_dir /home/prasoon/neeharika_test_video
+
+
+python3 run_backfill.py --front_video cmu_88880M_407sc_104_20220208131228_front.avi \
+--back_video cmu_88880M_407sc_104_20220208131228_back.avi \
+--video_dir /home/prasoon/mask_test_videos --keyword cmu_88880M_407sc_104_20220208131228 \
+--front_num_gpu_start 1 --front_num_gpu 1 --back_num_gpu_start 2 --back_num_gpu 2 \
+--video_schema classinsight-graphql-video --audio_schema classinsight-graphql-audio \
+--backend_url ci-storage-1.andrew.cmu.edu:3000 --developer prasoon_jun21backfill --time_duration -1 --backfillFPS 15 \
+--log_dir /home/prasoon/prod_backfill_logs

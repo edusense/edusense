@@ -8,8 +8,9 @@ import json
 from datetime import datetime,timedelta
 
 backend_params = None
-app_username = os.getenv("APP_USERNAME", "")
-app_password = os.getenv("APP_PASSWORD", "")
+app_username = os.getenv("EDUSENSE_ANALYTICS_USERNAME", "")
+app_password = os.getenv("EDUSENSE_ANALYTICS_PASSWORD", "")
+app_url = os.getenv("EDUSENSE_ANALYTICS_URL", "")
     
 cred = '{}:{}'.format(app_username, app_password).encode('ascii')
 encoded_cred = base64.standard_b64encode(cred).decode('ascii')
@@ -200,7 +201,7 @@ analytics_schema = {
 
 query = '''
         {
-            analytics(sessionId: "11", keyword: "keywordTest") {
+            analytics(sessionId: "610f3eb7e81eb70c26d9f4b8") {
                 id
                 keyword
                 metaInfo {
@@ -223,7 +224,9 @@ try:
 
     # Query
     req = {'query': query}
-    resp = requests.post("https://edusense-dev-1.andrew.cmu.edu:9000/query", headers=backend_params['headers'], json=req)
+    # resp = requests.post("https://edusense-dev-1.andrew.cmu.edu:9000/query", headers=backend_params['headers'], json=req)
+    resp = requests.post(f"http://{app_url}/query", headers=backend_params['headers'],
+                         json=req)
     
     print("****resp returned")
     if (resp.status_code != 200 or

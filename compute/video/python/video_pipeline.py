@@ -962,6 +962,7 @@ if __name__ == '__main__':
                       else (args.tcp_host, args.tcp_port))
     logger.info("Initiating video pipeline run...")
     t_pipeline_start = datetime.now()
+
     run_pipeline(server_address, args.time_duration, args.process_real_time,
                  args.process_gaze, args.gaze_3d, args.keep_frame_number, channel,
                  args.area_of_interest, fps, start_date, start_time, logger_master, logging_dict, backend_params,
