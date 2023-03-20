@@ -516,7 +516,7 @@ class ConsumerThread(threading.Thread):
                         # print(face)
                         # logger.info('.......')
                         tvec, rvec, point_2d, face = gaze_3d.get_3d_pose(raw_image, bboxes,
-                                                                         face)  ##TODO-: change the face variablr
+                                                                         face)  ##TODO-: change the face variable
                         # logger.info(point_2d)
                         tvec = tvec.tolist()
                         rvec = rvec.tolist()
