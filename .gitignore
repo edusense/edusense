@@ -105,3 +105,9 @@ venv.bak/
 compose/input
 **.DS_Store
 .idea/
+**.tar
+**.pth
+**.pt
+compute/videoV3/models/
+compute/videoV3/cache/
+compute/videoV2/cache/
