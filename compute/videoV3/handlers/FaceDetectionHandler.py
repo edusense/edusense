@@ -10,12 +10,14 @@ from copy import deepcopy
 import time
 import torch
 from queue import Empty as EmptyQueueException
-
+from concurrent.futures import ThreadPoolExecutor
 
 def run_face_handler(face_input_queue, gaze_input_queue, face_embedding_input_queue, session_config, logger_name):
     logger = get_logger(logger_name)
     # init face boundingbox model
-    retinaface = RetinaFaceInference(device=torch.device(session_config['device']))
+    # retinaface = RetinaFaceInference(device=torch.device(session_config['device']))
+    retinaface = RetinaFaceInference(device=torch.device('cuda:1'))
+    threadExecutor = ThreadPoolExecutor(5)
     body_count=0
     while True:
         success = False
@@ -34,21 +36,35 @@ def run_face_handler(face_input_queue, gaze_input_queue, face_embedding_input_qu
         assert (type(video_frame) == np.ndarray) & (len(video_frame.shape) == 3)
         h, w, _ = video_frame.shape
         process_start = datetime.now()
+
         if track_results is not None:
-            face_results = deepcopy(track_results)
-            body_count = len(face_results)
+            # face_results = deepcopy(track_results)
+            body_count = len(track_results)
+            body_frames = []
+            body_indexes = []
             for body_index, tracking_info in enumerate(track_results):
                 if type(tracking_info) == dict:
                     body_bbox = tracking_info['bbox']
                     X_TL, Y_TL, X_BR, Y_BR = body_bbox[:4].astype(int)
+                    if (np.abs(Y_TL-Y_BR)<3) | (np.abs(X_TL-X_BR)<3):
+                        logger.warning("Very small body space found, not running face detection...")
+                        continue
                     body_frame = video_frame[Y_TL:Y_BR, X_TL:X_BR, :]
-                    faces, _ = retinaface.run(body_frame, frame_debug=None)
-                    face_results[body_index].update({
-                        'face':faces
-                    })
+                    body_frames.append(body_frame)
+                    body_indexes.append(body_index)
 
-            gaze_input_queue.put((frame_number, video_frame, face_results))
-            face_embedding_input_queue.put((frame_number, video_frame, face_results))
+            face_detections = threadExecutor.map(retinaface.run, body_frames)
+            for body_index, face_result in zip(body_indexes,face_detections):
+                track_results[body_index].update({
+                    'face':face_result[0]
+                })
+            # faces, _ = [retinaface.run(body_frame, frame_debug=None)[0] for body_frame in body_frames]
+            # face_results[body_index].update({
+            #     'face':faces
+            # })
+
+            gaze_input_queue.put((frame_number, video_frame, track_results))
+            face_embedding_input_queue.put((frame_number, video_frame, track_results))
             success = True
 
         process_end = datetime.now()

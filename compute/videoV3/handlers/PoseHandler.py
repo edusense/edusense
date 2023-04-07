@@ -30,7 +30,8 @@ def run_pose_handler(pose_input_queue, pose_output_queue, session_config, logger
 
         wait_end = datetime.now()
         if video_frame is None:
-            logger.info("Received none frame from input queue, exiting tracking handler.")
+            logger.info("Received none frame from input queue, exiting pose handler.")
+            pose_output_queue.put((frame_number, 'pose', None))
             break
         assert (type(video_frame) == np.ndarray) & (len(video_frame.shape) == 3)
 

@@ -26,6 +26,7 @@ def run_gaze_handler(gaze_input_queue, gaze_output_queue, session_config, logger
         wait_end = datetime.now()
         if video_frame is None:
             logger.info("Received none frame from input queue, exiting tracking handler.")
+            gaze_output_queue.put((frame_number, 'gaze', None))
             break
         assert (type(video_frame) == np.ndarray) & (len(video_frame.shape) == 3)
 

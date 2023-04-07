@@ -12,10 +12,10 @@ import tensorflow as tf
 import torch
 import time
 from queue import Empty as EmptyQueueException
+
 tf_version = tf.__version__
 tf_major_version = int(tf_version.split(".", maxsplit=1)[0])
 tf_minor_version = int(tf_version.split(".")[1])
-
 
 if tf_major_version == 1:
     from keras.preprocessing import image
@@ -39,6 +39,7 @@ def run_face_embedding_handler(face_embedding_input_queue, face_embedding_output
         wait_end = datetime.now()
         if video_frame is None:
             logger.info("Received none frame from input queue, exiting tracking handler.")
+            face_embedding_output_queue.put((frame_number, 'face_embedding', None))
             break
         assert (type(video_frame) == np.ndarray) & (len(video_frame.shape) == 3)
 
@@ -91,8 +92,8 @@ def run_face_embedding_handler(face_embedding_input_queue, face_embedding_output
                     face_tensor = torch.from_numpy(video_frame_pixels).permute(2, 1, 0).unsqueeze(0).to(
                         session_config['device'])
                     face_embedding = facial_embedding_model(face_tensor)[0].to('cpu').detach().numpy()
-                    face_results[body_index].update({
-                        'face_embedding':face_embedding
+                    face_embedding_results[body_index].update({
+                        'face_embedding': face_embedding
                     })
 
             face_embedding_output_queue.put((frame_number, 'face_embedding', face_embedding_results))

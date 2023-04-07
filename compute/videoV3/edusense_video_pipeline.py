@@ -9,36 +9,38 @@ import torch
 import time
 
 SOURCE_DIR = '/home/prasoon/video_analysis/edusenseV2compute/compute/videoV3'
-SESSION_DIR = '/home/prasoon/video_analysis/mmtracking/'
-SESSION_KEYWORD = 'first-10-min_5fps.mp4'
+SESSION_DIR = '/mnt/ci-nas-classes/classinsight/2019F/video_backup'
+SESSION_KEYWORD = 'classinsight-cmu_79388A_ghc_4301_201910031826'
+SESSION_CAMERA = 'front'
+# SOURCE_DIR = '/home/prasoon/video_analysis/edusenseV2compute/compute/videoV3'
+# SESSION_DIR = '/home/prasoon/video_analysis/mmtracking/'
+# SESSION_KEYWORD = 'first-10-min_5fps.mp4'
 OUT_DIR = '/home/prasoon/video_analysis/edusenseV2compute/compute/videoV3/cache'
-DEVICE = 'cuda:1'
+DEVICE = 'cuda:0'
 NUM_FACE_DETECTION_HANDLERS = 1
+TARGET_FPS = 3
+START_FRAME_NUMBER = 0 # used for debug purposes only
+FRAME_INTERVAL_IN_SEC =  0.5
+MAX_QUEUE_SIZE=3000
 
 if __name__ == '__main__':
     torch.multiprocessing.set_start_method('spawn')
     # TODO: Setup Parser for command line runs and docker runs
-    session_config = get_session_config(SOURCE_DIR, SESSION_DIR, SESSION_KEYWORD, OUT_DIR, DEVICE)
+    session_config = get_session_config(SOURCE_DIR, SESSION_DIR, SESSION_KEYWORD, SESSION_CAMERA, OUT_DIR, DEVICE, TARGET_FPS, start_frame_number = START_FRAME_NUMBER, frame_interval=FRAME_INTERVAL_IN_SEC)
     session_config['num_face_detection_handlers'] = NUM_FACE_DETECTION_HANDLERS
     # setup logger
     logger = get_logger("edusense_pipeline")
 
     # Setup multiprocessing queues <input>_<output>_queue
 
-    video_tracking_queue = Queue()
+    video_tracking_queue = Queue(maxsize=MAX_QUEUE_SIZE)
+    tracking_pose_queue = Queue(maxsize=MAX_QUEUE_SIZE)
+    tracking_face_queue = Queue(maxsize=MAX_QUEUE_SIZE)
 
-    tracking_pose_queue = Queue()
-    tracking_face_queue = Queue()
-
-    pose_output_queue = Queue()
-    face_gaze_queue = Queue()
-    face_embedding_queue = Queue()
-    audio_speech_queue = Queue()
-
-    speech_speaker_queue = Queue()
-
-    video_output_queue = Queue()
-    audio_output_queue = Queue()
+    pose_output_queue = Queue(maxsize=MAX_QUEUE_SIZE)
+    face_gaze_queue = Queue(maxsize=MAX_QUEUE_SIZE)
+    face_embedding_queue = Queue(maxsize=MAX_QUEUE_SIZE)
+    video_output_queue = Queue(maxsize=MAX_QUEUE_SIZE)
 
     # initialize output handler
     output_handler = Process(target=handlers.run_output_handler,

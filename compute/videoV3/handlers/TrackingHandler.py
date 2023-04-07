@@ -9,6 +9,7 @@ from utils_computev3 import time_diff, get_logger
 import time
 from queue import Empty as EmptyQueueException
 
+
 def run_tracking_handler(frame_input_queue, pose_queue, face_queue, session_config, logger_name):
     logger = get_logger(logger_name)
     # build the model from a config file and a checkpoint file
@@ -40,9 +41,9 @@ def run_tracking_handler(frame_input_queue, pose_queue, face_queue, session_conf
         track_results = inference_mot(tracking_model, video_frame, frame_id=frame_number)
         track_bboxes = track_results['track_bboxes'][0]
         track_results = [dict(bbox=x[1:], track_id=x[0]) for x in list(track_bboxes)]
-
-        pose_queue.put((frame_number, video_frame, track_results))
-        face_queue.put((frame_number, video_frame, track_results))
+        if len(track_results) > 0:
+            pose_queue.put((frame_number, video_frame, track_results))
+            face_queue.put((frame_number, video_frame, track_results))
         process_end = datetime.now()
 
         logger.info(

@@ -5,16 +5,23 @@ This file generate session running config for edusense pipeline
 def get_session_config(source_dir,
                        session_dir,
                        session_keyword,
+                       session_camera,
                        output_dir,
-                       device):
+                       device,
+                       target_fps,
+                       start_frame_number=0,
+                       frame_interval=0.):
     video_config = {
         # videoHandler
         'session_dir':session_dir,
         'session_keyword':session_keyword,
         'source_dir':source_dir,
         'output_dir':output_dir,
+        'session_camera':session_camera,
         'device':device,
-        'video_fps': 5,
+        'target_fps': target_fps,
+        'start_frame_number':start_frame_number,
+        'frame_interval':frame_interval,
 
         # trackingHandler
         'track_config':f'{source_dir}/configs/mmlab/ocsort_yolox_x_crowdhuman_mot17-private-half.py',
