@@ -20,8 +20,8 @@ DEVICE = 'cuda:0'
 NUM_FACE_DETECTION_HANDLERS = 1
 TARGET_FPS = 3
 START_FRAME_NUMBER = 0 # used for debug purposes only
-FRAME_INTERVAL_IN_SEC =  0.5
-MAX_QUEUE_SIZE=3000
+FRAME_INTERVAL_IN_SEC =  0.6
+MAX_QUEUE_SIZE=300
 
 if __name__ == '__main__':
     torch.multiprocessing.set_start_method('spawn')
@@ -29,7 +29,7 @@ if __name__ == '__main__':
     session_config = get_session_config(SOURCE_DIR, SESSION_DIR, SESSION_KEYWORD, SESSION_CAMERA, OUT_DIR, DEVICE, TARGET_FPS, start_frame_number = START_FRAME_NUMBER, frame_interval=FRAME_INTERVAL_IN_SEC)
     session_config['num_face_detection_handlers'] = NUM_FACE_DETECTION_HANDLERS
     # setup logger
-    logger = get_logger("edusense_pipeline")
+    logger = get_logger("edusense_video_pipeline")
 
     # Setup multiprocessing queues <input>_<output>_queue
 
@@ -76,8 +76,6 @@ if __name__ == '__main__':
     video_handler.start()
 
     # start observing output queue
-
-
     video_handler.join()
     tracking_handler.join()
     pose_handler.join()

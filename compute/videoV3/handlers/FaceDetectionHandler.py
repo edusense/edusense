@@ -15,8 +15,8 @@ from concurrent.futures import ThreadPoolExecutor
 def run_face_handler(face_input_queue, gaze_input_queue, face_embedding_input_queue, session_config, logger_name):
     logger = get_logger(logger_name)
     # init face boundingbox model
-    # retinaface = RetinaFaceInference(device=torch.device(session_config['device']))
-    retinaface = RetinaFaceInference(device=torch.device('cuda:1'))
+    retinaface = RetinaFaceInference(device=torch.device(session_config['device']))
+    # retinaface = RetinaFaceInference(device=torch.device('cuda:1'))
     threadExecutor = ThreadPoolExecutor(5)
     body_count=0
     while True:
