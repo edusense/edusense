@@ -2,13 +2,16 @@
 This is main file to run Edusense pipeline with compute V3 on multiprocessing
 """
 import os
+import sys
 
 from configs.get_session_config import get_session_config
 from utils_computev3 import get_logger, time_diff
-from multiprocessing import Queue, Process
-import handlers
+from multiprocessing.connection import Listener, Client
+from multiprocessing import Process, Queue
+import socket_handlers
 import torch
-
+import threading
+from subprocess import Popen
 
 from queue import Empty as EmptyQueueException
 import time
@@ -29,7 +32,7 @@ os.makedirs(BACKFILL_STATUS_DIR, exist_ok=True)
 # SESSION_DIR = '/home/prasoon/video_analysis/mmtracking/'
 # SESSION_KEYWORD = 'first-10-min_5fps.mp4'
 
-DEVICE = 'cuda:2'
+DEVICE = 'cuda:4'
 
 NUM_FACE_DETECTION_HANDLERS = 1
 TARGET_FPS = 3
@@ -41,10 +44,10 @@ session_dirs = [xr for xr in session_dirs if f'_{COURSE_ID}_' in xr]
 print(f"Got {len(session_dirs)} sessions from {VIDEO_DIR} and course {COURSE_ID}")
 
 if __name__ == '__main__':
-    try:
-        torch.multiprocessing.set_start_method('spawn')
-    except:
-        print("Spawn method already set, continue...")
+    # try:
+    #     torch.multiprocessing.set_start_method('spawn')
+    # except:
+    #     print("Spawn method already set, continue...")
     for SESSION_DIR in session_dirs:
         SESSION_KEYWORD = SESSION_DIR.split("/")[-1]
         for SESSION_CAMERA in ['front']:
@@ -82,7 +85,7 @@ if __name__ == '__main__':
             # Setup multiprocessing queues <input>_<output>_queue
             '''                        
             Queue-Process Architecture:
-                                                            
+
             P:video_handler
                    |
                   \|/                                   |--Q{tracking_pose_queue}--> P:pose_handler ------------>|
@@ -92,63 +95,72 @@ if __name__ == '__main__':
                                                                                         \|/                      |
                                                                                           --Q{face_gaze_queue}-->|
                                                                                           --Q{face_emb_queue}--->|
-            
+
             '''
 
-            video_tracking_queue = Queue(maxsize=MAX_QUEUE_SIZE)
+            VIDEO_TRACKING_SOCKET = 8000
+            TRACKING_POSE_SOCKET = 8001
+            TRACKING_FACE_SOCKET = 8002
+            FACE_GAZE_SOCKET = 8003
+            FACE_EMB_SOCKET = 8004
+            VIDEO_OUTPUT_SOCKET = 8005
 
-            tracking_pose_queue = Queue(maxsize=MAX_QUEUE_SIZE)
-            tracking_face_queue = Queue(maxsize=MAX_QUEUE_SIZE)
+            output_server = Listener(address=('localhost', VIDEO_OUTPUT_SOCKET), authkey=b'output')
 
-            face_gaze_queue = Queue(maxsize=MAX_QUEUE_SIZE)
-            face_emb_queue = Queue(maxsize=MAX_QUEUE_SIZE)
+            common_command_args = f'--source_dir {SOURCE_DIR} --course_id {COURSE_ID} --session_dir {SESSION_DIR} --session_keyword {SESSION_KEYWORD} ' \
+                                  f'--session_camera {SESSION_CAMERA} --device {DEVICE} --target_fps {TARGET_FPS} ' \
+                                  f'--frame_interval {FRAME_INTERVAL_IN_SEC}'.split(" ")
 
-            video_output_queue = Queue(maxsize=MAX_QUEUE_SIZE)
+            gaze_command_args = f'python socket_handlers/GazeHandler.py --face_gaze_socket {FACE_GAZE_SOCKET} ' \
+                                f'--gaze_output_socket {VIDEO_OUTPUT_SOCKET}'.split(" ") + common_command_args
+            gaze_process = Popen(gaze_command_args)
 
-            # initialize output handler
-            # output_handler = Process(target=handlers.run_output_handler,
-            #                            args=(video_output_queue, session_config,"output"))
-            # output_handler.start()
+            face_command_args = f'python socket_handlers/FaceDetectionHandler.py --tracking_face_socket {TRACKING_FACE_SOCKET} ' \
+                                f'--face_gaze_socket {FACE_GAZE_SOCKET}'.split(" ") + common_command_args
+            face_process = Popen(face_command_args)
 
-            # initialize support handlers
+            pose_command_args = f'python socket_handlers/PoseHandler.py --tracking_pose_socket {TRACKING_POSE_SOCKET} ' \
+                                f'--pose_output_socket {VIDEO_OUTPUT_SOCKET}'.split(" ") + common_command_args
+            pose_process = Popen(pose_command_args)
 
-            # ---------------- Student/Instructor Tracking Handler ----------------
-            tracking_handler = Process(target=handlers.run_tracking_handler,
-                                       args=(video_tracking_queue, tracking_pose_queue, tracking_face_queue, session_config,
-                                             "tracker"))
-            tracking_handler.start()
+            tracking_command_args = f'python socket_handlers/TrackingHandler.py --video_tracking_socket {VIDEO_TRACKING_SOCKET} ' \
+                                    f'--tracking_pose_socket {TRACKING_POSE_SOCKET} --tracking_face_socket {TRACKING_FACE_SOCKET}'.split(" ") + common_command_args
+            tracking_process = Popen(tracking_command_args)
 
-            # ---------------- Student/Instructor Pose Handler ----------------
-            pose_handler = Process(target=handlers.run_pose_handler,
-                                   args=(tracking_pose_queue, video_output_queue, session_config, "pose"))
-            pose_handler.start()
+            logger.info("Sleeping for 10 secs to let pose and tracking processes start")
+            time.sleep(20)
 
-            # ---------------- Student/Instructor Face(Bounding Box) Detection Handler ----------------
-            face_detection_handlers = [None] * NUM_FACE_DETECTION_HANDLERS
-            for i in range(NUM_FACE_DETECTION_HANDLERS):
-                face_detection_handlers[i] = Process(target=handlers.run_face_handler,
-                                                     args=(tracking_face_queue, face_gaze_queue, face_emb_queue,
-                                                           session_config, "face_detection"))
-                face_detection_handlers[i].start()
+            # define client handler
+            def output_client_handler(client_connection, output_queue):
+                time.sleep(1)
+                while True:
+                    frame_number, frame_type, frame_data = client_connection.recv()
+                    output_queue.put((frame_number, frame_type, frame_data))
+                    if frame_data is None:
+                        break
+                client_connection.close()
 
-            # ---------------- Student/Instructor Gaze Detection Handler ----------------
-            gaze_handler = Process(target=handlers.run_gaze_handler,
-                                   args=(face_gaze_queue, video_output_queue, session_config, "gaze"))
-            gaze_handler.start()
+            out_queue = Queue()
 
-            # ---------------- Student/Instructor Face(Dense Embedding) Detection Handler ----------------
-            face_embedding_handler = Process(target=handlers.run_face_embedding_handler,
-                                             args=(
-                                                 face_emb_queue, video_output_queue, session_config,
-                                                 "face_embedding"))
-            face_embedding_handler.start()
+            # accept connection from 2 clients and start threads
+            i = 0
+            output_connections = []
+            while(i<2):
+                output_conn = output_server.accept()
+                logger.info(f'output_conn Connection accepted from {output_server.last_accepted}')
+                client_process = Process(target=output_client_handler, args=(output_conn, out_queue))
+                # client_process.start()
+                output_connections.append(client_process)
+                i+=1
 
-            # ---------------- Student/Instructor Video Processing Handler ----------------
-            video_handler = Process(target=handlers.run_video_handler,
-                                    args=(None, video_tracking_queue, session_config, "video"))
-            video_handler.start()
+            # start video reading
+            video_command_args = f'python socket_handlers/VideoHandler.py --video_tracking_socket {VIDEO_TRACKING_SOCKET}'.split(
+                " ") + common_command_args
+            video_process = Popen(video_command_args)
 
-            # ---------------- All Handlers Initialized ----------------
+            for i in range(len(output_connections)):
+                output_connections[i].start()
+
             session_video_output = {
                 'gaze': [],
                 'face_embedding': [],
@@ -156,12 +168,14 @@ if __name__ == '__main__':
             }
 
             final_packet_received = {'gaze': False, 'face_embedding': False, 'pose': False}
+
             output_start_time = time.time()
             while True:
                 try:
-                    frame_number, frame_type, frame_data = video_output_queue.get(timeout=0.1)
+                    frame_number, frame_type, frame_data = out_queue.get(timeout=0.5)
                 except EmptyQueueException:
                     time.sleep(0.5)
+                    logger.info("Empty Output Queue")
                     continue
                 if frame_type not in session_video_output.keys():
                     logger.info(f"Frame Type {frame_type} is not supported..")
@@ -184,15 +198,5 @@ if __name__ == '__main__':
                     logger.info(f"Stored frames till {frame_number} in {time.time() - output_start_time:3f} secs..")
                     output_start_time = time.time()
 
-            # joining all processes
-            video_handler.join()
-            tracking_handler.join()
-            pose_handler.join()
-            for i in range(NUM_FACE_DETECTION_HANDLERS):
-                face_detection_handlers[i].join()
-            gaze_handler.join()
-            face_embedding_handler.join()
-
-            # free resources
-            del video_output_queue, tracking_face_queue, tracking_pose_queue, \
-                face_emb_queue, face_gaze_queue, video_output_queue
+            output_server.close()
+            sys.exit(0)

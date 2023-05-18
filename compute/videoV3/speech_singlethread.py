@@ -16,7 +16,7 @@ import traceback
 # conda activate edusense && export PYTHONPATH="${PYTHONPATH}:/home/prasoon/video_analysis/edusenseV2compute/compute/videoV3/"
 
 SOURCE_DIR = '/home/prasoon/video_analysis/edusenseV2compute/compute/videoV3'
-VIDEO_DIR = '/mnt/ci-nas-classes/classinsight/2019S/video_backup'
+VIDEO_DIR = '/mnt/ci-nas-classes/classinsight/2019M/video_backup'
 # SESSION_KEYWORD = 'classinsight-cmu_79388A_ghc_4301_201910031826'
 OUT_DIR = '/home/prasoon/video_analysis/edusenseV2compute/compute/videoV3/cache/audio'
 os.makedirs(OUT_DIR,exist_ok=True)
@@ -37,12 +37,12 @@ for session_dir in session_dirs:
     # create mp3 if not present
     for camera_view in ['front','back']:
         logger.info(f"Start Audio Pipeline for {camera_view} Camera")
+        session_video_file = f'{session_dir}/{SESSION_KEYWORD}-{camera_view}.avi'
         OUT_FILE = f'{OUT_DIR}/{SESSION_KEYWORD}-{camera_view}.pb'
         if os.path.exists(OUT_FILE):
             logger.info(f"Output file {OUT_FILE} exists for camera {session_video_file}, Skipping..")
             continue
 
-        session_video_file = f'{session_dir}/{SESSION_KEYWORD}-{camera_view}.avi'
         if not os.path.exists(session_video_file):
             logger.info(f"camera video file {session_video_file} does not exist. Skipping...")
             continue

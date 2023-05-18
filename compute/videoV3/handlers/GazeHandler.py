@@ -9,10 +9,15 @@ from GazeWrapper import GazeInference
 from copy import deepcopy
 import time
 from queue import Empty as EmptyQueueException
-
+import os
 
 def run_gaze_handler(gaze_input_queue, gaze_output_queue, session_config, logger_name):
-    logger = get_logger(logger_name)
+    course_id = session_config["course_id"]
+    session_keyword, session_camera = session_config["session_keyword"], session_config["session_camera"]
+    session_log_dir = f'cache/logs/{course_id}/{session_keyword}-{session_camera}'
+    os.makedirs(session_log_dir, exist_ok=True)
+    logger = get_logger(logger_name, logdir=session_log_dir)
+
     # init gaze model
     gaze_model = GazeInference(device=session_config['device'])
 

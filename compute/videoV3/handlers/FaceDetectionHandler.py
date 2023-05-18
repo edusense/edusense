@@ -9,11 +9,16 @@ from utils_computev3 import time_diff, get_logger
 from copy import deepcopy
 import time
 import torch
+import os
 from queue import Empty as EmptyQueueException
 from concurrent.futures import ThreadPoolExecutor
 
 def run_face_handler(face_input_queue, gaze_input_queue, face_embedding_input_queue, session_config, logger_name):
-    logger = get_logger(logger_name)
+    course_id = session_config["course_id"]
+    session_keyword, session_camera = session_config["session_keyword"], session_config["session_camera"]
+    session_log_dir = f'cache/logs/{course_id}/{session_keyword}-{session_camera}'
+    os.makedirs(session_log_dir,exist_ok=True)
+    logger = get_logger(logger_name, logdir=session_log_dir)
     # init face boundingbox model
     retinaface = RetinaFaceInference(device=torch.device(session_config['device']))
     # retinaface = RetinaFaceInference(device=torch.device('cuda:1'))
