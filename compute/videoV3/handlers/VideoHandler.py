@@ -5,12 +5,19 @@ Handler to process video into frames and passing to tracking processes
 import mmcv
 import time
 from queue import Empty as EmptyQueueException
+from utils_computev3 import time_diff, get_logger
+import os
 
+def run_video_handler(video_input_queue, frame_output_queue, session_config, logger_name):
+    course_id = session_config["course_id"]
+    session_keyword, session_camera = session_config["session_keyword"], session_config["session_camera"]
+    session_log_dir = f'cache/logs/{course_id}/{session_keyword}-{session_camera}'
+    os.makedirs(session_log_dir, exist_ok=True)
+    logger = get_logger(logger_name, logdir=session_log_dir)
 
-def run_video_handler(video_input_queue, frame_output_queue, session_config, logger):
     # read video file
     session_dir, session_keyword, session_camera =session_config["session_dir"], session_config["session_keyword"], session_config["session_camera"]
-    class_video_file = f'{session_dir}/{session_keyword}/{session_keyword}-{session_camera}.avi'
+    class_video_file = f'{session_dir}/{session_keyword}-{session_camera}.avi'
     mmcv_video_frames = mmcv.VideoReader(class_video_file)
     video_fps = mmcv_video_frames.fps
     target_fps = session_config['target_fps']

@@ -9,9 +9,14 @@ from datetime import datetime
 from utils_computev3 import time_diff, get_logger
 import time
 from queue import Empty as EmptyQueueException
-
+import os
 def run_pose_handler(pose_input_queue, pose_output_queue, session_config, logger_name):
-    logger = get_logger(logger_name)
+    course_id = session_config["course_id"]
+    session_keyword, session_camera = session_config["session_keyword"], session_config["session_camera"]
+    session_log_dir = f'cache/logs/{course_id}/{session_keyword}-{session_camera}'
+    os.makedirs(session_log_dir, exist_ok=True)
+    logger = get_logger(logger_name, logdir=session_log_dir)
+
     # init pose model
     pose_model = init_pose_model(session_config['pose_config'], session_config['pose_checkpoint'],
                                  session_config['device'])

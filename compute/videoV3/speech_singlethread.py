@@ -38,6 +38,7 @@ for session_dir in session_dirs:
     # create mp3 if not present
     for camera_view in ['front','back']:
         logger.info(f"Start Audio Pipeline for {camera_view} Camera")
+        session_video_file = f'{session_dir}/{SESSION_KEYWORD}-{camera_view}.avi'
         OUT_FILE = f'{OUT_DIR}/{SESSION_KEYWORD}-{camera_view}.pb'
         session_video_file = f'{session_dir}/{SESSION_KEYWORD}-{camera_view}.avi'
         if os.path.exists(OUT_FILE):

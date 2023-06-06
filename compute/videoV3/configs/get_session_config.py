@@ -3,20 +3,20 @@ This file generate session running config for edusense pipeline
 """
 
 def get_session_config(source_dir,
+                       course_id,
                        session_dir,
                        session_keyword,
                        session_camera,
-                       output_dir,
                        device,
                        target_fps,
                        start_frame_number=0,
                        frame_interval=0.):
     video_config = {
         # videoHandler
+        'course_id':course_id,
         'session_dir':session_dir,
         'session_keyword':session_keyword,
         'source_dir':source_dir,
-        'output_dir':output_dir,
         'session_camera':session_camera,
         'device':device,
         'target_fps': target_fps,

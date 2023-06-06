@@ -7,11 +7,18 @@ from mmtrack.apis import inference_mot, init_model as init_tracking_model
 from datetime import datetime
 from utils_computev3 import time_diff, get_logger
 import time
+import os
 from queue import Empty as EmptyQueueException
+from multiprocessing.connection import Listener, Client
 
 
 def run_tracking_handler(frame_input_queue, pose_queue, face_queue, session_config, logger_name):
-    logger = get_logger(logger_name)
+    course_id = session_config["course_id"]
+    session_keyword, session_camera = session_config["session_keyword"], session_config["session_camera"]
+    session_log_dir = f'cache/logs/{course_id}/{session_keyword}-{session_camera}'
+    os.makedirs(session_log_dir, exist_ok=True)
+    logger = get_logger(logger_name, logdir=session_log_dir)
+
     # build the model from a config file and a checkpoint file
     tracking_model = init_tracking_model(session_config['track_config'],
                                          session_config['track_checkpoint'],
