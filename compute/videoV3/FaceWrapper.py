@@ -82,64 +82,67 @@ class RetinaFaceInference(object):
         img = img.to(self.device)
         scale = scale.to(self.device)
 
-        self._t['forward_pass'].tic()
-        loc, conf, landms = self.net(img)  # forward pass
-        self._t['forward_pass'].toc()
-        self._t['misc'].tic()
-        priorbox = PriorBox(self.cfg, image_size=(im_height, im_width))
-        priors = priorbox.forward()
-        priors = priors.to(self.device)
-        prior_data = priors.data
-        boxes = decode(loc.data.squeeze(0), prior_data, self.cfg['variance'])
-        boxes = boxes * scale / 1
-        boxes = boxes.cpu().numpy()
-        scores = conf.squeeze(0).data.cpu().numpy()[:, 1]
-        landms = decode_landm(landms.data.squeeze(0), prior_data, self.cfg['variance'])
-        scale1 = torch.Tensor([img.shape[3], img.shape[2], img.shape[3], img.shape[2],
-                               img.shape[3], img.shape[2], img.shape[3], img.shape[2],
-                               img.shape[3], img.shape[2]])
-        scale1 = scale1.to(self.device)
-        landms = landms * scale1 / 1
-        landms = landms.cpu().numpy()
+        try:
+            self._t['forward_pass'].tic()
+            loc, conf, landms = self.net(img)  # forward pass
+            self._t['forward_pass'].toc()
+            self._t['misc'].tic()
+            priorbox = PriorBox(self.cfg, image_size=(im_height, im_width))
+            priors = priorbox.forward()
+            priors = priors.to(self.device)
+            prior_data = priors.data
+            boxes = decode(loc.data.squeeze(0), prior_data, self.cfg['variance'])
+            boxes = boxes * scale / 1
+            boxes = boxes.cpu().numpy()
+            scores = conf.squeeze(0).data.cpu().numpy()[:, 1]
+            landms = decode_landm(landms.data.squeeze(0), prior_data, self.cfg['variance'])
+            scale1 = torch.Tensor([img.shape[3], img.shape[2], img.shape[3], img.shape[2],
+                                   img.shape[3], img.shape[2], img.shape[3], img.shape[2],
+                                   img.shape[3], img.shape[2]])
+            scale1 = scale1.to(self.device)
+            landms = landms * scale1 / 1
+            landms = landms.cpu().numpy()
 
-        confidence_threshold = 0.02
-        # ignore low scores
-        inds = np.where(scores > confidence_threshold)[0]
-        boxes = boxes[inds]
-        landms = landms[inds]
-        scores = scores[inds]
+            confidence_threshold = 0.02
+            # ignore low scores
+            inds = np.where(scores > confidence_threshold)[0]
+            boxes = boxes[inds]
+            landms = landms[inds]
+            scores = scores[inds]
 
-        # keep top-K before NMS
-        # order = scores.argsort()[::-1][:args.top_k]
-        order = scores.argsort()[::-1]
-        boxes = boxes[order]
-        landms = landms[order]
-        scores = scores[order]
-        nms_threshold = 0.4
-        # do NMS
-        dets = np.hstack((boxes, scores[:, np.newaxis])).astype(np.float32, copy=False)
-        keep = py_cpu_nms(dets, nms_threshold)
+            # keep top-K before NMS
+            # order = scores.argsort()[::-1][:args.top_k]
+            order = scores.argsort()[::-1]
+            boxes = boxes[order]
+            landms = landms[order]
+            scores = scores[order]
+            nms_threshold = 0.4
+            # do NMS
+            dets = np.hstack((boxes, scores[:, np.newaxis])).astype(np.float32, copy=False)
+            keep = py_cpu_nms(dets, nms_threshold)
 
-        dets = dets[keep, :]
-        landms = landms[keep]
+            dets = dets[keep, :]
+            landms = landms[keep]
 
-        # keep top-K faster NMS
-        # dets = dets[:args.keep_top_k, :]
-        # landms = landms[:args.keep_top_k, :]
+            # keep top-K faster NMS
+            # dets = dets[:args.keep_top_k, :]
+            # landms = landms[:args.keep_top_k, :]
 
-        dets = np.concatenate((dets, landms), axis=1)
-        self._t['misc'].toc()
-            
-        conf = dets[:, 4]
-        filtered_idx = np.where(conf > self.threshold)
-        dets = dets[filtered_idx[0]]
+            dets = np.concatenate((dets, landms), axis=1)
+            self._t['misc'].toc()
 
-        if frame_debug is not None:
-            frame_debug = self.debug(dets, frame_debug)
-        else: 
-            frame_debug = img
+            conf = dets[:, 4]
+            filtered_idx = np.where(conf > self.threshold)
+            dets = dets[filtered_idx[0]]
 
-        return dets, frame_debug
+            if frame_debug is not None:
+                frame_debug = self.debug(dets, frame_debug)
+            else:
+                frame_debug = img
+
+            return dets, frame_debug
+        except:
+            return np.array([]), None
 
     def debug(self, dets, image):
         

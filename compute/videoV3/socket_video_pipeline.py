@@ -21,6 +21,8 @@ import glob
 SOURCE_DIR = '/home/prasoon/openmmlab/edusenseV2compute/compute/videoV3'
 VIDEO_DIR = '/mnt/ci-nas-classes/classinsight/2019F/video_backup'
 COURSE_ID = '79388A'
+INIT_SOCKET_ADDRESS =8000
+# COURSE_ID = ''
 OUT_DIR = '/home/prasoon/video_analysis/edusenseV2compute/compute/videoV3/cache/video'
 BACKFILL_STATUS_DIR = '/home/prasoon/video_analysis/edusenseV2compute/compute/videoV3/cache/backfill_status'
 os.makedirs(OUT_DIR, exist_ok=True)
@@ -37,7 +39,7 @@ DEVICE = 'cuda:4'
 NUM_FACE_DETECTION_HANDLERS = 1
 TARGET_FPS = 3
 # START_FRAME_NUMBER = 0 # used for debug purposes only
-FRAME_INTERVAL_IN_SEC = 0.6
+FRAME_INTERVAL_IN_SEC = 0.5
 MAX_QUEUE_SIZE = 300
 session_dirs = glob.glob(f'{VIDEO_DIR}/*')
 session_dirs = [xr for xr in session_dirs if f'_{COURSE_ID}_' in xr]
@@ -51,7 +53,9 @@ if __name__ == '__main__':
     for SESSION_DIR in session_dirs:
         SESSION_KEYWORD = SESSION_DIR.split("/")[-1]
         for SESSION_CAMERA in ['front']:
-            logger = get_logger(f"MAIN-{SESSION_KEYWORD}-{SESSION_CAMERA}", logdir=f'cache/logs/{COURSE_ID}')
+            session_log_dir = f'cache/logs/{COURSE_ID}/{SESSION_KEYWORD}-{SESSION_CAMERA}'
+            os.makedirs(session_log_dir, exist_ok=True)
+            logger = get_logger(f"main", logdir=session_log_dir)
             logger.info(f"processing for session {SESSION_KEYWORD}, {SESSION_CAMERA}")
             t_start_session = time.time()
             session_config = get_session_config(SOURCE_DIR,
@@ -98,12 +102,12 @@ if __name__ == '__main__':
 
             '''
 
-            VIDEO_TRACKING_SOCKET = 8000
-            TRACKING_POSE_SOCKET = 8001
-            TRACKING_FACE_SOCKET = 8002
-            FACE_GAZE_SOCKET = 8003
-            FACE_EMB_SOCKET = 8004
-            VIDEO_OUTPUT_SOCKET = 8005
+            VIDEO_TRACKING_SOCKET = INIT_SOCKET_ADDRESS
+            TRACKING_POSE_SOCKET = INIT_SOCKET_ADDRESS+1
+            TRACKING_FACE_SOCKET = INIT_SOCKET_ADDRESS+2
+            FACE_GAZE_SOCKET = INIT_SOCKET_ADDRESS+3
+            FACE_EMB_SOCKET = INIT_SOCKET_ADDRESS+4
+            VIDEO_OUTPUT_SOCKET = INIT_SOCKET_ADDRESS+5
 
             output_server = Listener(address=('localhost', VIDEO_OUTPUT_SOCKET), authkey=b'output')
 
