@@ -106,6 +106,7 @@ compose/input
 **.DS_Store
 .idea/
 **.tar
+**.tar.gz
 **.pth
 **.pt
 compute/videoV3/models/
