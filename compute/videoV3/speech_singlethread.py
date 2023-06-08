@@ -12,20 +12,21 @@ import pickle
 import glob
 from utils_computev3 import get_logger, time_diff
 import traceback
+import sys
 
 # conda activate edusense && export PYTHONPATH="${PYTHONPATH}:/home/prasoon/video_analysis/edusenseV2compute/compute/videoV3/"
 
 SOURCE_DIR = '/home/prasoon/video_analysis/edusenseV2compute/compute/videoV3'
-VIDEO_DIR = '/mnt/ci-nas-classes/classinsight/2019M/video_backup'
+VIDEO_DIR = f"/mnt/ci-nas-classes/classinsight/{sys.argv[1]}/video_backup"
 # SESSION_KEYWORD = 'classinsight-cmu_79388A_ghc_4301_201910031826'
 OUT_DIR = '/home/prasoon/video_analysis/edusenseV2compute/compute/videoV3/cache/audio'
 os.makedirs(OUT_DIR,exist_ok=True)
-DEVICE = 'cuda:0'
-WHISPER_MODEL = 'large-v2'
+DEVICE = f"cuda:{sys.argv[2]}"
+WHISPER_MODEL = 'medium'
 BLOCK_SIZE_IN_SECS = 300
 AUDIO_SR = 16000
 MIN_SEGMENT_TIME_IN_SECS = 1
-logger = get_logger("edusense_audio_pipeline")
+logger = get_logger(f"edusense_audio_pipeline_{VIDEO_DIR.split('/')[-2]}")
 
 
 session_dirs = glob.glob(f'{VIDEO_DIR}/*')
@@ -39,6 +40,7 @@ for session_dir in session_dirs:
         logger.info(f"Start Audio Pipeline for {camera_view} Camera")
         session_video_file = f'{session_dir}/{SESSION_KEYWORD}-{camera_view}.avi'
         OUT_FILE = f'{OUT_DIR}/{SESSION_KEYWORD}-{camera_view}.pb'
+        session_video_file = f'{session_dir}/{SESSION_KEYWORD}-{camera_view}.avi'
         if os.path.exists(OUT_FILE):
             logger.info(f"Output file {OUT_FILE} exists for camera {session_video_file}, Skipping..")
             continue
@@ -64,7 +66,15 @@ for session_dir in session_dirs:
                 continue
 
         # transcribe with original whisper
-        model = whisper.load_model(WHISPER_MODEL, DEVICE)
+        try:
+            model = whisper.load_model(WHISPER_MODEL, DEVICE)
+        except torch.cuda.OutOfMemoryError:
+            logger.error("Cuda memory not emptied in clean manner, removing again...")
+            torch.cuda.empty_cache()
+            time.sleep(5)
+            model = whisper.load_model(WHISPER_MODEL, DEVICE)
+
+
         try:
             start_time = time.time()
             result = model.transcribe(session_audio_file, language='en')
@@ -75,6 +85,7 @@ for session_dir in session_dirs:
             logger.info(traceback.format_exc())
 
         del model
+        time.sleep(5)
         torch.cuda.empty_cache()
 
         start_time = time.time()
