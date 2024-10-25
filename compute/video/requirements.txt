@@ -32,6 +32,6 @@ pytz
 torch==1.6.0
 torchvision==0.7.0
 matplotlib==3.3.2
-Werkzeug==0.16.0
+Werkzeug==3.0.6
 wrapt==1.11.2
 pytesseract
